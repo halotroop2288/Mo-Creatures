@@ -2,7 +2,10 @@ package drzhark.mocreatures.client.renderer.entity;
 
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.entity.RenderLiving;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
@@ -13,20 +16,24 @@ import drzhark.mocreatures.entity.passive.MoCEntityDeer;
 @SideOnly(Side.CLIENT)
 public class MoCRenderDeer extends RenderLiving {
 
+    protected ResourceLocation getEntityTexture(Entity par1Entity) {
+        return ((MoCEntityDeer)par1Entity).getTexture();
+    }
+
     public MoCRenderDeer(ModelBase modelbase, float f)
     {
         super(modelbase, f);
     }
 
     @Override
-    public void doRenderLiving(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
+    public void doRender(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
     {
         MoCEntityDeer entitydeer = (MoCEntityDeer) entityliving;
-        super.doRenderLiving(entitydeer, d, d1, d2, f, f1);
+        super.doRender(entitydeer, d, d1, d2, f, f1);
     }
 
     @Override
-    protected float handleRotationFloat(EntityLiving entityliving, float f)
+    protected float handleRotationFloat(EntityLivingBase entityliving, float f)
     {
         MoCEntityDeer entitydeer = (MoCEntityDeer) entityliving;
         stretch(entitydeer);
@@ -34,7 +41,7 @@ public class MoCRenderDeer extends RenderLiving {
     }
 
     @Override
-    protected void preRenderCallback(EntityLiving entityliving, float f)
+    protected void preRenderCallback(EntityLivingBase entityliving, float f)
     {
         rotateDeer((MoCEntityDeer) entityliving);
     }

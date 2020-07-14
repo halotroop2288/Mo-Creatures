@@ -1,18 +1,21 @@
 package drzhark.mocreatures.entity.passive;
 
-import drzhark.mocreatures.MoCTools;
-import drzhark.mocreatures.MoCreatures;
-import drzhark.mocreatures.entity.MoCEntityAnimal;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
+import drzhark.mocreatures.MoCTools;
+import drzhark.mocreatures.MoCreatures;
+import drzhark.mocreatures.entity.MoCEntityTameableAnimal;
 
-public class MoCEntityCrocodile extends MoCEntityAnimal {
+public class MoCEntityCrocodile extends MoCEntityTameableAnimal {
     // TODO
     // fix floating so it moves faster if it's deep and caughts prey underneath
 
@@ -24,22 +27,24 @@ public class MoCEntityCrocodile extends MoCEntityAnimal {
     public float spin;
     public int spinInt;
     private float myMoveSpeed;
-    // public float edad;
     private boolean waterbound;
     private int hunting;
 
     public MoCEntityCrocodile(World world)
     {
         super(world);
-        texture = MoCreatures.proxy.MODEL_TEXTURE + "crocodile.png";
+        texture = "crocodile.png";
         setSize(2F, 0.6F);
         myMoveSpeed = 0.5F;
-        health = 25;
-        // textureSet = false;
-        // setAdult(true);
+        //health = 25;
         setEdad(50 + rand.nextInt(50));
-        // setEdad(0.7F);
         setTamed(false);
+    }
+
+    protected void applyEntityAttributes()
+    {
+        super.applyEntityAttributes();
+        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(25.0D);
     }
 
     @Override
@@ -68,21 +73,18 @@ public class MoCEntityCrocodile extends MoCEntityAnimal {
 
     public void setBiting(boolean flag)
     {
-        //if (worldObj.isRemote) return;
         byte input = (byte) (flag ? 1 : 0);
         dataWatcher.updateObject(22, Byte.valueOf(input));
     }
 
     public void setIsResting(boolean flag)
     {
-        //if (worldObj.isRemote) return;
         byte input = (byte) (flag ? 1 : 0);
         dataWatcher.updateObject(23, Byte.valueOf(input));
     }
 
     public void setHasCaughtPrey(boolean flag)
     {
-        //if (worldObj.isRemote) return;
         byte input = (byte) (flag ? 1 : 0);
         dataWatcher.updateObject(24, Byte.valueOf(input));
     }
@@ -91,10 +93,11 @@ public class MoCEntityCrocodile extends MoCEntityAnimal {
     protected void jump()
     {
 
-        if (isInsideOfMaterial(Material.water)) // super.jump();
+        if (isInsideOfMaterial(Material.water))
         {
-            if (getHasCaughtPrey() || (entityToAttack == null && rand.nextInt(20) != 0)) { return;
-            // if (entityToAttack == null)
+            if (getHasCaughtPrey() || (entityToAttack == null && rand.nextInt(20) != 0)) 
+            {
+                return;
             }
 
             motionY = 0.3D;
@@ -118,12 +121,6 @@ public class MoCEntityCrocodile extends MoCEntityAnimal {
     {
         return getIsResting();
     }
-
-    /*
-     * @Override public void moveEntity(double d, double d1, double d2) {
-     * if(!getIsResting() || (ridingEntity != null) || !onGround) {
-     * if(!worldObj.isRemote) { super.moveEntity(d, d1, d2); } } }
-     */
 
     @Override
     protected void updateEntityActionState()
@@ -149,26 +146,8 @@ public class MoCEntityCrocodile extends MoCEntityAnimal {
     @Override
     public void onLivingUpdate()
     {
-        /*
-         * EntityPlayer nearentityplayer =
-         * worldObj.getClosestPlayerToEntity(this, 3D); if (nearentityplayer !=
-         * null)// && !hasPath()) { MoCTools.MoveToWater(this, worldObj);
-         * 
-         * }
-         */
-        /*
-         * if (rand.nextInt(500) == 0) { if (getIsResting()) {
-         * setIsResting(false); }else { boolean restingflag = (entityToAttack ==
-         * null && !caughtPrey && !isInsideOfMaterial(Material.water));
-         * setIsResting(restingflag);
-         * 
-         * }
-         * 
-         * }
-         */
         if (getIsResting())
         {
-            // biteProgress = 0.4F;
             rotationPitch = -5F;
             if (!isInsideOfMaterial(Material.water) && biteProgress < 0.3F && rand.nextInt(5) == 0)
             {
@@ -179,18 +158,12 @@ public class MoCEntityCrocodile extends MoCEntityAnimal {
             {
                 setIsResting(false);
                 getMyOwnPath(entityToAttack, 16F);
-                // pathToEntity = worldObj.getPathToEntity(this, entityToAttack,
-                // f);
             }
             if (MoCreatures.isServer() && entityToAttack != null || getHasCaughtPrey() || rand.nextInt(500) == 0)// isInsideOfMaterial(Material.water)
-            // ||
             {
-                // boolean restingflag = (entityToAttack == null && !caughtPrey
-                // && !isInsideOfMaterial(Material.water));
                 setIsResting(false);
                 biteProgress = 0;
                 hunting = 1;
-
             }
 
         }
@@ -207,7 +180,6 @@ public class MoCEntityCrocodile extends MoCEntityAnimal {
         if (isInsideOfMaterial(Material.water))
         {
             myMoveSpeed = 0.8F;
-            // setIsResting(false);
         }
         else
         {
@@ -278,9 +250,9 @@ public class MoCEntityCrocodile extends MoCEntityAnimal {
                 if (!isInsideOfMaterial(Material.water))
                 {
                     waterbound = true;
-                    if (riddenByEntity instanceof EntityLiving && ((EntityLiving) riddenByEntity).getHealth() > 0)
+                    if (riddenByEntity instanceof EntityLiving && ((EntityLivingBase) riddenByEntity).getHealth() > 0)
                     {
-                        ((EntityLiving) riddenByEntity).deathTime = 0;
+                        ((EntityLivingBase) riddenByEntity).deathTime = 0;
                     }
 
                     if (MoCreatures.isServer() && rand.nextInt(50) == 0)
@@ -291,13 +263,6 @@ public class MoCEntityCrocodile extends MoCEntityAnimal {
                             MoCTools.destroyDrops(this, 3D);
                         }
                     }
-
-                    /*
-                     * if (rand.nextInt(50)==0) { //MoCTools.MoveToWater(this,
-                     * worldObj); 
-                     *System.out.println("moving to water");
-                     * waterbound = true; }
-                     */
                 }
             }
             else
@@ -312,7 +277,7 @@ public class MoCEntityCrocodile extends MoCEntityAnimal {
                 spinInt += 3;
                 if ((spinInt % 20) == 0)
                 {
-                    worldObj.playSoundAtEntity(this, "crocroll", 1.0F, 1.0F + ((rand.nextFloat() - rand.nextFloat()) * 0.2F));
+                    worldObj.playSoundAtEntity(this, "mocreatures:crocroll", 1.0F, 1.0F + ((rand.nextFloat() - rand.nextFloat()) * 0.2F));
                 }
                 if (spinInt > 80)
                 {
@@ -366,7 +331,7 @@ public class MoCEntityCrocodile extends MoCEntityAnimal {
             biteProgress += 0.1F;
             if (biteProgress == 0.4F)
             {
-                worldObj.playSoundAtEntity(this, "crocjawsnap", 1.0F, 1.0F + ((rand.nextFloat() - rand.nextFloat()) * 0.2F));
+                worldObj.playSoundAtEntity(this, "mocreatures:crocjawsnap", 1.0F, 1.0F + ((rand.nextFloat() - rand.nextFloat()) * 0.2F));
             }
             if (biteProgress > 0.6F)
             {
@@ -382,6 +347,12 @@ public class MoCEntityCrocodile extends MoCEntityAnimal {
     @Override
     protected void attackEntity(Entity entity, float f)
     {
+        if (entity instanceof EntityPlayer)
+        {
+            EntityPlayer player = (EntityPlayer)entity;
+            if (player.capabilities.isCreativeMode)
+                return;
+        }
         if (getHasCaughtPrey()) { return; }
 
         if (attackTime <= 0 && (f < 3F) && (entity.boundingBox.maxY > boundingBox.minY) && (entity.boundingBox.minY < boundingBox.maxY))
@@ -407,7 +378,7 @@ public class MoCEntityCrocodile extends MoCEntityAnimal {
     }
 
     @Override
-    public boolean attackEntityFrom(DamageSource damagesource, int i)
+    public boolean attackEntityFrom(DamageSource damagesource, float i)
     {
         if (riddenByEntity != null)
         {
@@ -415,7 +386,7 @@ public class MoCEntityCrocodile extends MoCEntityAnimal {
             Entity entity = damagesource.getEntity();
             if (entity != null && riddenByEntity == entity)
             {
-                if (rand.nextInt(10) != 0)
+                if (rand.nextInt(2) != 0)
                 {
                     return false;
                 }
@@ -432,7 +403,7 @@ public class MoCEntityCrocodile extends MoCEntityAnimal {
 
             if (riddenByEntity != null && riddenByEntity == entity)
             {
-                if ((entity != this) && (worldObj.difficultySetting > 0))
+                if ((entity != this) && (worldObj.difficultySetting.getDifficultyId() > 0))
                 {
                     entityToAttack = entity;
                 }
@@ -451,22 +422,22 @@ public class MoCEntityCrocodile extends MoCEntityAnimal {
     {
         if (getHasCaughtPrey()) { return null; }
 
-        if (worldObj.difficultySetting > 0)// && getIsAdult())
+        if (worldObj.difficultySetting.getDifficultyId() > 0)
         {
             double attackD = 12D;
              
             if (getIsResting())
             {
-            	attackD = 6D;
+                attackD = 6D;
             }
             
-            EntityPlayer entityplayer = worldObj.getClosestPlayerToEntity(this, attackD); 
+            EntityPlayer entityplayer = worldObj.getClosestVulnerablePlayerToEntity(this, attackD); 
             if((entityplayer != null) && getIsAdult()) 
-            { 
-            	 return entityplayer; 
+            {
+                 return entityplayer; 
             }
             
-            EntityLiving entityliving = getClosestEntityLiving(this, attackD);
+            EntityLivingBase entityliving = getClosestEntityLiving(this, attackD);
             return entityliving;
         }
         return null;
@@ -486,9 +457,7 @@ public class MoCEntityCrocodile extends MoCEntityAnimal {
         if (riddenByEntity == null) { return; }
         int direction = 1;
 
-        // double dist = 1.7D;// * edad;
         double dist = getEdad() * 0.01F + riddenByEntity.width - 0.4D;
-        // if (riddenByEntity instanceof EntityPlayer) dist = 1.7D;// * edad;
         double newPosX = posX - (dist * Math.cos((MoCTools.realAngle(rotationYaw - 90F)) / 57.29578F));
         double newPosZ = posZ - (dist * Math.sin((MoCTools.realAngle(rotationYaw - 90F)) / 57.29578F));
         riddenByEntity.setPosition(newPosX, posY + getMountedYOffset() + riddenByEntity.getYOffset(), newPosZ);
@@ -501,15 +470,9 @@ public class MoCEntityCrocodile extends MoCEntityAnimal {
         {
             direction = 1;
         }
-        // riddenByEntity.setPositionAndRotation(newPosX, posY +
-        // getMountedYOffset() + riddenByEntity.getYOffset(), newPosZ,
-        // this.rotationYaw*direction, riddenByEntity.rotationPitch);
-        ((EntityLiving) riddenByEntity).renderYawOffset = this.rotationYaw * direction;
-        ((EntityLiving) riddenByEntity).prevRenderYawOffset = this.rotationYaw * direction;
-        // ((EntityLiving)riddenByEntity).rotationYaw =
-        // this.rotationYaw*direction;
-        // ((EntityLiving)riddenByEntity).isWet()
 
+        ((EntityLivingBase) riddenByEntity).renderYawOffset = this.rotationYaw * direction;
+        ((EntityLivingBase) riddenByEntity).prevRenderYawOffset = this.rotationYaw * direction;
     }
 
     @Override
@@ -521,18 +484,12 @@ public class MoCEntityCrocodile extends MoCEntityAnimal {
     @Override
     public void floating()
     {
-        if ((entityToAttack != null && ((entityToAttack.posY < (posY - 0.5D)) && getDistanceToEntity(entityToAttack) < 10F))) // ||
-                                                                                                                                // caughtPrey)
+        if ((entityToAttack != null && ((entityToAttack.posY < (posY - 0.5D)) && getDistanceToEntity(entityToAttack) < 10F))) // || caughtPrey)
         {
             if (motionY < -0.1)
             {
                 motionY = -0.1;
-                // if (motionY > 0.1) motionY = 0.1;
             }
-
-            /*
-             * if (MoCTools.distanceToSurface(this) > 1) { motionY += 0.1D; }
-             */
         }
         else
         {
@@ -543,26 +500,26 @@ public class MoCEntityCrocodile extends MoCEntityAnimal {
     @Override
     protected String getDeathSound()
     {
-        return "crocdying";
+        return "mocreatures:crocdying";
     }
 
     @Override
     protected String getHurtSound()
     {
-        return "crochurt";
+        return "mocreatures:crochurt";
     }
 
     @Override
     protected String getLivingSound()
     {
-        if (getIsResting()) { return "crocresting"; }
-        return "crocgrunt";
+        if (getIsResting()) { return "mocreatures:crocresting"; }
+        return "mocreatures:crocgrunt";
     }
 
     @Override
-    protected int getDropItemId()
+    protected Item getDropItem()
     {
-        return MoCreatures.crochide.itemID;
+        return MoCreatures.hideCroc;
     }
 
     public boolean isSpinning()
@@ -584,9 +541,9 @@ public class MoCEntityCrocodile extends MoCEntityAnimal {
 
         if (riddenByEntity != null)
         {
-            if (riddenByEntity instanceof EntityLiving && ((EntityLiving) riddenByEntity).getHealth() > 0)
+            if (riddenByEntity instanceof EntityLiving && ((EntityLivingBase) riddenByEntity).getHealth() > 0)
             {
-                ((EntityLiving) riddenByEntity).deathTime = 0;
+                ((EntityLivingBase) riddenByEntity).deathTime = 0;
             }
 
             riddenByEntity.mountEntity(null);
@@ -595,23 +552,9 @@ public class MoCEntityCrocodile extends MoCEntityAnimal {
     }
 
     @Override
-    public int getMaxSpawnedInChunk()
-    {
-        return 6;
-    }
-
-    @Override
     public int getTalkInterval()
     {
         return 120;
-    }
-
-    @Override
-    public boolean getCanSpawnHere()
-    {
-        if (MoCTools.isNearTorch(this)) { return false; }
-
-        return (MoCreatures.proxy.getFrequency(this.getEntityName()) > 0) && super.getCanSpawnHere();
     }
 
     @Override

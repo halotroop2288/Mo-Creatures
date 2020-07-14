@@ -2,7 +2,9 @@ package drzhark.mocreatures.entity;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.pathfinding.PathEntity;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
@@ -13,16 +15,13 @@ public abstract class MoCEntityFlyerMob extends MoCEntityMob {
     protected int attackStrength;
     private PathEntity entitypath;
 
-    //public double speedModifier;
-
     public MoCEntityFlyerMob(World world)
     {
         super(world);
         isCollidedVertically = false;
-        //speedModifier = 0.03D;
         setSize(1.5F, 1.5F);
         attackStrength = 3;
-        health = 10;
+        //health = 10;
     }
 
     @Override
@@ -93,10 +92,10 @@ public abstract class MoCEntityFlyerMob extends MoCEntityMob {
             if (onGround)
             {
                 f2 = 0.5460001F;
-                int i = worldObj.getBlockId(MathHelper.floor_double(posX), MathHelper.floor_double(boundingBox.minY) - 1, MathHelper.floor_double(posZ));
-                if (i > 0)
+                Block block = worldObj.getBlock(MathHelper.floor_double(posX), MathHelper.floor_double(boundingBox.minY) - 1, MathHelper.floor_double(posZ));
+                if (block != Blocks.air)
                 {
-                    f2 = Block.blocksList[i].slipperiness * 0.91F;
+                    f2 = block.slipperiness * 0.91F;
                 }
             }
             float f3 = 0.162771F / (f2 * f2 * f2);
@@ -105,10 +104,10 @@ public abstract class MoCEntityFlyerMob extends MoCEntityMob {
             if (onGround)
             {
                 f2 = 0.5460001F;
-                int j = worldObj.getBlockId(MathHelper.floor_double(posX), MathHelper.floor_double(boundingBox.minY) - 1, MathHelper.floor_double(posZ));
-                if (j > 0)
+                Block block = worldObj.getBlock(MathHelper.floor_double(posX), MathHelper.floor_double(boundingBox.minY) - 1, MathHelper.floor_double(posZ));
+                if (block != Blocks.air)
                 {
-                    f2 = Block.blocksList[j].slipperiness * 0.91F;
+                    f2 = block.slipperiness * 0.91F;
                 }
             }
             moveEntity(motionX, motionY, motionZ);
@@ -144,7 +143,6 @@ public abstract class MoCEntityFlyerMob extends MoCEntityMob {
             if (entityToAttack != null)
             {
                 entitypath = worldObj.getPathEntityToEntity(this, entityToAttack, f, true, false, false, true);
-
             }
         }
         else if (!entityToAttack.isEntityAlive())
@@ -161,7 +159,6 @@ public abstract class MoCEntityFlyerMob extends MoCEntityMob {
         }
         if (!hasAttacked && (entityToAttack != null) && ((entitypath == null) || (rand.nextInt(10) == 0)))
         {
-            // entitypath = worldObj.getPathToEntity(this, entityToAttack, f);
             entitypath = worldObj.getPathEntityToEntity(this, entityToAttack, f, true, false, false, true);
         }
         else if (((entitypath == null) && (rand.nextInt(80) == 0)) || (rand.nextInt(80) == 0))
@@ -229,7 +226,7 @@ public abstract class MoCEntityFlyerMob extends MoCEntityMob {
             double d3 = vec3d.yCoord - i;
             float f4 = (float) ((Math.atan2(d2, d1) * 180D) / 3.1415927410125728D) - 90F;
             float f5 = f4 - rotationYaw;
-            moveForward = moveSpeed;
+            moveForward = (float)this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).getAttributeValue();
             for (; f5 < -180F; f5 += 360F)
             {
             }

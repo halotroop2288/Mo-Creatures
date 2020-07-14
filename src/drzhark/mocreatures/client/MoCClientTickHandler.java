@@ -1,51 +1,17 @@
 package drzhark.mocreatures.client;
 
 import java.util.EnumSet;
-import java.util.List;
+
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.TickEvent.ClientTickEvent;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.world.WorldServer;
-import net.minecraftforge.common.DimensionManager;
-import cpw.mods.fml.client.FMLClientHandler;
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.ITickHandler;
-import cpw.mods.fml.common.TickType;
-import drzhark.mocreatures.MoCTools;
-import drzhark.mocreatures.MoCreatures;
 
-public class MoCClientTickHandler implements ITickHandler {
+public class MoCClientTickHandler {
 
     private void onTickInGame()
     {
-       /* if (inMenu)
-        {
-            if (lastTickRun > 10)
-            {
-                //System.out.println("MoCreatures.proxy.needsUpdate = " + MoCreatures.proxy.needsUpdate);
-                if (MoCreatures.proxy.needsUpdate)
-                {
-                    //System.out.println("need update, updating settings...");
-                    MoCreatures.updateSettings();
-                    inMenu = false;
-                }
-            }
-        }*/
-        
-        if (inMenu)
-        {
-            //if (lastTickRun > 10)
-            //{
-            if (MoCreatures.proxy.needsUpdate)
-            {
-                MoCreatures.updateSettings();
-                inMenu = false;
-                MoCreatures.proxy.needsUpdate = false;
-            }
-            //}
-            //lastTickRun++;
-        }
     }
 
     boolean inMenu;
@@ -53,19 +19,15 @@ public class MoCClientTickHandler implements ITickHandler {
 
     private void onTickInGui(GuiScreen curScreen)
     {
+        // handle GUI tick stuff here
         inMenu = true;
         lastTickRun = 0;
     }
 
-    @Override
-    public void tickStart(EnumSet<TickType> type, Object... tickData)
+    @SubscribeEvent
+    public void tickEnd(ClientTickEvent event)
     {
-    }
-
-    @Override
-    public void tickEnd(EnumSet<TickType> type, Object... tickData)
-    {
-        if (type.equals(EnumSet.of(TickType.CLIENT)))
+        if (event.type.equals(event.type.CLIENT))
         {
             GuiScreen curScreen = Minecraft.getMinecraft().currentScreen;
             if (curScreen != null)
@@ -74,33 +36,9 @@ public class MoCClientTickHandler implements ITickHandler {
             }
             else
             {
+                inMenu = false;
                 onTickInGame();
             }
         }
-
     }
-
-    @Override
-    public EnumSet<TickType> ticks()
-    {
-        return EnumSet.of(TickType.CLIENT);
-    }
-
-    @Override
-    public String getLabel()
-    {
-        return null;
-    }
-    
-    
-    
-    
-    
-    
-   
-
-
-
-
-
 }

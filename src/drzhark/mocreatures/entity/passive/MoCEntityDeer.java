@@ -1,13 +1,17 @@
 package drzhark.mocreatures.entity.passive;
 
-import drzhark.mocreatures.MoCreatures;
-import drzhark.mocreatures.entity.MoCEntityAnimal;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import drzhark.mocreatures.MoCTools;
+import drzhark.mocreatures.MoCreatures;
+import drzhark.mocreatures.entity.MoCEntityTameableAnimal;
 
-public class MoCEntityDeer extends MoCEntityAnimal {
-    //public boolean textureSet;
+public class MoCEntityDeer extends MoCEntityTameableAnimal {
+
     private float myMoveSpeed;
 
     public MoCEntityDeer(World world)
@@ -15,11 +19,16 @@ public class MoCEntityDeer extends MoCEntityAnimal {
         super(world);
         setEdad(75);
         setSize(0.9F, 1.3F);
-        health = 10;
-        //textureSet = false;
+        //health = 10;
         setAdult(true);
         myMoveSpeed = 1.7F;
         setTamed(false);
+    }
+
+    protected void applyEntityAttributes()
+    {
+        super.applyEntityAttributes();
+        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(10.0D);
     }
 
     @Override
@@ -41,40 +50,24 @@ public class MoCEntityDeer extends MoCEntityAnimal {
                 setType(3);
             }
         }
-        /*if (getType() == 1)
-        {
-            texture = MoCreatures.proxy.MODEL_TEXTURE + "deer.png";
-            //health = 15;
-        } else if (getType() == 2)
-        {
-            texture = MoCreatures.proxy.MODEL_TEXTURE + "deerf.png";
-            //health = 15;
-        } else
-        {
-            texture = MoCreatures.proxy.MODEL_TEXTURE + "deerb.png";
-            //health = 5;
-            setAdult(false);
-        }
-        
-        setMySpeed(false);*/
     }
 
     @Override
-    public String getTexture()
+    public ResourceLocation getTexture()
     {
 
         switch (getType())
         {
         case 1:
-            return MoCreatures.proxy.MODEL_TEXTURE + "deer.png";
+            return MoCreatures.proxy.getTexture("deer.png");
         case 2:
-            return MoCreatures.proxy.MODEL_TEXTURE + "deerf.png";
+            return MoCreatures.proxy.getTexture("deerf.png");
         case 3:
             setAdult(false);
-            return MoCreatures.proxy.MODEL_TEXTURE + "deerb.png";
+            return MoCreatures.proxy.getTexture("deerb.png");
 
         default:
-            return MoCreatures.proxy.MODEL_TEXTURE + "deer.png";
+            return MoCreatures.proxy.getTexture("deer.png");
         }
     }
 
@@ -92,23 +85,19 @@ public class MoCEntityDeer extends MoCEntityAnimal {
     @Override
     protected String getDeathSound()
     {
-        return "deerdying";
+        return "mocreatures:deerdying";
     }
 
-    /*
-     * public int type { return(dataWatcher.getWatchableObjectInt(17)); }
-     */
-
     @Override
-    protected int getDropItemId()
+    protected Item getDropItem()
     {
-        return MoCreatures.fur.itemID;
+        return MoCreatures.fur;
     }
 
     @Override
     protected String getHurtSound()
     {
-        return "deerhurt";
+        return "mocreatures:deerhurt";
     }
 
     @Override
@@ -116,11 +105,11 @@ public class MoCEntityDeer extends MoCEntityAnimal {
     {
         if (!getIsAdult())
         {
-            return "deerbgrunt";
+            return "mocreatures:deerbgrunt";
         }
         else
         {
-            return "deerfgrunt";
+            return "mocreatures:deerfgrunt";
         }
     }
 
@@ -142,12 +131,12 @@ public class MoCEntityDeer extends MoCEntityAnimal {
             }
             if (rand.nextInt(5) == 0)
             {
-                EntityLiving entityliving = getBoogey(10D);
+                EntityLivingBase entityliving = getBoogey(10D);
                 if (entityliving != null)
                 {
                     setMySpeed(true);
 
-                    runLikeHell(entityliving);
+                    MoCTools.runLikeHell(this, entityliving);
 
                 }
                 else
@@ -180,12 +169,6 @@ public class MoCEntityDeer extends MoCEntityAnimal {
         myMoveSpeed = f;
     }
 
-    /*public void setTypeInt(int i)
-    {
-        type = i;
-        selectType();
-    }
-    */
     @Override
     public float getMoveSpeed()
     {
@@ -200,12 +183,5 @@ public class MoCEntityDeer extends MoCEntityAnimal {
             motionY = 0.6D;
         }
         super.updateEntityActionState();
-    }
-
-    @Override
-    public boolean getCanSpawnHere()
-    {
-        return (MoCreatures.proxy.getFrequency(this.getEntityName()) > 0) && super.getCanSpawnHere();
-
     }
 }

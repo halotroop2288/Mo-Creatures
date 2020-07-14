@@ -1,6 +1,8 @@
 package drzhark.mocreatures.client.renderer.entity;
 
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
@@ -10,7 +12,7 @@ import drzhark.mocreatures.client.model.MoCModelBear;
 import drzhark.mocreatures.entity.passive.MoCEntityBear;
 
 @SideOnly(Side.CLIENT)
-public class MoCRenderBear extends MoCRenderAnimal {
+public class MoCRenderBear extends MoCRenderMoC {
 
     public MoCRenderBear(MoCModelBear modelbase, float f)
     {
@@ -18,7 +20,7 @@ public class MoCRenderBear extends MoCRenderAnimal {
     }
 
     @Override
-    protected void preRenderCallback(EntityLiving entityliving, float f)
+    protected void preRenderCallback(EntityLivingBase entityliving, float f)
     {
         MoCEntityBear entitybear = (MoCEntityBear) entityliving;
         stretch(entitybear);
@@ -37,4 +39,7 @@ public class MoCRenderBear extends MoCRenderAnimal {
         GL11.glScalef(sizeFactor, sizeFactor, sizeFactor);
     }
 
+    protected ResourceLocation getEntityTexture(Entity par1Entity) {
+        return ((MoCEntityBear)par1Entity).getTexture();
+    }
 }

@@ -3,25 +3,31 @@ package drzhark.mocreatures.entity.monster;
 import java.util.Iterator;
 import java.util.List;
 
-import drzhark.mocreatures.MoCreatures;
-import drzhark.mocreatures.entity.MoCEntityMob;
-
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.projectile.EntityArrow;
+import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import drzhark.mocreatures.MoCreatures;
+import drzhark.mocreatures.entity.MoCEntityMob;
 
 public class MoCEntityRat extends MoCEntityMob {
     public MoCEntityRat(World world)
     {
         super(world);
         setSize(0.5F, 0.5F);
-        health = 10;
-        //attackStrength = 1;
+    }
+
+    protected void applyEntityAttributes()
+    {
+        super.applyEntityAttributes();
+        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(10.0D);
     }
 
     @Override
@@ -43,34 +49,28 @@ public class MoCEntityRat extends MoCEntityMob {
                 setType(3);
             }
         }
-
-        /*if (type == 1)
-        {
-            texture = MoCreatures.proxy.MODEL_TEXTURE + "ratb.png";
-        } else if (type == 2)
-        {
-            texture = MoCreatures.proxy.MODEL_TEXTURE + "ratbl.png";
-        } else if (type == 3)
-        {
-            texture = MoCreatures.proxy.MODEL_TEXTURE + "ratw.png";
-        }*/
     }
 
     @Override
-    public String getTexture()
+    protected double getAttackStrenght() 
     {
-
+        return 1D;
+    }
+    
+    @Override
+    public ResourceLocation getTexture()
+    {
         switch (getType())
         {
         case 1:
-            return MoCreatures.proxy.MODEL_TEXTURE + "ratb.png";
+            return MoCreatures.proxy.getTexture("ratb.png");
         case 2:
-            return MoCreatures.proxy.MODEL_TEXTURE + "ratbl.png";
+            return MoCreatures.proxy.getTexture("ratbl.png");
         case 3:
-            return MoCreatures.proxy.MODEL_TEXTURE + "ratw.png";
+            return MoCreatures.proxy.getTexture("ratw.png");
 
         default:
-            return MoCreatures.proxy.MODEL_TEXTURE + "ratb.png";
+            return MoCreatures.proxy.getTexture("ratb.png");
         }
     }
 
@@ -91,7 +91,7 @@ public class MoCEntityRat extends MoCEntityMob {
     }
 
     @Override
-    public boolean attackEntityFrom(DamageSource damagesource, int i)
+    public boolean attackEntityFrom(DamageSource damagesource, float i)
     {
         if (super.attackEntityFrom(damagesource, i))
         {
@@ -144,62 +144,38 @@ public class MoCEntityRat extends MoCEntityMob {
             EntityPlayer entityplayer = worldObj.getClosestVulnerablePlayerToEntity(this, 16D);
             return entityplayer != null && this.canEntityBeSeen(entityplayer) ? entityplayer : null;
         }
-            return null;
-        
-    }
-
-    @Override
-    public boolean getCanSpawnHere()
-    {
-        return (MoCreatures.proxy.getFrequency(this.getEntityName()) > 0) && super.getCanSpawnHere();
+        return null;
     }
 
     @Override
     protected String getDeathSound()
     {
-        return "ratdying";
+        return "mocreatures:ratdying";
     }
 
     @Override
-    protected int getDropItemId()
+    protected Item getDropItem()
     {
-        return MoCreatures.ratRaw.itemID;
-        //return Item.coal.itemID;
+        return MoCreatures.ratRaw;
     }
 
     @Override
     protected String getHurtSound()
     {
-        return "rathurt";
+        return "mocreatures:rathurt";
     }
 
     @Override
     protected String getLivingSound()
     {
-        return "ratgrunt";
+        return "mocreatures:ratgrunt";
     }
-
-    @Override
-    public int getMaxSpawnedInChunk()
-    {
-        return 5;
-    }
-
-    @Override
-    public int getMaxHealth()
-    {
-        return 10;
-    }
-
-    
 
     @Override
     public boolean isOnLadder()
     {
         return isCollidedHorizontally;
     }
-
-    
 
     @Override
     public void readEntityFromNBT(NBTTagCompound nbttagcompound)
@@ -211,11 +187,5 @@ public class MoCEntityRat extends MoCEntityMob {
     public void writeEntityToNBT(NBTTagCompound nbttagcompound)
     {
         super.writeEntityToNBT(nbttagcompound);
-    }
-
-    @Override
-    public int getAttackStrength(Entity par1Entity)
-    {
-        return 1;
     }
 }

@@ -1,35 +1,32 @@
 package drzhark.mocreatures.client.renderer.entity;
 
 import net.minecraft.client.model.ModelBase;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import drzhark.mocreatures.entity.passive.MoCEntityCricket;
+import drzhark.mocreatures.entity.ambient.MoCEntityCricket;
 
 @SideOnly(Side.CLIENT)
-public class MoCRenderCricket extends MoCRenderAnimal {
+public class MoCRenderCricket extends MoCRenderMoC {
+
     public MoCRenderCricket(ModelBase modelbase)
     {
         super(modelbase, 0.0F);
-        //this.setRenderPassModel(new MoCModelFirefly());
     }
 
     @Override
-    protected void preRenderCallback(EntityLiving par1EntityLiving, float par2)
+    protected void preRenderCallback(EntityLivingBase par1EntityLiving, float par2)
     {
         rotateCricket((MoCEntityCricket) par1EntityLiving);
     }
 
     protected void rotateCricket(MoCEntityCricket entityfirefly)
     {
-        /*if (entityfirefly.getIsFlying())
-        {
-            GL11.glRotatef(40F, -1F, 0.0F, 0.0F);
-        }*/
-
         if (!entityfirefly.onGround)
         {
             if (entityfirefly.motionY > 0.5D)
@@ -47,4 +44,7 @@ public class MoCRenderCricket extends MoCRenderAnimal {
         }
     }
 
+    protected ResourceLocation getEntityTexture(Entity par1Entity) {
+        return ((MoCEntityCricket)par1Entity).getTexture();
+    }
 }

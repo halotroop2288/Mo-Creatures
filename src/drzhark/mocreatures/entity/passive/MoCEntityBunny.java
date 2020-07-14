@@ -2,51 +2,67 @@ package drzhark.mocreatures.entity.passive;
 
 import java.util.List;
 
-import drzhark.mocreatures.MoCTools;
-import drzhark.mocreatures.MoCreatures;
-import drzhark.mocreatures.entity.MoCEntityAnimal;
-
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.MathHelper;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraftforge.common.BiomeDictionary;
+import net.minecraftforge.common.BiomeDictionary.Type;
+import drzhark.mocreatures.MoCTools;
+import drzhark.mocreatures.MoCreatures;
+import drzhark.mocreatures.entity.MoCEntityTameableAnimal;
 
-public class MoCEntityBunny extends MoCEntityAnimal {
+public class MoCEntityBunny extends MoCEntityTameableAnimal {
     public boolean pickedUp;
     public int bunnyReproduceTickerA;
     public int bunnyReproduceTickerB;
-    public int bunnyLimit = 12;
 
     // TODO check that bunnyLimit??
-
-    // public float edad;
 
     public MoCEntityBunny(World world)
     {
         super(world);
-        // a = false;
         setAdult(true);
         setTamed(false);
         setEdad(50);
-        //moveSpeed = 1.5F;
-        //yOffset = -0.16F;
         setSize(0.4F, 0.4F);
-        health = 4;
+        //health = 4;
         bunnyReproduceTickerA = rand.nextInt(64);
         bunnyReproduceTickerB = 0;
-        //forceUpdates = true;
-        // unused_flag = true;
     }
 
-    /*@Override
-    protected boolean canDespawn()
+    protected void applyEntityAttributes()
     {
-        return !getIsTamed();
-    }*/
+        super.applyEntityAttributes();
+        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(4.0D);
+    }
+
+    @Override
+    protected void entityInit()
+    {
+        super.entityInit();
+        dataWatcher.addObject(22, Byte.valueOf((byte) 0)); // hasEaten - 0 false 1 true
+    }
+
+    public boolean getHasEaten()
+    {
+        return (dataWatcher.getWatchableObjectByte(22) == 1);
+    }
+
+    public void setHasEaten(boolean flag)
+    {
+        byte input = (byte) (flag ? 1 : 0);
+        dataWatcher.updateObject(22, Byte.valueOf(input));
+    }
 
     @Override
     public float getMoveSpeed()
@@ -57,52 +73,49 @@ public class MoCEntityBunny extends MoCEntityAnimal {
     @Override
     public void selectType()
     {
+        checkSpawningBiome();
+        
         if (getType() == 0)
         {
-            int k = rand.nextInt(100);
-            if (k <= 20)
-            {
-                setType(1);
-            }
-            else if (k <= 40)
-            {
-                setType(2);
-            }
-            else if (k <= 60)
-            {
-                setType(3);
-            }
-            else if (k <= 80)
-            {
-                setType(4);
-            }
-            else
-            {
-                setType(5);
-            }
+            setType(rand.nextInt(5)+1);
         }
 
     }
 
     @Override
-    public String getTexture()
+    public boolean checkSpawningBiome()
     {
+        int i = MathHelper.floor_double(posX);
+        int j = MathHelper.floor_double(boundingBox.minY);
+        int k = MathHelper.floor_double(posZ);
 
+        BiomeGenBase currentbiome = MoCTools.Biomekind(worldObj, i, j, k);
+        if (BiomeDictionary.isBiomeOfType(currentbiome, Type.FROZEN))
+        {
+            setType(3); //snow white bunnies!
+            return true;
+        }
+        return true;
+    }
+
+    @Override
+    public ResourceLocation getTexture()
+    {
         switch (getType())
         {
         case 1:
-            return MoCreatures.proxy.MODEL_TEXTURE + "bunny.png";
+            return MoCreatures.proxy.getTexture("bunny.png");
         case 2:
-            return MoCreatures.proxy.MODEL_TEXTURE + "bunnyb.png";
+            return MoCreatures.proxy.getTexture("bunnyb.png");
         case 3:
-            return MoCreatures.proxy.MODEL_TEXTURE + "bunnyc.png";
+            return MoCreatures.proxy.getTexture("bunnyc.png");
         case 4:
-            return MoCreatures.proxy.MODEL_TEXTURE + "bunnyd.png";
+            return MoCreatures.proxy.getTexture("bunnyd.png");
         case 5:
-            return MoCreatures.proxy.MODEL_TEXTURE + "bunnye.png";
+            return MoCreatures.proxy.getTexture("bunnye.png");
 
         default:
-            return MoCreatures.proxy.MODEL_TEXTURE + "bunny.png";
+            return MoCreatures.proxy.getTexture("bunny.png");
         }
     }
 
@@ -112,22 +125,15 @@ public class MoCEntityBunny extends MoCEntityAnimal {
     }
 
     @Override
-    public boolean getCanSpawnHere()
-    {
-        return (MoCreatures.proxy.getFrequency(this.getEntityName()) > 0) && super.getCanSpawnHere();
-
-    }
-
-    @Override
     protected String getDeathSound()
     {
-        return "rabbitdeath";
+        return "mocreatures:rabbitdeath";
     }
 
     @Override
     protected String getHurtSound()
     {
-        return "rabbithurt";
+        return "mocreatures:rabbithurt";
     }
 
     @Override
@@ -158,6 +164,18 @@ public class MoCEntityBunny extends MoCEntityAnimal {
 
         ItemStack itemstack = entityplayer.inventory.getCurrentItem();
 
+        if ((itemstack != null) && (itemstack.getItem() == Items.golden_carrot) && !getHasEaten())
+        {
+            if (--itemstack.stackSize == 0)
+            {
+                entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, null);
+            }
+
+            setHasEaten(true);
+            MoCTools.playCustomSound(this, "eating", worldObj);
+            return true;
+        }
+
         rotationYaw = entityplayer.rotationYaw;
         if (this.ridingEntity == null)
         {
@@ -167,16 +185,15 @@ public class MoCEntityBunny extends MoCEntityAnimal {
                 mountEntity(entityplayer);
             }
             pickedUp = true;
-            //System.out.println("My entity ID = " + this.entityId + "My name = " + this.getName() + " my owner = " + getOwnerName());
-            if (!getIsTamed() && MoCreatures.isServer())
-            {
-                MoCTools.tameWithName((EntityPlayerMP) entityplayer, this);
 
+            if (MoCreatures.isServer() && !getIsTamed())
+            {
+                MoCTools.tameWithName(entityplayer, this);
             }
         }
         else
         {
-            worldObj.playSoundAtEntity(this, "rabbitlift", 1.0F, ((rand.nextFloat() - rand.nextFloat()) * 0.2F) + 1.0F);
+            worldObj.playSoundAtEntity(this, "mocreatures:rabbitlift", 1.0F, ((rand.nextFloat() - rand.nextFloat()) * 0.2F) + 1.0F);
             if (MoCreatures.isServer())
             {
                 this.mountEntity(null);
@@ -213,7 +230,7 @@ public class MoCEntityBunny extends MoCEntityAnimal {
         if (MoCreatures.isServer())
         {
 
-            if (!getIsTamed() || !getIsAdult() || (ridingEntity != null) || (worldObj.countEntities(this.getClass()) > bunnyLimit)) { return; }
+            if (!getIsTamed() || !getIsAdult() || !getHasEaten() || (ridingEntity != null)) { return; }
             if (bunnyReproduceTickerA < 1023)
             {
                 bunnyReproduceTickerA++;
@@ -224,19 +241,12 @@ public class MoCEntityBunny extends MoCEntityAnimal {
             }
             else
             {
-                int k = worldObj.countEntities(this.getClass());
-                if (k > bunnyLimit)
+                /*int k = worldObj.countEntities(this.getClass());
+                if (k > MoCreatures.proxy.bunnyBreedThreshold)
                 {
                     proceed();
                     return;
-                }
-                /*
-                 * List list =
-                 * worldObj.getEntitiesWithinAABBExcludingEntity(this,
-                 * boundingBox.expand(16D, 16D, 16D)); for(int l = 0; l <
-                 * list.size(); l++) { Entity entity = (Entity) list.get(l);
-                 * if(entity instanceof MoCEntityBunny) { k++; } }
-                 */
+                }*/
 
                 List list1 = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand(4.0D, 4.0D, 4.0D));
                 boolean flag = false;
@@ -248,13 +258,19 @@ public class MoCEntityBunny extends MoCEntityAnimal {
                         continue;
                     }
                     MoCEntityBunny entitybunny = (MoCEntityBunny) entity1;
-                    if ((entitybunny.ridingEntity != null) || (entitybunny.bunnyReproduceTickerA < 1023) || !entitybunny.getIsAdult())
+                    if ((entitybunny.ridingEntity != null) || (entitybunny.bunnyReproduceTickerA < 1023) || !entitybunny.getIsAdult() || !entitybunny.getHasEaten())
                     {
                         continue;
                     }
                     MoCEntityBunny entitybunny1 = new MoCEntityBunny(worldObj);
                     entitybunny1.setPosition(posX, posY, posZ);
                     entitybunny1.setAdult(false);
+                    int babytype = this.getType();
+                    if (rand.nextInt(2) == 0)
+                    {
+                        babytype = entitybunny.getType();
+                    }
+                    entitybunny1.setType(babytype);
                     worldObj.spawnEntityInWorld(entitybunny1);
                     worldObj.playSoundAtEntity(this, "mob.chickenplop", 1.0F, ((rand.nextFloat() - rand.nextFloat()) * 0.2F) + 1.0F);
                     proceed();
@@ -262,16 +278,13 @@ public class MoCEntityBunny extends MoCEntityAnimal {
                     flag = true;
                     break;
                 }
-                /*
-                 * if(!flag) { k = rand.nextInt(16); }
-                 */
-
             }
         }
     }
 
     public void proceed()
     {
+        setHasEaten(false);
         bunnyReproduceTickerB = 0;
         bunnyReproduceTickerA = rand.nextInt(64);
     }
@@ -291,7 +304,7 @@ public class MoCEntityBunny extends MoCEntityAnimal {
         {
             pickedUp = false;
             //System.out.println("pickedOff");
-            worldObj.playSoundAtEntity(this, "rabbitland", 1.0F, ((rand.nextFloat() - rand.nextFloat()) * 0.2F) + 1.0F);
+            worldObj.playSoundAtEntity(this, "mocreatures:rabbitland", 1.0F, ((rand.nextFloat() - rand.nextFloat()) * 0.2F) + 1.0F);
             List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand(12D, 12D, 12D));
             for (int k = 0; k < list.size(); k++)
             {
@@ -305,12 +318,6 @@ public class MoCEntityBunny extends MoCEntityAnimal {
             }
 
         }
-    }
-
-    @Override
-    public boolean isBreedingItem(ItemStack par1ItemStack)
-    {
-        return false;//par1ItemStack != null && par1ItemStack.itemID == Item.wheat.itemID;
     }
 
     @Override
@@ -328,21 +335,13 @@ public class MoCEntityBunny extends MoCEntityAnimal {
     @Override
     public int nameYOffset()
     {
-
         return -40;
-
-    }
-
-    @Override
-    public int getMaxHealth()
-    {
-        return 4;
     }
 
     @Override
     public boolean isMyHealFood(ItemStack par1ItemStack)
     {
-        return par1ItemStack != null && par1ItemStack.itemID == Item.carrot.itemID;
+        return par1ItemStack != null && par1ItemStack.getItem() == Items.carrot;
     }
 
     @Override
@@ -355,12 +354,18 @@ public class MoCEntityBunny extends MoCEntityAnimal {
      * So bunny-hats don't suffer damage
      */
     @Override
-    public boolean attackEntityFrom(DamageSource damagesource, int i)
+    public boolean attackEntityFrom(DamageSource damagesource, float i)
     {
         if (this.ridingEntity != null) 
         {
             return false;
         }
         return super.attackEntityFrom(damagesource, i);
+    }
+    
+    @Override
+    public boolean swimmerEntity()
+    {
+        return true;
     }
 }

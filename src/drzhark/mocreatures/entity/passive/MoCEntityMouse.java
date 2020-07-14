@@ -1,114 +1,105 @@
-
 package drzhark.mocreatures.entity.passive;
 
-import drzhark.mocreatures.MoCreatures;
-import drzhark.mocreatures.entity.MoCEntityAnimal;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-
+import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraftforge.common.BiomeDictionary;
+import net.minecraftforge.common.BiomeDictionary.Type;
+import drzhark.mocreatures.MoCTools;
+import drzhark.mocreatures.MoCreatures;
+import drzhark.mocreatures.entity.MoCEntityAnimal;
 
 public class MoCEntityMouse extends MoCEntityAnimal
 {
-    //private boolean fertile;
-    //private int     micetimer;
 
     public MoCEntityMouse(World world)
     {
         super(world);
         setSize(0.3F, 0.3F);
-        health = 4;
-        //forceUpdates = true;
+        //health = 4;
     }
-    
+
+    protected void applyEntityAttributes()
+    {
+        super.applyEntityAttributes();
+        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(4.0D);
+    }
+
     public void selectType()
     {
+        checkSpawningBiome();
+        
         if (getType() == 0)
         {
-            int i = rand.nextInt(100);
-            if (i <= 50)
-            {
-                setType(1);
-            } else if (i <= 80)
-            {
-                setType(2);
-            } else
-            {
-                setType(3);
-            }
+            setType(rand.nextInt(3)+1);
         }
-        
-        
     }
-    
-    
+
     @Override
-    public String getTexture()
+    public ResourceLocation getTexture()
     {
-        
         switch (getType())
         {
             case 1:
-                return MoCreatures.proxy.MODEL_TEXTURE + "miceg.png";
+                return MoCreatures.proxy.getTexture("miceg.png");
             case 2:
-                return MoCreatures.proxy.MODEL_TEXTURE + "miceb.png";
+                return MoCreatures.proxy.getTexture("miceb.png");
             case 3:
-                return MoCreatures.proxy.MODEL_TEXTURE + "micew.png";
+                return MoCreatures.proxy.getTexture("micew.png");
             
             default:
-                return MoCreatures.proxy.MODEL_TEXTURE + "miceg.png";
+                return MoCreatures.proxy.getTexture("miceg.png");
         }
     }
-    
+
     @Override
-    public int getMaxHealth()
+    public boolean checkSpawningBiome()
     {
-        return 4;
+        int i = MathHelper.floor_double(posX);
+        int j = MathHelper.floor_double(boundingBox.minY);
+        int k = MathHelper.floor_double(posZ);
+        BiomeGenBase currentbiome = MoCTools.Biomekind(worldObj, i, j, k);
+
+        String s = MoCTools.BiomeName(worldObj, i, j, k);
+        if (BiomeDictionary.isBiomeOfType(currentbiome, Type.FROZEN))
+        {
+            setType(3); //white mice!
+        }
+        return true;
     }
-    
+
     @Override
     public float getMoveSpeed()
     {
         return 0.8F;
     }
-    
+
     @Override
     protected void entityInit()
     {
         super.entityInit();
         dataWatcher.addObject(22, Byte.valueOf((byte) 0)); // byte IsPicked, 0 = false 1 = true
     }
-    
+
     public boolean getIsPicked()
     {
         return (dataWatcher.getWatchableObjectByte(22) == 1);
     }
-    
+
     public void setPicked(boolean flag)
     {
-        //if (worldObj.isRemote) return;
         byte input = (byte) (flag ? 1 : 0);
         dataWatcher.updateObject(22, Byte.valueOf(input));
     }
-
-    /*private void checkFertility()
-    {
-        int i = 0;
-        List list = worldObj.getEntitiesWithinAABB(MoCEntityMouse.class, AxisAlignedBB.getBoundingBoxFromPool(posX, posY, posZ, posX + 1.0D, posY + 1.0D, posZ + 1.0D).expand(16D, 4D, 16D));
-        for(int j = 0; j < list.size(); j++)
-        {
-            i++;
-        }
-
-        if(i > 10)
-        {
-            fertile = false;
-        }
-    }*/
 
     private boolean checkNearCats()
     {
@@ -125,13 +116,12 @@ public class MoCEntityMouse extends MoCEntityAnimal
         return !onGround && isOnLadder();
     }
 
-
     public boolean entitiesToInclude(Entity entity)
     {
         return !(entity instanceof MoCEntityMouse)
         && super.entitiesToInclude(entity);
     }
-    
+
     @Override
     public boolean getCanSpawnHere()
     {
@@ -139,50 +129,46 @@ public class MoCEntityMouse extends MoCEntityAnimal
         int j = MathHelper.floor_double(boundingBox.minY);
         int k = MathHelper.floor_double(posZ);
         return ( 
-                (MoCreatures.proxy.getFrequency(this.getEntityName()) > 0) &&
+                (MoCreatures.entityMap.get(this.getClass()).getFrequency() > 0) &&
                 worldObj.checkNoEntityCollision(boundingBox) 
                 && (worldObj.getCollidingBoundingBoxes(this, boundingBox).size() == 0) 
                 && !worldObj.isAnyLiquid(boundingBox) 
-                && ((worldObj.getBlockId(i, j - 1, k) == Block.cobblestone.blockID) 
-                || (worldObj.getBlockId(i, j - 1, k) == Block.planks.blockID) 
-                || (worldObj.getBlockId(i, j - 1, k) == Block.dirt.blockID) 
-                || (worldObj.getBlockId(i, j - 1, k) == Block.stone.blockID) 
-                || (worldObj.getBlockId(i, j - 1, k) == Block.grass.blockID)));
+                && ((worldObj.getBlock(i, j - 1, k) == Blocks.cobblestone) 
+                || (worldObj.getBlock(i, j - 1, k) == Blocks.planks) 
+                || (worldObj.getBlock(i, j - 1, k) == Blocks.dirt) 
+                || (worldObj.getBlock(i, j - 1, k) == Blocks.stone) 
+                || (worldObj.getBlock(i, j - 1, k) == Blocks.grass)));
     }
 
     @Override
     protected String getDeathSound()
     {
-        return "micedying";
+        return "mocreatures:micedying";
     }
 
     @Override
-    protected int getDropItemId()
+    protected Item getDropItem()
     {
-        return Item.seeds.itemID;
+        return Items.wheat_seeds;
     }
 
     @Override
     protected String getHurtSound()
     {
-        return "micehurt";
+        return "mocreatures:micehurt";
     }
 
     @Override
     protected String getLivingSound()
     {
-        return "micegrunt";
+        return "mocreatures:micegrunt";
     }
 
     @Override
-    public int getMaxSpawnedInChunk()
+    protected void fall(float f)
     {
-        return 6;
     }
 
-   
-    
-    
     @Override
     public double getYOffset()
     {
@@ -198,8 +184,6 @@ public class MoCEntityMouse extends MoCEntityAnimal
         else 
             return yOffset;
     }
-    
-    
 
     @Override
     public boolean interact(EntityPlayer entityplayer)
@@ -210,7 +194,6 @@ public class MoCEntityMouse extends MoCEntityAnimal
             if (MoCreatures.isServer()) mountEntity(entityplayer);
             setPicked(true);
         }
-        
         else
         {
             worldObj.playSoundAtEntity(this, "mob.chickenplop", 1.0F, ((rand.nextFloat() - rand.nextFloat()) * 0.2F) + 1.0F);
@@ -238,10 +221,10 @@ public class MoCEntityMouse extends MoCEntityAnimal
         {
             if(rand.nextInt(15) == 0)
             {
-                EntityLiving entityliving = getBoogey(6D);
+                EntityLivingBase entityliving = getBoogey(6D);
                 if(entityliving != null)
                 {
-                    runLikeHell(entityliving);
+                    MoCTools.runLikeHell(this, entityliving);
 
                 }
             }
@@ -266,11 +249,17 @@ public class MoCEntityMouse extends MoCEntityAnimal
     {
         return true;
     }
-    
+
     @Override
     public boolean forceUpdates() 
     {
         return true;
     }
+
     
+    @Override
+    public boolean swimmerEntity()
+    {
+        return true;
+    }
 }

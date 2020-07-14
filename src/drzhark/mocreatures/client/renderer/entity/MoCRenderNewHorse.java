@@ -1,6 +1,9 @@
 package drzhark.mocreatures.client.renderer.entity;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
@@ -10,12 +13,16 @@ import drzhark.mocreatures.client.model.MoCModelNewHorse;
 import drzhark.mocreatures.entity.passive.MoCEntityHorse;
 
 @SideOnly(Side.CLIENT)
-public class MoCRenderNewHorse extends MoCRenderAnimal {
+public class MoCRenderNewHorse extends MoCRenderMoC {
 
     public MoCRenderNewHorse(MoCModelNewHorse modelbase)
     {
         super(modelbase, 0.5F);
 
+    }
+
+    protected ResourceLocation getEntityTexture(Entity par1Entity) {
+        return ((MoCEntityHorse)par1Entity).getTexture();
     }
 
     protected void adjustHeight(EntityLiving entityliving, float FHeight)
@@ -24,7 +31,7 @@ public class MoCRenderNewHorse extends MoCRenderAnimal {
     }
 
     @Override
-    protected void preRenderCallback(EntityLiving entityliving, float f)
+    protected void preRenderCallback(EntityLivingBase entityliving, float f)
     {
         MoCEntityHorse entityhorse = (MoCEntityHorse) entityliving;
         if (!entityhorse.getIsAdult() || entityhorse.getType() > 64)

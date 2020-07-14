@@ -1,22 +1,24 @@
 package drzhark.mocreatures.entity.passive;
 
-import drzhark.mocreatures.MoCTools;
-import drzhark.mocreatures.MoCreatures;
-import drzhark.mocreatures.entity.MoCEntityAnimal;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.potion.Potion;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import drzhark.mocreatures.MoCTools;
+import drzhark.mocreatures.MoCreatures;
+import drzhark.mocreatures.entity.MoCEntityTameableAnimal;
 
-public class MoCEntityGoat extends MoCEntityAnimal {
+public class MoCEntityGoat extends MoCEntityTameableAnimal {
     private boolean hungry;
     private boolean swingLeg;
     private boolean swingEar;
@@ -30,19 +32,20 @@ public class MoCEntityGoat extends MoCEntityAnimal {
     private int tailcount; // 90 to -45
     private int earcount; // 20 to 40 default = 30
     private int eatcount;
-    public EntityLiving roper;
+    //private float moveSpeed;
 
-    // TODO
-    /*
-     * sounds poo
-     */
+   
     public MoCEntityGoat(World world)
     {
         super(world);
         setSize(1.4F, 0.9F);
-        health = 12;
-
         setEdad(70);
+    }
+
+    protected void applyEntityAttributes()
+    {
+        super.applyEntityAttributes();
+        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(12.0D);
     }
 
     @Override
@@ -52,6 +55,8 @@ public class MoCEntityGoat extends MoCEntityAnimal {
         dataWatcher.addObject(22, Byte.valueOf((byte) 0)); // isUpset - 0 false 1 true
         dataWatcher.addObject(23, Byte.valueOf((byte) 0)); // isCharging - 0 false 1 true
     }
+
+    
 
     public boolean getUpset()
     {
@@ -65,14 +70,12 @@ public class MoCEntityGoat extends MoCEntityAnimal {
 
     public void setUpset(boolean flag)
     {
-        if (!MoCreatures.isServer()) { return; }
         byte input = (byte) (flag ? 1 : 0);
         dataWatcher.updateObject(22, Byte.valueOf(input));
     }
 
     public void setCharging(boolean flag)
     {
-        if (!MoCreatures.isServer()) { return; }
         byte input = (byte) (flag ? 1 : 0);
         dataWatcher.updateObject(23, Byte.valueOf(input));
     }
@@ -127,34 +130,27 @@ public class MoCEntityGoat extends MoCEntityAnimal {
     }
 
     @Override
-    public int getMaxHealth()
+    public ResourceLocation getTexture()
     {
-        return 12;
-    }
-
-    @Override
-    public String getTexture()
-    {
-
         switch (getType())
         {
         case 1:
-            return MoCreatures.proxy.MODEL_TEXTURE + "goat1.png";
+            return MoCreatures.proxy.getTexture("goat1.png");
         case 2:
-            return MoCreatures.proxy.MODEL_TEXTURE + "goat2.png";
+            return MoCreatures.proxy.getTexture("goat2.png");
         case 3:
-            return MoCreatures.proxy.MODEL_TEXTURE + "goat3.png";
+            return MoCreatures.proxy.getTexture("goat3.png");
         case 4:
-            return MoCreatures.proxy.MODEL_TEXTURE + "goat4.png";
+            return MoCreatures.proxy.getTexture("goat4.png");
         case 5:
-            return MoCreatures.proxy.MODEL_TEXTURE + "goat5.png";
+            return MoCreatures.proxy.getTexture("goat5.png");
         case 6:
-            return MoCreatures.proxy.MODEL_TEXTURE + "goat6.png";
+            return MoCreatures.proxy.getTexture("goat6.png");
         case 7:
-            return MoCreatures.proxy.MODEL_TEXTURE + "goat1.png";
+            return MoCreatures.proxy.getTexture("goat1.png");
 
         default:
-            return MoCreatures.proxy.MODEL_TEXTURE + "goat1.png";
+            return MoCreatures.proxy.getTexture("goat1.png");
         }
     }
 
@@ -253,8 +249,6 @@ public class MoCEntityGoat extends MoCEntityAnimal {
             if (rand.nextInt(500) == 0 || entityToAttack == null)
             {
                 calm();
-                // setUpset(false);
-                // attacking = 0;
             }
 
             if (!getCharging() && rand.nextInt(35) == 0)
@@ -275,7 +269,6 @@ public class MoCEntityGoat extends MoCEntityAnimal {
                     setCharging(true);
                 }
             }
-
         }
 
         if (getCharging())
@@ -294,26 +287,11 @@ public class MoCEntityGoat extends MoCEntityAnimal {
             if (entityToAttack == null)
             {
                 calm();
-                // chargecount = 0;
-                // moveSpeed = 0.7F;
             }
-
         }
 
         if (!getUpset() && !getCharging())
         {
-            // roped, follow the player
-            /*if (getIsTamed() && (roper != null))
-            {
-                float f = roper.getDistanceToEntity(this);
-                if ((f > 5F))
-                {
-                    getPathOrWalkableBlock(roper, f);
-                    return;
-                }
-
-            }*/
-
             EntityPlayer entityplayer1 = worldObj.getClosestPlayerToEntity(this, 24D);
             if (entityplayer1 != null)
             {// Behaviour that happens only close to player :)
@@ -335,28 +313,13 @@ public class MoCEntityGoat extends MoCEntityAnimal {
                     }
                     if ((f < 2.0F) && (entityitem != null) && (deathTime == 0) && rand.nextInt(50) == 0)
                     {
-                        worldObj.playSoundAtEntity(this, "goateating", 1.0F, 1.0F + ((rand.nextFloat() - rand.nextFloat()) * 0.2F));
+                        worldObj.playSoundAtEntity(this, "mocreatures:goateating", 1.0F, 1.0F + ((rand.nextFloat() - rand.nextFloat()) * 0.2F));
                         setEating(true);
 
                         entityitem.setDead();
                         return;
                     }
                 }
-
-                // player nearby does it have foods in hand?
-
-                /*ItemStack itemstack1 = entityplayer1.inventory.getCurrentItem();
-                Item item1 = null;
-                if (itemstack1 != null)    item1 = itemstack1.getItem();
-                if (item1 != null && isItemEdible(item1))
-                {
-                    PathEntity pathentity = worldObj.getPathEntityToEntity(this, entityplayer1, 16F, true, false, false, true);
-                    setPathToEntity(pathentity);
-                    hungry = true;
-                    return;
-
-                }
-                */
 
                 // find other goat to play!
                 if (getType() > 4 && rand.nextInt(200) == 0)
@@ -409,14 +372,13 @@ public class MoCEntityGoat extends MoCEntityAnimal {
     @Override
     protected void attackEntity(Entity entity, float f)
     {
-
         if (attackTime <= 0 && (f < 3.0D) && (entity.boundingBox.maxY > boundingBox.minY) && (entity.boundingBox.minY < boundingBox.maxY) && attacking > 70)
         {
             attackTime = 30;
 
             attacking = 30;
 
-            worldObj.playSoundAtEntity(this, "goatsmack", 1.0F, 1.0F + ((rand.nextFloat() - rand.nextFloat()) * 0.2F));
+            worldObj.playSoundAtEntity(this, "mocreatures:goatsmack", 1.0F, 1.0F + ((rand.nextFloat() - rand.nextFloat()) * 0.2F));
             if (entity instanceof MoCEntityGoat)
             {
                 MoCTools.bigsmack(this, entity, 0.4F);
@@ -496,13 +458,13 @@ public class MoCEntityGoat extends MoCEntityAnimal {
     }
 
     @Override
-    public boolean attackEntityFrom(DamageSource damagesource, int i)
+    public boolean attackEntityFrom(DamageSource damagesource, float i)
     {
         if (super.attackEntityFrom(damagesource, i))
         {
             Entity entity = damagesource.getEntity();
 
-            if ((entity != this) && (worldObj.difficultySetting > 0) && getType() > 4)
+            if ((entity != this) && (worldObj.difficultySetting.getDifficultyId() > 0) && getType() > 4)
             {
                 entityToAttack = entity;
                 setUpset(true);
@@ -524,7 +486,7 @@ public class MoCEntityGoat extends MoCEntityAnimal {
             movecount += 5;
             if (movecount == 30)
             {
-                worldObj.playSoundAtEntity(this, "goatdigg", 1.0F, 1.0F + ((rand.nextFloat() - rand.nextFloat()) * 0.2F));
+                worldObj.playSoundAtEntity(this, "mocreatures:goatdigg", 1.0F, 1.0F + ((rand.nextFloat() - rand.nextFloat()) * 0.2F));
             }
 
             if (movecount > 100)
@@ -562,7 +524,7 @@ public class MoCEntityGoat extends MoCEntityAnimal {
                 EntityPlayer entityplayer1 = worldObj.getClosestPlayerToEntity(this, 3D);
                 if (entityplayer1 != null)
                 {
-                    worldObj.playSoundAtEntity(this, "goateating", 1.0F, 1.0F + ((rand.nextFloat() - rand.nextFloat()) * 0.2F));
+                    worldObj.playSoundAtEntity(this, "mocreatures:goateating", 1.0F, 1.0F + ((rand.nextFloat() - rand.nextFloat()) * 0.2F));
                 }
             }
             if (eatcount > 25)
@@ -598,7 +560,6 @@ public class MoCEntityGoat extends MoCEntityAnimal {
         // 90 to -45
         if (!getSwingTail()) { return 90; }
 
-        // return -tailcount + 90;
         return tailcount - 45;
     }
 
@@ -618,10 +579,9 @@ public class MoCEntityGoat extends MoCEntityAnimal {
     @Override
     public boolean interact(EntityPlayer entityplayer)
     {
-        //System.out.println("edad = " + getEdad());
         if (super.interact(entityplayer)) { return false; }
         ItemStack itemstack = entityplayer.inventory.getCurrentItem();
-        if (itemstack != null && itemstack.itemID == Item.bucketEmpty.itemID)
+        if (itemstack != null && itemstack.getItem() == Items.bucket)
         {
             if (getType() > 4)
             {
@@ -631,71 +591,29 @@ public class MoCEntityGoat extends MoCEntityAnimal {
             }
             if (getType() == 1) { return false; }
 
-            entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, new ItemStack(Item.bucketMilk));
+            entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, new ItemStack(Items.milk_bucket));
             return true;
         }
 
         if (getIsTamed())
         {
-
-            /*if ((itemstack != null) //&& MoCreatures.isServer()
-                    && ((itemstack.itemID == MoCreatures.medallion.itemID) || (itemstack.itemID == Item.book.itemID)))
-            {
-                if (!MoCreatures.isServer())
-                {
-                    MoCreatures.proxy.setName(entityplayer, this);
-                }
-                return true;
-            }*/
             if ((itemstack != null) && (isItemEdible(itemstack.getItem())))
             {
                 if (--itemstack.stackSize == 0)
                 {
                     entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, null);
                 }
-                this.health = getMaxHealth();
-                worldObj.playSoundAtEntity(this, "goateating", 1.0F, 1.0F + ((rand.nextFloat() - rand.nextFloat()) * 0.2F));
-
-            }
-
-            /*if (itemstack != null && (itemstack.itemID == Item.pickaxeDiamond.itemID || itemstack.itemID == Item.pickaxeWood.itemID || itemstack.itemID == Item.pickaxeStone.itemID || itemstack.itemID == Item.pickaxeIron.itemID || itemstack.itemID == Item.pickaxeGold.itemID))
-            {
-                //setDisplayName(!getDisplayName());
-                return true;
-            }*/
-
-            /*if ((itemstack != null) && (riddenByEntity == null) && (roper == null) && (itemstack.itemID == MoCreatures.rope.itemID))
-            {
-                if (--itemstack.stackSize == 0)
-                {
-                    entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, null);
-                }
-                worldObj.playSoundAtEntity(this, "roping", 1.0F, 1.0F + ((rand.nextFloat() - rand.nextFloat()) * 0.2F));
-                roper = entityplayer;
+                this.setHealth(getMaxHealth());
+                worldObj.playSoundAtEntity(this, "mocreatures:goateating", 1.0F, 1.0F + ((rand.nextFloat() - rand.nextFloat()) * 0.2F));
                 return true;
             }
-            if ((roper != null))
-            {
-                entityplayer.inventory.addItemStackToInventory(new ItemStack(MoCreatures.rope));
-                worldObj.playSoundAtEntity(this, "roping", 1.0F, 1.0F + ((rand.nextFloat() - rand.nextFloat()) * 0.2F));
-                roper = null;
-                return true;
-            }*/
-
-            // return true;
         }
 
-        if (!getIsTamed() && (itemstack != null) && isItemEdible(itemstack.getItem()))
+        if (MoCreatures.isServer() && !getIsTamed() && (itemstack != null) && isItemEdible(itemstack.getItem()))
         {
-            if (MoCreatures.isServer())
+            if (MoCTools.tameWithName(entityplayer, this))
             {
-                MoCTools.tameWithName((EntityPlayerMP) entityplayer, this);
-                //TODO NAMER
-                //setTamed(true);
-                //if (!MoCreatures.isServer())
-                //{
-                //    MoCreatures.proxy.setName(entityplayer, this);
-                //}
+                return true;
             }
         }
 
@@ -705,7 +623,7 @@ public class MoCEntityGoat extends MoCEntityAnimal {
 
     public boolean getBleating()
     {
-        return bleat && (getAttacking() == 0);// && !getAttacking();
+        return bleat && (getAttacking() == 0);
     }
 
     public void setBleating(boolean flag)
@@ -732,29 +650,29 @@ public class MoCEntityGoat extends MoCEntityAnimal {
     @Override
     protected String getHurtSound()
     {
-        return "goathurt";
+        return "mocreatures:goathurt";
     }
 
     @Override
     protected String getLivingSound()
     {
         setBleating(true);
-        if (getType() == 1) { return "goatkid"; }
-        if (getType() > 2 && getType() < 5) { return "goatfemale"; }
+        if (getType() == 1) { return "mocreatures:goatkid"; }
+        if (getType() > 2 && getType() < 5) { return "mocreatures:goatfemale"; }
 
-        return "goatgrunt";
+        return "mocreatures:goatgrunt";
     }
 
     @Override
     protected String getDeathSound()
     {
-        return "goatdying";
+        return "mocreatures:goatdying";
     }
 
     @Override
-    protected int getDropItemId()
+    protected Item getDropItem()
     {
-        return Item.leather.itemID;
+        return Items.leather;
     }
 
     @Override
@@ -769,11 +687,5 @@ public class MoCEntityGoat extends MoCEntityAnimal {
     {
         super.writeEntityToNBT(nbttagcompound);
         nbttagcompound.setBoolean("DisplayName", getDisplayName());
-    }
-
-    @Override
-    public boolean getCanSpawnHere()
-    {
-        return (MoCreatures.proxy.getFrequency(this.getEntityName()) > 0) && super.getCanSpawnHere();
     }
 }

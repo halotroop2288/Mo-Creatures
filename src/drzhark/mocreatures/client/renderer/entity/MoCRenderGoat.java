@@ -4,8 +4,11 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderLiving;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
@@ -17,6 +20,11 @@ import drzhark.mocreatures.entity.passive.MoCEntityGoat;
 
 @SideOnly(Side.CLIENT)
 public class MoCRenderGoat extends RenderLiving {
+
+    protected ResourceLocation getEntityTexture(Entity par1Entity) {
+        return ((MoCEntityGoat)par1Entity).getTexture();
+    }
+
     public MoCRenderGoat(ModelBase modelbase, float f)
     {
         super(modelbase, f);
@@ -24,7 +32,7 @@ public class MoCRenderGoat extends RenderLiving {
     }
 
     @Override
-    protected void preRenderCallback(EntityLiving entityliving, float f)
+    protected void preRenderCallback(EntityLivingBase entityliving, float f)
     {
         GL11.glTranslatef(0.0F, depth, 0.0F);
         stretch((MoCEntityGoat) entityliving);
@@ -32,7 +40,7 @@ public class MoCRenderGoat extends RenderLiving {
     }
 
     /*@Override
-    public void doRenderLiving(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
+    public void doRender(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
     {
         MoCEntityGoat entitygoat = (MoCEntityGoat) entityliving;
         tempGoat.typeInt = entitygoat.type;
@@ -56,13 +64,13 @@ public class MoCRenderGoat extends RenderLiving {
         tempGoat.attacking = entitygoat.attacking;
 
 
-        super.doRenderLiving(entityliving, d, d1, d2, f, f1);
+        super.doRender(entityliving, d, d1, d2, f, f1);
         
         
     }*/
 
     @Override
-    public void doRenderLiving(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
+    public void doRender(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
     {
         MoCEntityGoat entitygoat = (MoCEntityGoat) entityliving;
         tempGoat.typeInt = entitygoat.getType();
@@ -74,7 +82,7 @@ public class MoCRenderGoat extends RenderLiving {
         tempGoat.tailMov = entitygoat.tailMovement();
         tempGoat.eatMov = entitygoat.mouthMovement();
 
-        super.doRenderLiving(entitygoat, d, d1, d2, f, f1);
+        super.doRender(entitygoat, d, d1, d2, f, f1);
         boolean flag = MoCreatures.proxy.getDisplayPetName() && !(entitygoat.getName()).isEmpty();
         boolean flag1 = MoCreatures.proxy.getDisplayPetHealth();
         //boolean flag2 = MoCreatures.proxy.getdisplayPetIcons();

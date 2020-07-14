@@ -1,36 +1,39 @@
 package drzhark.mocreatures.entity.monster;
 
-import drzhark.mocreatures.MoCreatures;
 import net.minecraft.block.Block;
+import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import drzhark.mocreatures.MoCreatures;
 
 public class MoCEntityHellRat extends MoCEntityRat {
+
+    private int textCounter;
 
     public MoCEntityHellRat(World world)
     {
         super(world);
-        texture = MoCreatures.proxy.MODEL_TEXTURE + "hellrat1.png";
         setSize(0.7F, 0.7F);
-        health = 20;
-        //attackStrength = 2;
         isImmuneToFire = true;
     }
 
-    private int textCounter;
+    protected void applyEntityAttributes()
+    {
+        super.applyEntityAttributes();
+        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(20.0D);
+    }
 
     @Override
     public void selectType()
     {
         setType(4);
-        //texture = MoCreatures.proxy.MODEL_TEXTURE + "hellrat1.png";
     }
 
-    /**
-     * Overridden for the dynamic nightmare texture.
-     */
     @Override
-    public String getTexture()
+    public ResourceLocation getTexture()
     {
         if (rand.nextInt(2) == 0)
         {
@@ -46,27 +49,14 @@ public class MoCEntityHellRat extends MoCEntityRat {
         }
         String textNumber = "" + textCounter;
         textNumber = textNumber.substring(0, 1);
-        return MoCreatures.proxy.MODEL_TEXTURE + "hellrat" + textNumber + ".png";
-
+        return MoCreatures.proxy.getTexture("hellrat" + textNumber + ".png");
     }
 
     @Override
-    public int getMaxHealth()
+    protected Item getDropItem()
     {
-        return 20;
-    }
-
-    @Override
-    public boolean getCanSpawnHere()
-    {
-        return (MoCreatures.proxy.getFrequency(this.getEntityName()) > 0) && super.getCanSpawnHere();
-    }
-
-    @Override
-    protected int getDropItemId()
-    {
-        boolean flag = (rand.nextInt(3) == 0);
-        if (flag) { return Block.fire.blockID; }
-        return Item.redstone.itemID;
+        boolean flag = (rand.nextInt(100) < MoCreatures.proxy.rareItemDropChance);
+        if (flag) { return Item.getItemFromBlock(Blocks.fire); }
+        return Items.redstone;
     }
 }

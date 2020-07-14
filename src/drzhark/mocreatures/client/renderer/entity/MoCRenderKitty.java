@@ -3,7 +3,11 @@ package drzhark.mocreatures.client.renderer.entity;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderBiped;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
@@ -19,6 +23,10 @@ public class MoCRenderKitty extends RenderBiped {
 
     public MoCModelKitty pussy1;
 
+    protected ResourceLocation getEntityTexture(Entity par1Entity) {
+        return ((MoCEntityKitty)par1Entity).getTexture();
+    }
+
     public MoCRenderKitty(MoCModelKitty modelkitty, float f)
     {
         super(modelkitty, f);
@@ -26,10 +34,10 @@ public class MoCRenderKitty extends RenderBiped {
     }
 
     @Override
-    public void doRenderLiving(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
+    public void doRender(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
     {
         MoCEntityKitty entitykitty = (MoCEntityKitty) entityliving;
-        super.doRenderLiving(entitykitty, d, d1, d2, f, f1);
+        super.doRender(entitykitty, d, d1, d2, f, f1);
         boolean flag = MoCreatures.proxy.getDisplayPetName() && !(entitykitty.getName()).isEmpty();
         boolean flag1 = MoCreatures.proxy.getDisplayPetHealth();
         boolean flag2 = MoCreatures.proxy.getDisplayPetIcons();
@@ -58,15 +66,8 @@ public class MoCRenderKitty extends RenderBiped {
                 byte byte0 = -48;
                 if (flag2 && ((MoCEntityKitty) entityliving).getIsEmo())
                 {
-                    //if(MoCClientProxy.mc.isMultiplayerWorld() && (((MoCEntityKitty) entityliving).getEmoticon() != null))
-                    if ((((MoCEntityKitty) entityliving).getEmoticon() != null))
-                    {
-                        GL11.glBindTexture(3553 /* GL_TEXTURE_2D */, MoCClientProxy.mc.renderEngine.getTexture(((MoCEntityKitty) entityliving).getEmoticon()));
-                    }
-                    else
-                    {
-                        GL11.glBindTexture(3553 /* GL_TEXTURE_2D */, MoCClientProxy.mc.renderEngine.getTexture(((MoCEntityKitty) entityliving).getEmoticon()));
-                    }
+                    this.bindTexture(((MoCEntityKitty) entityliving).getEmoteIcon());
+
                     int i = -83;
                     if (!flag)
                     {
@@ -142,14 +143,14 @@ public class MoCRenderKitty extends RenderBiped {
         }
     }
 
-    public void doRenderLiving2(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
+    public void doRender2(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
     {
         MoCEntityKitty entitykitty = (MoCEntityKitty) entityliving;
-        super.doRenderLiving(entitykitty, d, d1, d2, f, f1);
+        super.doRender(entitykitty, d, d1, d2, f, f1);
     }
 
     @Override
-    protected float handleRotationFloat(EntityLiving entityliving, float f)
+    protected float handleRotationFloat(EntityLivingBase entityliving, float f)
     {
         MoCEntityKitty entitykitty = (MoCEntityKitty) entityliving;
         if (!entitykitty.getIsAdult())
@@ -159,7 +160,7 @@ public class MoCRenderKitty extends RenderBiped {
         return entityliving.ticksExisted + f;
     }
 
-    protected void onMaBack(EntityLiving entityliving)
+    protected void onMaBack(EntityLivingBase entityliving)
     {
         GL11.glRotatef(90F, 0.0F, 0.0F, -1F);
 
@@ -174,14 +175,14 @@ public class MoCRenderKitty extends RenderBiped {
 
     }
 
-    protected void onTheSide(EntityLiving entityliving)
+    protected void onTheSide(EntityLivingBase entityliving)
     {
         GL11.glRotatef(90F, 0.0F, 0.0F, -1F);
         GL11.glTranslatef(0.2F, 0.0F, -0.2F);
     }
 
     @Override
-    protected void preRenderCallback(EntityLiving entityliving, float f)
+    protected void preRenderCallback(EntityLivingBase entityliving, float f)
     {
         MoCEntityKitty entitykitty = (MoCEntityKitty) entityliving;
         pussy1.isSitting = entitykitty.getIsSitting();
@@ -206,7 +207,7 @@ public class MoCRenderKitty extends RenderBiped {
         }
     }
 
-    protected void rotateAnimal(EntityLiving entityliving)
+    protected void rotateAnimal(EntityLivingBase entityliving)
     {
         if (!entityliving.onGround)
         {
@@ -219,7 +220,7 @@ public class MoCRenderKitty extends RenderBiped {
         GL11.glScalef(entitykitty.getEdad() * 0.01F, entitykitty.getEdad() * 0.01F, entitykitty.getEdad() * 0.01F);
     }
 
-    protected void upsideDown(EntityLiving entityliving)
+    protected void upsideDown(EntityLivingBase entityliving)
     {
         GL11.glRotatef(180F, 0.0F, 0.0F, -1F);
         GL11.glTranslatef(-0.35F, 0F, -0.55F);

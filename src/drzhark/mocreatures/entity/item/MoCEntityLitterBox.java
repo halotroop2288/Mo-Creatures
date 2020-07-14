@@ -2,19 +2,22 @@ package drzhark.mocreatures.entity.item;
 
 import java.util.List;
 
-import drzhark.mocreatures.MoCreatures;
-import drzhark.mocreatures.entity.monster.MoCEntityOgre;
-
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.monster.EntityCreeper;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import drzhark.mocreatures.MoCreatures;
+import drzhark.mocreatures.entity.monster.MoCEntityOgre;
 
 public class MoCEntityLitterBox extends EntityLiving {
     public int littertime;
@@ -23,15 +26,19 @@ public class MoCEntityLitterBox extends EntityLiving {
     {
         super(world);
         setSize(1.0F, 0.3F);
-        texture = MoCreatures.proxy.MODEL_TEXTURE + "litterbox.png";
+        //texture = MoCreatures.proxy.MODEL_TEXTURE + "litterbox.png";
     }
 
-    /*public MoCEntityLitterBox(World world, double d, double d1, double d2)
+    public ResourceLocation getTexture()
     {
-        super(world);
-        setSize(1.0F, 0.3F);
-        texture = MoCreatures.proxy.MODEL_TEXTURE + "litterbox.png";
-    }*/
+        return MoCreatures.proxy.getTexture("litterbox.png");
+    }
+
+    protected void applyEntityAttributes()
+    {
+        super.applyEntityAttributes();
+        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(20.0D); // setMaxHealth
+    }
 
     @Override
     protected void entityInit()
@@ -147,7 +154,7 @@ public class MoCEntityLitterBox extends EntityLiving {
     public boolean interact(EntityPlayer entityplayer)
     {
         ItemStack itemstack = entityplayer.inventory.getCurrentItem();
-        if ((itemstack != null) && MoCreatures.isServer() && ((itemstack.itemID == Item.pickaxeStone.itemID) || (itemstack.itemID == Item.pickaxeWood.itemID) || (itemstack.itemID == Item.pickaxeIron.itemID) || (itemstack.itemID == Item.pickaxeGold.itemID) || (itemstack.itemID == Item.pickaxeDiamond.itemID)))
+        if ((itemstack != null) && MoCreatures.isServer() && ((itemstack.getItem() == Items.stone_pickaxe) || (itemstack.getItem() == Items.wooden_pickaxe) || (itemstack.getItem() == Items.iron_pickaxe) || (itemstack.getItem() == Items.golden_pickaxe) || (itemstack.getItem() == Items.diamond_pickaxe)))
         {
             entityplayer.inventory.addItemStackToInventory(new ItemStack(MoCreatures.litterbox));
             worldObj.playSoundAtEntity(this, "random.pop", 0.2F, (((rand.nextFloat() - rand.nextFloat()) * 0.7F) + 1.0F) * 2.0F);
@@ -155,7 +162,7 @@ public class MoCEntityLitterBox extends EntityLiving {
             return true;
         }
 
-        if ((itemstack != null) && MoCreatures.isServer() && (itemstack.itemID == Block.sand.blockID))
+        if ((itemstack != null) && MoCreatures.isServer() && (itemstack.getItem() == Item.getItemFromBlock(Blocks.sand)))
         {
             if (--itemstack.stackSize == 0)
             {
@@ -228,7 +235,6 @@ public class MoCEntityLitterBox extends EntityLiving {
                 if (entitymob instanceof MoCEntityOgre)
                 {
                     ((MoCEntityOgre) entitymob).pendingSmashAttack = false;
-                    //((MoCEntityOgre) entitymob).attackTime = 20;
                 }
             }
 
@@ -255,11 +261,5 @@ public class MoCEntityLitterBox extends EntityLiving {
     public void readEntityFromNBT(NBTTagCompound nbttagcompound)
     {
         setUsedLitter(nbttagcompound.getBoolean("UsedLitter"));
-    }
-
-    @Override
-    public int getMaxHealth()
-    {
-        return 20;
     }
 }

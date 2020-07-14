@@ -3,8 +3,11 @@ package drzhark.mocreatures.client.renderer.entity;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderLiving;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
@@ -27,58 +30,36 @@ public class MoCRenderBigCat extends RenderLiving {
         bigcat1 = modelbigcat2;
     }
 
-    /*
-     * protected boolean a(MoCEntityBigCat entitybigcat, int i)
-     * {
-     * if((entitybigcat.getBigCatType() == 2) && entitybigcat.getIsAdult())
-     * {
-     * this.loadTexture(MoCreatures.proxy.MODEL_TEXTURE + " lionb.png");
-     * }
-     * else
-     * {
-     * this.loadTexture(MoCreatures.proxy.MODEL_TEXTURE + " lionc.png");
-     * }
-     * return i == 0;
-     * }
-     * /**
-     * @param entityliving Entity to render
-     * @param i
-     * @param f unused
-     */
-    // @Override
-    /*
-     * protected boolean shouldRenderPass(EntityLiving entityliving, int i, float f)
-     * {
-     * return this.a((MoCEntityBigCat) entityliving, i);
-     * }
-     */
-
-    protected int setWoolColorAndRender(MoCEntityBigCat entitybigcat, int i)
+    protected int shouldRenderPass(MoCEntityBigCat entitybigcat, int i)
     {
         if (entitybigcat.getType() == 2 && entitybigcat.getIsAdult())
         {
-            loadTexture(MoCreatures.proxy.MODEL_TEXTURE + "lionb.png");
+            bindTexture(MoCreatures.proxy.getTexture("lionb.png"));
         }
         else
         {
-            loadTexture(MoCreatures.proxy.MODEL_TEXTURE + "lionc.png");
+            bindTexture(MoCreatures.proxy.getTexture("lionc.png"));
         }
-        return 1;//i == 0 ;//&& !entitybigcat.lionboolean;
+        return 1;
     }
 
     @Override
-    protected int shouldRenderPass(EntityLiving entityliving, int i, float f)
+    protected int shouldRenderPass(EntityLivingBase entityliving, int i, float f)
     {
-        return setWoolColorAndRender((MoCEntityBigCat) entityliving, i);
+        return shouldRenderPass((MoCEntityBigCat) entityliving, i);
+    }
+
+    protected ResourceLocation getEntityTexture(Entity par1Entity) {
+        return ((MoCEntityBigCat)par1Entity).getTexture();
     }
 
     @Override
-    public void doRenderLiving(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
+    public void doRender(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
     {
 
         MoCEntityBigCat entitybigcat = (MoCEntityBigCat) entityliving;
 
-        super.doRenderLiving(entitybigcat, d, d1, d2, f, f1);
+        super.doRender(entitybigcat, d, d1, d2, f, f1);
         boolean flag = MoCreatures.proxy.getDisplayPetName() && !(entitybigcat.getName()).isEmpty();
         boolean flag1 = MoCreatures.proxy.getDisplayPetHealth();
         boolean flag2 = MoCreatures.proxy.getDisplayPetIcons();
@@ -210,7 +191,7 @@ public class MoCRenderBigCat extends RenderLiving {
     }
 
     @Override
-    protected float handleRotationFloat(EntityLiving entityliving, float f)
+    protected float handleRotationFloat(EntityLivingBase entityliving, float f)
     {
         MoCEntityBigCat entitybigcat = (MoCEntityBigCat) entityliving;
         stretch(entitybigcat);
@@ -218,7 +199,7 @@ public class MoCRenderBigCat extends RenderLiving {
     }
 
     @Override
-    protected void preRenderCallback(EntityLiving entityliving, float f)
+    protected void preRenderCallback(EntityLivingBase entityliving, float f)
     {
         MoCEntityBigCat entitybigcat = (MoCEntityBigCat) entityliving;
         bigcat1.sitting = entitybigcat.getIsSitting();

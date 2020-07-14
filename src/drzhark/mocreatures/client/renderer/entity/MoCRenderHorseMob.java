@@ -1,7 +1,10 @@
 package drzhark.mocreatures.client.renderer.entity;
 
 import net.minecraft.client.renderer.entity.RenderLiving;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
@@ -25,7 +28,7 @@ public class MoCRenderHorseMob extends RenderLiving {
     }
 
     @Override
-    protected void preRenderCallback(EntityLiving entityliving, float f)
+    protected void preRenderCallback(EntityLivingBase entityliving, float f)
     {
         MoCEntityHorseMob entityhorse = (MoCEntityHorseMob) entityliving;
 
@@ -37,4 +40,7 @@ public class MoCRenderHorseMob extends RenderLiving {
 
     }
 
+    protected ResourceLocation getEntityTexture(Entity par1Entity) {
+        return ((MoCEntityHorseMob)par1Entity).getTexture();
+    }
 }

@@ -1,14 +1,17 @@
 package drzhark.mocreatures.entity.item;
 
-import drzhark.mocreatures.MoCreatures;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
+import drzhark.mocreatures.MoCreatures;
 
 public class MoCEntityFishBowl extends EntityLiving {
     private int rotInt = 0;
@@ -18,22 +21,31 @@ public class MoCEntityFishBowl extends EntityLiving {
     {
         super(world);
         setSize(1.0F, 1.0F);
-
-        texture = MoCreatures.proxy.MODEL_TEXTURE + "fishbowl.png";
+        //texture = MoCreatures.proxy.MODEL_TEXTURE + "fishbowl.png";
     }
 
     public MoCEntityFishBowl(World world, double d, double d1, double d2)
     {
         super(world);
         setSize(1.0F, 1.0F);
-
-        texture = MoCreatures.proxy.MODEL_TEXTURE + "fishbowl.png";
+        //texture = MoCreatures.proxy.MODEL_TEXTURE + "fishbowl.png";
     }
 
     public MoCEntityFishBowl(World world, int i)
     {
         this(world);
         setType(i);
+    }
+
+    public ResourceLocation getTexture()
+    {
+        return MoCreatures.proxy.getTexture("fishbowl.png");
+    }
+
+    protected void applyEntityAttributes()
+    {
+        super.applyEntityAttributes();
+        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(5.0D); // setMaxHealth
     }
 
     @Override
@@ -189,7 +201,7 @@ public class MoCEntityFishBowl extends EntityLiving {
     public boolean interact(EntityPlayer entityplayer)
     {
         ItemStack itemstack = entityplayer.inventory.getCurrentItem();
-        if ((itemstack != null) && ((itemstack.itemID == Item.pickaxeStone.itemID) || (itemstack.itemID == Item.pickaxeWood.itemID) || (itemstack.itemID == Item.pickaxeIron.itemID) || (itemstack.itemID == Item.pickaxeGold.itemID) || (itemstack.itemID == Item.pickaxeDiamond.itemID)))
+        if ((itemstack != null) && ((itemstack.getItem() == Items.stone_pickaxe) || (itemstack.getItem() == Items.wooden_pickaxe) || (itemstack.getItem() == Items.iron_pickaxe) || (itemstack.getItem() == Items.golden_pickaxe) || (itemstack.getItem() == Items.diamond_pickaxe)))
         {
             ItemStack mystack = toItemStack(getType());
 
@@ -203,22 +215,19 @@ public class MoCEntityFishBowl extends EntityLiving {
             return true;
         }
 
-        if ((itemstack != null) && (getType() > 0 && getType() < 11) && ((itemstack.itemID == MoCreatures.fishbowl_e.itemID) || (itemstack.itemID == MoCreatures.fishbowl_w.itemID)))
+        if ((itemstack != null) && (getType() > 0 && getType() < 11) && ((itemstack.getItem() == MoCreatures.fishbowl_e) || (itemstack.getItem() == MoCreatures.fishbowl_w)))
         {
             if (--itemstack.stackSize == 0)
             {
                 entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, null);
             }
             ItemStack mystack = toItemStack(getType());
-            //if (!worldObj.isRemote)
-            {
-                entityplayer.inventory.addItemStackToInventory(mystack);
-            }
+            entityplayer.inventory.addItemStackToInventory(mystack);
             setType(0);
             return true;
         }
 
-        if (ridingEntity == null && MoCreatures.isServer())// && !worldObj.isRemote)
+        if (ridingEntity == null && MoCreatures.isServer())
         {
             rotationYaw = entityplayer.rotationYaw;
             // TODO change sound
@@ -241,7 +250,7 @@ public class MoCEntityFishBowl extends EntityLiving {
     @Override
     public void moveEntity(double d, double d1, double d2)
     {
-        if ((ridingEntity != null) || !onGround)//|| !((Boolean) MoCreatures.staticbed.get()).booleanValue())
+        if ((ridingEntity != null) || !onGround)
         {
             if (!worldObj.isRemote)
             {
@@ -269,18 +278,11 @@ public class MoCEntityFishBowl extends EntityLiving {
         prevRenderYawOffset = renderYawOffset = rotationYaw = prevRotationYaw;
     }
 
-    /*@Override
-    protected void updateEntityActionState()
-    {
-        prevRenderYawOffset = renderYawOffset = rotationYaw = prevRotationYaw;
-    }*/
-
     @Override
     public void readEntityFromNBT(NBTTagCompound nbttagcompound)
     {
         super.readEntityFromNBT(nbttagcompound);
         setType(nbttagcompound.getInteger("SheetColour"));
-
     }
 
     @Override
@@ -288,13 +290,6 @@ public class MoCEntityFishBowl extends EntityLiving {
     {
         super.writeEntityToNBT(nbttagcompound);
         nbttagcompound.setInteger("SheetColour", getType());
-
-    }
-
-    @Override
-    public int getMaxHealth()
-    {
-        return 5;
     }
 
     public int getRotation()

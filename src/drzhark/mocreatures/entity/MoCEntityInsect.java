@@ -2,25 +2,36 @@ package drzhark.mocreatures.entity;
 
 import java.util.List;
 
-import drzhark.mocreatures.MoCTools;
-import drzhark.mocreatures.MoCreatures;
-import drzhark.mocreatures.network.MoCServerPacketHandler;
+import cpw.mods.fml.common.network.NetworkRegistry.TargetPoint;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.EnumCreatureAttribute;
+import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.init.Blocks;
 import net.minecraft.pathfinding.PathEntity;
 import net.minecraft.world.World;
+import drzhark.mocreatures.MoCTools;
+import drzhark.mocreatures.MoCreatures;
+import drzhark.mocreatures.network.MoCMessageHandler;
+import drzhark.mocreatures.network.message.MoCMessageAnimation;
 
 public class MoCEntityInsect extends MoCEntityAmbient {
 
-	private int climbCounter;
-	
+    private int climbCounter;
+
     public MoCEntityInsect(World world)
     {
         super(world);
         setSize(0.2F, 0.2F);
-        health = 2;
+        //health = 2;
+    }
+
+    protected void applyEntityAttributes()
+    {
+        super.applyEntityAttributes();
+        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(6.0D);
     }
 
     @Override
@@ -28,7 +39,6 @@ public class MoCEntityInsect extends MoCEntityAmbient {
     {
         super.entityInit();
         dataWatcher.addObject(22, Byte.valueOf((byte) 0)); // isFlying - 0 false 1 true
-        //dataWatcher.addObject(23, Byte.valueOf((byte) 0)); // climbing - 0 false 1 true
     }
 
     @Override
@@ -50,7 +60,6 @@ public class MoCEntityInsect extends MoCEntityAmbient {
 
     public void setIsFlying(boolean flag)
     {
-        //if (!MoCreatures.isServer()) return;
         byte input = (byte) (flag ? 1 : 0);
         dataWatcher.updateObject(22, Byte.valueOf(input));
     }
@@ -59,11 +68,6 @@ public class MoCEntityInsect extends MoCEntityAmbient {
     public void onLivingUpdate()
     {
         super.onLivingUpdate();
-
-        /*if (!getIsFlying() && (motionY < 0.0D))
-        {
-            motionY *= 0.6D;
-        }*/
 
         if (getIsFlying())
         {
@@ -76,22 +80,22 @@ public class MoCEntityInsect extends MoCEntityAmbient {
 
         if (MoCreatures.isServer())
         {
-        	if (isOnLadder() && !onGround)
-        	{
-        		MoCServerPacketHandler.sendAnimationPacket(this.entityId, this.worldObj.provider.dimensionId, 1);
-        	}
-        	
+            if (isOnLadder() && !onGround)
+            {
+                MoCMessageHandler.INSTANCE.sendToAllAround(new MoCMessageAnimation(this.getEntityId(), 1), new TargetPoint(this.worldObj.provider.dimensionId, this.posX, this.posY, this.posZ, 64));
+            }
+            
             if (!getIsFlying() && rand.nextInt(getFlyingFreq()) == 0)
             {
                 List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand(4D, 4D, 4D));
                 for (int i = 0; i < list.size(); i++)
                 {
                     Entity entity1 = (Entity) list.get(i);
-                    if (!(entity1 instanceof EntityLiving))
+                    if (!(entity1 instanceof EntityLivingBase))
                     {
                         continue;
                     }
-                    if (((EntityLiving) entity1).width >= 0.4F && ((EntityLiving) entity1).height >= 0.4F && canEntityBeSeen(entity1))
+                    if (((EntityLivingBase) entity1).width >= 0.4F && ((EntityLivingBase) entity1).height >= 0.4F && canEntityBeSeen(entity1))
                     {
                         this.motionY += 0.3D;
                         setIsFlying(true);
@@ -101,14 +105,14 @@ public class MoCEntityInsect extends MoCEntityAmbient {
 
             if (isAttractedToLight() && rand.nextInt(50) == 0)
             {
-            	int ai[] = MoCTools.ReturnNearestBlockCoord(this, Block.torchWood.blockID, 8D);
+                int ai[] = MoCTools.ReturnNearestBlockCoord(this, Blocks.torch, 8D);
                 if (ai[0] > -1000)
                 {
-                	PathEntity pathentity = worldObj.getEntityPathToXYZ(this,ai[0], ai[1], ai[2], 24F, true, false, false, true);
-                	if (pathentity != null)
-                	{
-                		this.setPathToEntity(pathentity);
-                	}
+                    PathEntity pathentity = worldObj.getEntityPathToXYZ(this,ai[0], ai[1], ai[2], 24F, true, false, false, true);
+                    if (pathentity != null)
+                    {
+                        this.setPathToEntity(pathentity);
+                    }
                 }
             }
  
@@ -118,9 +122,10 @@ public class MoCEntityInsect extends MoCEntityAmbient {
                 updateWanderPath();
             }
 
-        }else // client stuff
+        }
+        else // client stuff
         {
-        	if (climbCounter > 0 && ++climbCounter > 8)
+            if (climbCounter > 0 && ++climbCounter > 8)
             {
                 climbCounter = 0;
             }
@@ -133,20 +138,19 @@ public class MoCEntityInsect extends MoCEntityAmbient {
      */
     public boolean isAttractedToLight() 
     {
-		return false;
-	}
+        return false;
+    }
 
-	@Override
+    @Override
     public void performAnimation(int animationType)
     {
-        
         if (animationType == 1) //climbing animation
         {
             climbCounter = 1;
         }
         
     }
-    
+
     @Override
     protected void fall(float f)
     {
@@ -155,15 +159,7 @@ public class MoCEntityInsect extends MoCEntityAmbient {
     @Override
     public boolean getCanSpawnHere()
     {
-        checkSpawningBiome();
-        return true;
-    }
-
-    @Override
-    public boolean checkSpawningBiome()
-    {
-        selectType();
-        return true;
+        return super.getCanSpawnHereAnimal()  && super.getCanSpawnHereCreature();
     }
 
     @Override
@@ -209,9 +205,7 @@ public class MoCEntityInsect extends MoCEntityAmbient {
 
     public boolean climbing()
     {
-    	return (climbCounter != 0);
-    	//return (dataWatcher.getWatchableObjectByte(23) == 1);
-        //return isOnLadder(); //&& !onGround && 
+        return (climbCounter != 0);
     }
 
     @Override
@@ -224,10 +218,23 @@ public class MoCEntityInsect extends MoCEntityAmbient {
     {
         return false;
     }
-    
 
     protected int getFlyingFreq()
     {
-    	return 20;
+        return 20;
+    }
+
+    @Override
+    public int rollRotationOffset() 
+    {
+        return 0;
+    }
+
+    /**
+     * Get this Entity's EnumCreatureAttribute
+     */
+    public EnumCreatureAttribute getCreatureAttribute()
+    {
+        return EnumCreatureAttribute.ARTHROPOD;
     }
 }

@@ -1,31 +1,24 @@
 package drzhark.mocreatures.item;
 
+import net.minecraft.client.renderer.texture.IIconRegister;
+import net.minecraft.item.Item;
+import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import drzhark.mocreatures.MoCreatures;
-import net.minecraft.client.renderer.texture.IconRegister;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.Item;
 
-public class MoCItem extends Item// implements ITextureProvider
+public class MoCItem extends Item
 {
-    public MoCItem(int i)
+    public MoCItem(String name)
     {
-        super(i);
+        GameRegistry.registerItem(this, name);
         this.setCreativeTab(MoCreatures.tabMoC);
+        this.setUnlocalizedName(name);
     }
 
-   /* @Override
-    public String getTextureFile()
-    {
-        return "/mocreatures/items.png";
-    }*/
-
-   
-    
     @SideOnly(Side.CLIENT)
     @Override
-    public void registerIcons(IconRegister par1IconRegister)
+    public void registerIcons(IIconRegister par1IconRegister)
     {
         this.itemIcon = par1IconRegister.registerIcon("mocreatures"+ this.getUnlocalizedName().replaceFirst("item.", ":"));
     }

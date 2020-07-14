@@ -5,8 +5,10 @@ import java.util.List;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+import drzhark.mocreatures.MoCTools;
 import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityAnimal;
 import drzhark.mocreatures.entity.passive.MoCEntityBigCat;
@@ -18,9 +20,9 @@ import drzhark.mocreatures.entity.passive.MoCEntityWyvern;
 
 public class MoCItemWhip extends MoCItem {
 
-    public MoCItemWhip(int i)
+    public MoCItemWhip(String name)
     {
-        super(i);
+        super(name);
         maxStackSize = 1;
         setMaxDamage(24);
     }
@@ -40,12 +42,12 @@ public class MoCItemWhip extends MoCItem {
     public boolean onItemUse(ItemStack itemstack, EntityPlayer entityplayer, World world, int i, int j, int k, int l, float f1, float f2, float f3)
     {
         int i1 = 0;
-        int j1 = world.getBlockId(i, j, k);
-        int k1 = world.getBlockId(i, j + 1, k);
-        if ((l != 0) && (k1 == 0) && (j1 != 0) && (j1 != Block.signPost.blockID))
+        Block block = world.getBlock(i, j, k);
+        Block block1 = world.getBlock(i, j + 1, k);
+        if ((l != 0) && (block == Blocks.air) && (block != Blocks.air) && (block != Blocks.standing_sign))
         {
             whipFX(world, i, j, k);
-            world.playSoundAtEntity(entityplayer, "whip", 0.5F, 0.4F / ((itemRand.nextFloat() * 0.4F) + 0.8F));
+            world.playSoundAtEntity(entityplayer, "mocreatures:whip", 0.5F, 0.4F / ((itemRand.nextFloat() * 0.4F) + 0.8F));
             itemstack.damageItem(1, entityplayer);
             List list = world.getEntitiesWithinAABBExcludingEntity(entityplayer, entityplayer.boundingBox.expand(12D, 12D, 12D));
             for (int l1 = 0; l1 < list.size(); l1++)
@@ -55,11 +57,10 @@ public class MoCItemWhip extends MoCItem {
                 if (entity instanceof MoCEntityAnimal)
                 {
                     MoCEntityAnimal animal = (MoCEntityAnimal) entity;
-                    if (MoCreatures.proxy.enableOwnership && animal.getOwnerName() != null && !animal.getOwnerName().equals("") && !entityplayer.username.equals(animal.getOwnerName())) 
+                    if (MoCreatures.proxy.enableOwnership && animal.getOwnerName() != null && !animal.getOwnerName().equals("") && !entityplayer.getCommandSenderName().equals(animal.getOwnerName()) && !MoCTools.isThisPlayerAnOP(entityplayer)) 
                     { 
                        continue;
                     }
-
                 }
                 
                 if (entity instanceof MoCEntityBigCat)
@@ -70,9 +71,8 @@ public class MoCItemWhip extends MoCItem {
                         entitybigcat.setSitting(!entitybigcat.getIsSitting());
                         i1++;
                     }
-                    else if ((world.difficultySetting > 0) && entitybigcat.getIsAdult())
+                    else if ((world.difficultySetting.getDifficultyId() > 0) && entitybigcat.getIsAdult())
                     {
-                        //entitybigcat.entityToAttack = entityplayer;
                         entitybigcat.setTarget(entityplayer);
                     }
                 }
@@ -98,7 +98,6 @@ public class MoCItemWhip extends MoCItem {
                         {
                             entityhorse.setEating(!entityhorse.getEating());
                         }
-
                     }
                 }
                 
@@ -113,14 +112,14 @@ public class MoCItemWhip extends MoCItem {
                 
                 if ((entity instanceof MoCEntityWyvern))
                 {
-                	MoCEntityWyvern entitywyvern = (MoCEntityWyvern) entity;
+                    MoCEntityWyvern entitywyvern = (MoCEntityWyvern) entity;
                     if (entitywyvern.getIsTamed() && !entitywyvern.isOnAir())
                     {
-                    	entitywyvern.setSitting(!entitywyvern.getIsSitting());
+                        entitywyvern.setSitting(!entitywyvern.getIsSitting());
                     }
                 }
                 
-                if (entity instanceof MoCEntityOstrich)// && entity.riddenByEntity != null)
+                if (entity instanceof MoCEntityOstrich)
                 {
                     MoCEntityOstrich entityostrich = (MoCEntityOstrich) entity;
 
@@ -135,10 +134,8 @@ public class MoCItemWhip extends MoCItem {
                     {
                         entityostrich.setHiding(!entityostrich.getHiding());
                     }
-
                 }
-                
-                if (entity instanceof MoCEntityElephant)// && entity.riddenByEntity != null)
+                if (entity instanceof MoCEntityElephant)
                 {
                     MoCEntityElephant entityelephant = (MoCEntityElephant) entity;
 
@@ -147,9 +144,7 @@ public class MoCItemWhip extends MoCItem {
                     {
                         entityelephant.sprintCounter = 1;
                     }
-
                 }
-
             }
 
             if (i1 > 6)
@@ -157,46 +152,6 @@ public class MoCItemWhip extends MoCItem {
                 //entityplayer.triggerAchievement(MoCreatures.Indiana);
             }
             return true;
-        }
-        if (MoCreatures.isServer() && (l != 0) && ((k1 == Block.signPost.blockID) || (j1 == Block.signPost.blockID)) && (j1 != 0))
-        {
-            //removed
-            /*TileEntitySign tileentitysign = (TileEntitySign) world.getBlockTileEntity(i, j + 1, k);
-            if (tileentitysign == null)
-            {
-                tileentitysign = (TileEntitySign) world.getBlockTileEntity(i, j, k);
-            }
-            if (tileentitysign != null)
-            {
-                int i2 = 0;
-                //List list1 = world.getLoadedEntityList(); //client
-                List list1 = world.loadedEntityList; //server
-                for (int j2 = 0; j2 < list1.size(); j2++)
-                {
-                    Entity entity1 = (Entity) list1.get(j2);
-                    if (entity1 instanceof EntityOcelot)
-                    {
-                        entity1.setDead();
-                        //MoCEntityBunny entitybunny = (MoCEntityBunny) entity1;
-                        //i2++;
-                        //entitybunny.setDead();
-                    }
-                }
-
-                String s = String.valueOf(i2);
-                tileentitysign.signText[0] = "";
-                tileentitysign.signText[1] = "R.I.P.";
-                tileentitysign.signText[2] = (new StringBuilder()).append(s).append(" Ocelots").toString();
-                tileentitysign.signText[3] = "";
-                if (i2 > 69)
-                {
-                    //entityplayer.triggerAchievement(MoCreatures.BunnyKilla);
-                }
-                whipFX(world, i, j, k);
-                world.playSoundAtEntity(entityplayer, "swhip", 0.5F, 0.4F / ((itemRand.nextFloat() * 0.4F) + 0.8F));
-                itemstack.damageItem(1, entityplayer);
-                return true;
-            }*/
         }
         return false;
     }

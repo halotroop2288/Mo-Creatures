@@ -2,6 +2,7 @@ package drzhark.mocreatures.client.renderer.entity;
 
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
 
 import org.lwjgl.opengl.GL11;
 
@@ -10,7 +11,7 @@ import cpw.mods.fml.relauncher.SideOnly;
 import drzhark.mocreatures.entity.MoCEntityInsect;
 
 @SideOnly(Side.CLIENT)
-public class MoCRenderInsect extends MoCRenderAnimal {
+public class MoCRenderInsect extends MoCRenderMoC {
     public MoCRenderInsect(ModelBase modelbase)
     {
         super(modelbase, 0.0F);
@@ -18,7 +19,7 @@ public class MoCRenderInsect extends MoCRenderAnimal {
     }
 
     @Override
-    protected void preRenderCallback(EntityLiving par1EntityLiving, float par2)
+    protected void preRenderCallback(EntityLivingBase par1EntityLiving, float par2)
     {
         MoCEntityInsect insect = (MoCEntityInsect) par1EntityLiving;
 
@@ -33,7 +34,7 @@ public class MoCRenderInsect extends MoCRenderAnimal {
 
     protected void rotateAnimal(EntityLiving entityliving)
     {
-    	GL11.glRotatef(90F, -1F, 0.0F, 0.0F);
+        GL11.glRotatef(90F, -1F, 0.0F, 0.0F);
     }
 
     protected void stretch(MoCEntityInsect entity)

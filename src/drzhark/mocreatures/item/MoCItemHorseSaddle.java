@@ -1,19 +1,20 @@
 package drzhark.mocreatures.item;
 
-import drzhark.mocreatures.entity.passive.MoCEntityHorse;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import drzhark.mocreatures.entity.passive.MoCEntityHorse;
 
 public class MoCItemHorseSaddle extends MoCItem {
 
-    public MoCItemHorseSaddle(int i)
+    public MoCItemHorseSaddle(String name)
     {
-        super(i);
+        super(name);
         maxStackSize = 32;
     }
 
     @Override
-    public boolean itemInteractionForEntity(ItemStack itemstack, EntityLiving entityliving)
+    public boolean itemInteractionForEntity(ItemStack itemstack, EntityPlayer entityplayer, EntityLivingBase entityliving)
     {
         if (entityliving instanceof MoCEntityHorse)
         {
@@ -27,5 +28,4 @@ public class MoCItemHorseSaddle extends MoCItem {
         }
         return false;
     }
-
 }

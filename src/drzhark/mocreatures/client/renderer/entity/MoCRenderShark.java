@@ -4,14 +4,17 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderLiving;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import drzhark.mocreatures.MoCreatures;
-import drzhark.mocreatures.entity.passive.MoCEntityShark;
+import drzhark.mocreatures.entity.aquatic.MoCEntityShark;
 
 @SideOnly(Side.CLIENT)
 public class MoCRenderShark extends RenderLiving {
@@ -22,10 +25,10 @@ public class MoCRenderShark extends RenderLiving {
     }
 
     @Override
-    public void doRenderLiving(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
+    public void doRender(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
     {
         MoCEntityShark entityshark = (MoCEntityShark) entityliving;
-        super.doRenderLiving(entityshark, d, d1, d2, f, f1);
+        super.doRender(entityshark, d, d1, d2, f, f1);
         boolean flag = MoCreatures.proxy.getDisplayPetName() && !(entityshark.getName()).isEmpty();
         boolean flag1 = MoCreatures.proxy.getDisplayPetHealth();
         boolean flag2 = MoCreatures.proxy.getDisplayPetIcons();
@@ -103,10 +106,10 @@ public class MoCRenderShark extends RenderLiving {
         }
     }
 
-    public void doRenderLiving2(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
+    public void doRender2(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
     {
         MoCEntityShark entityshark = (MoCEntityShark) entityliving;
-        super.doRenderLiving(entityshark, d, d1, d2, f, f1);
+        super.doRender(entityshark, d, d1, d2, f, f1);
         if (entityshark.renderName())
         {
             float f2 = 1.6F;
@@ -169,7 +172,7 @@ public class MoCRenderShark extends RenderLiving {
     }
 
     @Override
-    protected float handleRotationFloat(EntityLiving entityliving, float f)
+    protected float handleRotationFloat(EntityLivingBase entityliving, float f)
     {
         stretch((MoCEntityShark) entityliving);
         return entityliving.ticksExisted + f;
@@ -178,5 +181,9 @@ public class MoCRenderShark extends RenderLiving {
     protected void stretch(MoCEntityShark entityshark)
     {
         GL11.glScalef(entityshark.getEdad() * 0.01F, entityshark.getEdad() * 0.01F, entityshark.getEdad() * 0.01F);
+    }
+
+    protected ResourceLocation getEntityTexture(Entity par1Entity) {
+        return ((MoCEntityShark)par1Entity).getTexture();
     }
 }

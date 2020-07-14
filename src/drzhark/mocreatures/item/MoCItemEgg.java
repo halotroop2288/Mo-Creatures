@@ -1,23 +1,25 @@
 package drzhark.mocreatures.item;
 
-import drzhark.mocreatures.MoCreatures;
-import drzhark.mocreatures.entity.item.MoCEntityEgg;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+import drzhark.mocreatures.MoCreatures;
+import drzhark.mocreatures.entity.item.MoCEntityEgg;
 
 public class MoCItemEgg extends MoCItem {
 
-    public MoCItemEgg(int i)
+    int eggType;
+
+    public MoCItemEgg(String name)
     {
-        super(i);
+        super(name);
         maxStackSize = 16;
         setHasSubtypes(true);
     }
 
-    public MoCItemEgg(int i, int j)
+    public MoCItemEgg(String name, int j)
     {
-        this(i);
+        this(name);
         eggType = j;
     }
 
@@ -25,7 +27,7 @@ public class MoCItemEgg extends MoCItem {
     public ItemStack onItemRightClick(ItemStack itemstack, World world, EntityPlayer entityplayer)
     {
         itemstack.stackSize--;
-        if (MoCreatures.isServer())//if(!world.isRemote)
+        if (MoCreatures.isServer())
         {
             int i = itemstack.getItemDamage();
             if (i == 30)
@@ -45,9 +47,6 @@ public class MoCItemEgg extends MoCItem {
    @Override
     public String getUnlocalizedName(ItemStack itemstack)
     {
-	   //getItemDisplayName //func_77653_i
         return (new StringBuilder()).append(super.getUnlocalizedName()).append(".").append(itemstack.getItemDamage()).toString();
     }
-
-    int eggType;
 }

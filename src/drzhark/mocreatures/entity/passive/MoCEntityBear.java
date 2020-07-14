@@ -1,20 +1,26 @@
 package drzhark.mocreatures.entity.passive;
 
-import drzhark.mocreatures.MoCTools;
-import drzhark.mocreatures.MoCreatures;
-import drzhark.mocreatures.entity.MoCEntityAnimal;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraftforge.common.BiomeDictionary;
+import net.minecraftforge.common.BiomeDictionary.Type;
+import drzhark.mocreatures.MoCTools;
+import drzhark.mocreatures.MoCreatures;
+import drzhark.mocreatures.entity.MoCEntityTameableAnimal;
 
-public class MoCEntityBear extends MoCEntityAnimal {
+public class MoCEntityBear extends MoCEntityTameableAnimal {
 
     public int mouthCounter;
     private int attackCounter;
@@ -24,7 +30,7 @@ public class MoCEntityBear extends MoCEntityAnimal {
     {
         super(world);
         //texture = MoCreatures.proxy.MODEL_TEXTURE + "bearbrowm.png";
-        setSize(0.9F, 1.3F);
+        setSize(1.2F, 1.5F);
         roper = null;
         //health = 25;
         setEdad(55);
@@ -41,6 +47,12 @@ public class MoCEntityBear extends MoCEntityAnimal {
         }
     }
 
+    protected void applyEntityAttributes()
+    {
+        super.applyEntityAttributes();
+        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(calculateMaxHealth());
+    }
+
     /**
      * Initializes datawatchers for entity. Each datawatcher is used to sync
      * server data to client.
@@ -49,9 +61,10 @@ public class MoCEntityBear extends MoCEntityAnimal {
     protected void entityInit()
     {
         super.entityInit();
-        dataWatcher.addObject(22, Integer.valueOf(0)); // int BearState 
+        this.dataWatcher.addObject(23, Byte.valueOf((byte)0));
     }
 
+    
     /**
      * 0 - bear is on fours 1 - standing 2 - sitting
      * 
@@ -59,18 +72,19 @@ public class MoCEntityBear extends MoCEntityAnimal {
      */
     public int getBearState()
     {
-        return dataWatcher.getWatchableObjectInt(22);
+        return dataWatcher.getWatchableObjectByte(23);
     }
 
     public void setBearState(int i)
     {
-        if (!MoCreatures.isServer()) { return; }
-        dataWatcher.updateObject(22, Integer.valueOf(i));
+        dataWatcher.updateObject(23, Byte.valueOf((byte)i));
     }
 
     @Override
     public void selectType()
     {
+        checkSpawningBiome();
+        
         if (getType() == 0)
         {
 
@@ -88,27 +102,27 @@ public class MoCEntityBear extends MoCEntityAnimal {
                 setType(3);
             }
 
-            health = getMaxHealth();
+            this.setHealth(getMaxHealth());
         }
     }
 
     @Override
-    public String getTexture()
+    public ResourceLocation getTexture()
     {
 
         switch (getType())
         {
         case 1:
-            return MoCreatures.proxy.MODEL_TEXTURE + "bearbrowm.png";
+            return MoCreatures.proxy.getTexture("bearbrowm.png");
         case 2:
-            return MoCreatures.proxy.MODEL_TEXTURE + "bearblack.png";
+            return MoCreatures.proxy.getTexture("bearblack.png");
         case 3:
-            return MoCreatures.proxy.MODEL_TEXTURE + "bearpanda.png";
+            return MoCreatures.proxy.getTexture("bearpanda.png");
         case 4:
-            return MoCreatures.proxy.MODEL_TEXTURE + "bearpolar.png";
+            return MoCreatures.proxy.getTexture("bearpolar.png");
 
         default:
-            return MoCreatures.proxy.MODEL_TEXTURE + "bearbrowm.png";
+            return MoCreatures.proxy.getTexture("bearbrowm.png");
         }
     }
 
@@ -136,8 +150,7 @@ public class MoCEntityBear extends MoCEntityAnimal {
         }
     }
 
-    @Override
-    public int getMaxHealth()
+    public float calculateMaxHealth()
     {
         switch (getType())
         {
@@ -163,7 +176,7 @@ public class MoCEntityBear extends MoCEntityAnimal {
     public double getAttackRange()
     {
         int factor = 1;
-        if (worldObj.difficultySetting > 1)
+        if (worldObj.difficultySetting.getDifficultyId() > 1)
         {
             factor = 2;
         }
@@ -191,7 +204,7 @@ public class MoCEntityBear extends MoCEntityAnimal {
      */
     public int getAttackStrength()
     {
-        int factor = (worldObj.difficultySetting);
+        int factor = (worldObj.difficultySetting.getDifficultyId());
 
         switch (getType())
         {
@@ -234,13 +247,13 @@ public class MoCEntityBear extends MoCEntityAnimal {
     }
 
     @Override
-    public boolean attackEntityFrom(DamageSource damagesource, int i)
+    public boolean attackEntityFrom(DamageSource damagesource, float i)
     {
         if (super.attackEntityFrom(damagesource, i))
         {
             Entity entity = damagesource.getEntity();
             if ((riddenByEntity == entity) || (ridingEntity == entity)) { return true; }
-            if ((entity != this) && (worldObj.difficultySetting > 0) && this.getType() != 3)
+            if ((entity != this) && (worldObj.difficultySetting.getDifficultyId() > 0) && this.getType() != 3)
             {
                 entityToAttack = entity;
             }
@@ -261,18 +274,17 @@ public class MoCEntityBear extends MoCEntityAnimal {
     @Override
     protected Entity findPlayerToAttack()
     {
-        if (worldObj.difficultySetting > 0)
+        if (worldObj.difficultySetting.getDifficultyId() > 0)
         {
             float f = getBrightness(1.0F);
             if (f < 0.0F && this.getType() == 1 || this.getType() == 4)
             {
                 EntityPlayer entityplayer = worldObj.getClosestVulnerablePlayerToEntity(this, getAttackRange());
-                //worldObj.getClosestPlayerToEntity(this, getAttackRange());
                 if (entityplayer != null) { return entityplayer; }
             }
             if (rand.nextInt(80) == 0 && this.getType() != 3)
             {
-                EntityLiving entityliving = getClosestEntityLiving(this, 10D);
+                EntityLivingBase entityliving = getClosestEntityLiving(this, 10D);
                 return entityliving;
             }
         }
@@ -340,7 +352,7 @@ public class MoCEntityBear extends MoCEntityAnimal {
 
         if (MoCreatures.isServer() && getType() == 3 && (deathTime == 0) && getBearState() != 2)
         {
-            EntityItem entityitem = getClosestItem(this, 12D, Item.reed.itemID, Item.sugar.itemID);
+            EntityItem entityitem = getClosestItem(this, 12D, Items.reeds, Items.sugar);
             if (entityitem != null)
             {
 
@@ -352,9 +364,8 @@ public class MoCEntityBear extends MoCEntityAnimal {
                 if ((f < 2.0F) && (entityitem != null) && (deathTime == 0))
                 {
                     entityitem.setDead();
-                    worldObj.playSoundAtEntity(this, "eating", 1.0F, 1.0F + ((rand.nextFloat() - rand.nextFloat()) * 0.2F));
-                    //setTamed(true);
-                    health = getMaxHealth();
+                    worldObj.playSoundAtEntity(this, "mocreatures:eating", 1.0F, 1.0F + ((rand.nextFloat() - rand.nextFloat()) * 0.2F));
+                    this.setHealth(getMaxHealth());
                 }
 
             }
@@ -362,19 +373,11 @@ public class MoCEntityBear extends MoCEntityAnimal {
     }
 
     @Override
-    public boolean getCanSpawnHere()
-    {
-        if (MoCTools.isNearTorch(this)) { return false; }
-        checkSpawningBiome();
-        return (MoCreatures.proxy.getFrequency(this.getEntityName()) > 0) && super.getCanSpawnHere();
-    }
-
-    @Override
     public boolean interact(EntityPlayer entityplayer)
     {
         if (super.interact(entityplayer)) { return false; }
         ItemStack itemstack = entityplayer.inventory.getCurrentItem();
-        if ((itemstack != null) && (getType() == 3) && ((itemstack.itemID == MoCreatures.sugarlump.itemID) || (itemstack.itemID == Item.reed.itemID)))
+        if ((itemstack != null) && (getType() == 3) && ((itemstack.getItem() == MoCreatures.sugarlump) || (itemstack.getItem() == Items.reeds)))
         {
             if (--itemstack.stackSize == 0)
             {
@@ -383,9 +386,10 @@ public class MoCEntityBear extends MoCEntityAnimal {
 
             if (MoCreatures.isServer())
             {
-                MoCTools.tameWithName((EntityPlayerMP) entityplayer, this);
+                MoCTools.tameWithName(entityplayer, this);
             }
-            health = getMaxHealth();
+
+            this.setHealth(getMaxHealth());
             eatingAnimal();
             if (MoCreatures.isServer() && !getIsAdult() && (getEdad() < 100))
             {
@@ -408,33 +412,27 @@ public class MoCEntityBear extends MoCEntityAnimal {
     @Override
     protected String getDeathSound()
     {
-        return "beardying";
+        return "mocreatures:beardying";
     }
 
     @Override
-    protected int getDropItemId()
+    protected Item getDropItem()
     {
-        return MoCreatures.animalHide.itemID;
+        return MoCreatures.animalHide;
     }
 
     @Override
     protected String getHurtSound()
     {
         openMouth();
-        return "bearhurt";
+        return "mocreatures:bearhurt";
     }
 
     @Override
     protected String getLivingSound()
     {
         openMouth();
-        return "beargrunt";
-    }
-
-    @Override
-    public int getMaxSpawnedInChunk()
-    {
-        return 2;
+        return "mocreatures:beargrunt";
     }
 
     @Override
@@ -444,16 +442,19 @@ public class MoCEntityBear extends MoCEntityAnimal {
         int j = MathHelper.floor_double(boundingBox.minY);
         int k = MathHelper.floor_double(posZ);
 
-        String s = MoCTools.BiomeName(worldObj, i, j, k);
-        //System.out.println("biome = " + s);
-        int l = rand.nextInt(10);
+        BiomeGenBase currentbiome = MoCTools.Biomekind(worldObj, i, j, k);
 
-        if (s.equals("Taiga") || s.equals("Frozen Ocean") || s.equals("Frozen River") || s.equals("Ice Plains") || s.equals("Ice Mountains") || s.equals("TaigaHills"))
+        if (BiomeDictionary.isBiomeOfType(currentbiome, Type.FROZEN))
         {
-            setType(4);//polar bear
-            //System.out.println("Setting type 4");
+            setType(4);
+            return true;
         }
-        //selectType();
+
+        if (currentbiome.biomeName.toLowerCase().contains("bamboo") || MoCTools.isNearBlockName(this, 12D, "tile.reeds"))
+        {
+            setType(3);//panda
+            return true;
+        }
         return true;
     }
 
@@ -502,13 +503,13 @@ public class MoCEntityBear extends MoCEntityAnimal {
     @Override
     public boolean isMyFavoriteFood(ItemStack par1ItemStack)
     {
-        return this.getType() == 3 && par1ItemStack != null && par1ItemStack.itemID == Item.reed.itemID;
+        return this.getType() == 3 && par1ItemStack != null && par1ItemStack.getItem() == Items.reeds;
     }
 
     @Override
     public boolean isMyHealFood(ItemStack par1ItemStack)
     {
-        return this.getType() == 3 && par1ItemStack != null && par1ItemStack.itemID == Item.reed.itemID;
+        return this.getType() == 3 && par1ItemStack != null && par1ItemStack.getItem() == Items.reeds;
     }
 
     @Override

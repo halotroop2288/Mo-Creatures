@@ -2,51 +2,45 @@ package drzhark.mocreatures.entity.passive;
 
 import java.util.List;
 
-import drzhark.mocreatures.MoCTools;
-import drzhark.mocreatures.MoCreatures;
-import drzhark.mocreatures.entity.MoCEntityAnimal;
-import drzhark.mocreatures.entity.MoCIMoCreature;
-import drzhark.mocreatures.entity.item.MoCEntityKittyBed;
-import drzhark.mocreatures.entity.item.MoCEntityLitterBox;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.passive.EntityWolf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraftforge.common.BiomeDictionary;
+import net.minecraftforge.common.BiomeDictionary.Type;
+import drzhark.mocreatures.MoCTools;
+import drzhark.mocreatures.MoCreatures;
+import drzhark.mocreatures.entity.IMoCEntity;
+import drzhark.mocreatures.entity.MoCEntityTameableAnimal;
+import drzhark.mocreatures.entity.item.MoCEntityKittyBed;
+import drzhark.mocreatures.entity.item.MoCEntityLitterBox;
 
-public class MoCEntityBigCat extends MoCEntityAnimal {
-    //protected int force;
-    //protected double attackRange;
-    //public float heightF;
-    //public float widthF;
-    //public float lengthF;
-    //public EntityLiving roper;
-    //private boolean hasSMPInit;
+public class MoCEntityBigCat extends MoCEntityTameableAnimal {
 
     public MoCEntityBigCat(World world)
     {
         super(world);
         setEdad(35);
-        // edad = 0.35F;
         setSize(0.9F, 1.3F);
-        health = 25;
-        //force = 1;
-        //attackRange = 1.0D;
-        //moveSpeed = 2F;
+        //health = 25;
         if (rand.nextInt(4) == 0)
         {
             setAdult(false);
@@ -57,8 +51,13 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
             setAdult(true);
         }
         setHungry(true);
-        //setMaxHealth(25);
         setTamed(false);
+    }
+
+    protected void applyEntityAttributes()
+    {
+        super.applyEntityAttributes();
+        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(calculateMaxHealth());
     }
 
     /**
@@ -67,14 +66,9 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
     @Override
     public void selectType()
     {
-    	checkSpawningBiome();
+        checkSpawningBiome();
         if (getType() == 0)
         {
-            /*if (rand.nextInt(4) == 0)
-            {
-                setAdult(false);
-                // unused_flag = true;
-            }*/
             int i = rand.nextInt(100);
             if (i <= 5)
             {
@@ -101,7 +95,7 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
                 setType(5);
             }
 
-            health = getMaxHealth();
+            this.setHealth(getMaxHealth());
         }
 
         
@@ -132,8 +126,7 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
         }
     }
 
-    @Override
-    public int getMaxHealth()
+    public float calculateMaxHealth()
     {
         switch (getType())
         {
@@ -279,27 +272,26 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
     }
 
     @Override
-    public String getTexture()
+    public ResourceLocation getTexture()
     {
-
         switch (getType())
         {
-        case 1:
-            return MoCreatures.proxy.MODEL_TEXTURE + "lionf.png";
-        case 2:
-            return MoCreatures.proxy.MODEL_TEXTURE + "lionf.png";
-        case 3:
-            return MoCreatures.proxy.MODEL_TEXTURE + "panther.png";
-        case 4:
-            return MoCreatures.proxy.MODEL_TEXTURE + "cheetah.png";
-        case 5:
-            return MoCreatures.proxy.MODEL_TEXTURE + "tiger.png";
-        case 6:
-            return MoCreatures.proxy.MODEL_TEXTURE + "leopard.png";
-        case 7:
-            return MoCreatures.proxy.MODEL_TEXTURE + "tigerw.png";
-        default:
-            return MoCreatures.proxy.MODEL_TEXTURE + "lionf.png";
+            case 1:
+                return MoCreatures.proxy.getTexture("lionf.png");
+            case 2:
+                return MoCreatures.proxy.getTexture("lionf.png");
+            case 3:
+                return MoCreatures.proxy.getTexture("panther.png");
+            case 4:
+                return MoCreatures.proxy.getTexture("cheetah.png");
+            case 5:
+                return MoCreatures.proxy.getTexture("tiger.png");
+            case 6:
+                return MoCreatures.proxy.getTexture("leopard.png");
+            case 7:
+                return MoCreatures.proxy.getTexture("tigerw.png");
+            default:
+                return MoCreatures.proxy.getTexture("lionf.png");
         }
     }
 
@@ -333,21 +325,18 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
 
     public void setHungry(boolean flag)
     {
-        //if (!MoCreatures.isServer()) { return; }
         byte input = (byte) (flag ? 1 : 0);
         dataWatcher.updateObject(22, Byte.valueOf(input));
     }
 
     public void setEaten(boolean flag)
     {
-        //if (!MoCreatures.isServer()) { return; }
         byte input = (byte) (flag ? 1 : 0);
         dataWatcher.updateObject(23, Byte.valueOf(input));
     }
 
     public void setSitting(boolean flag)
     {
-        //if (!MoCreatures.isServer()) { return; }
         byte input = (byte) (flag ? 1 : 0);
         dataWatcher.updateObject(24, Byte.valueOf(input));
     }
@@ -381,15 +370,16 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
         }
     }
 
+    // Method used for receiving damage from another source
     @Override
-    public boolean attackEntityFrom(DamageSource damagesource, int i)
+    public boolean attackEntityFrom(DamageSource damagesource, float i)
     {
         if (super.attackEntityFrom(damagesource, i))
         {
             Entity entity = damagesource.getEntity();
             if (entity != null && getIsTamed() && entity instanceof EntityPlayer) { return false; }
             if ((riddenByEntity == entity) || (ridingEntity == entity)) { return true; }
-            if ((entity != this) && (worldObj.difficultySetting > 0))
+            if ((entity != this) && (worldObj.difficultySetting != worldObj.difficultySetting.PEACEFUL))
             {
                 entityToAttack = entity;
             }
@@ -411,11 +401,7 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
             if ((entity != this) && (entity instanceof MoCEntityBigCat))
             {
                 MoCEntityBigCat entitybigcat = (MoCEntityBigCat) entity;
-                if (getType() == 2)
-                {
-                    setType(1);// = 1;
-                }
-                return getType();
+                return entitybigcat.getType();
             }
         }
 
@@ -427,7 +413,7 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
     {
         if (roper != null && roper instanceof EntityPlayer) { return getMastersEnemy((EntityPlayer) roper, 12D); }
 
-        if (worldObj.difficultySetting > 0)
+        if (worldObj.difficultySetting != worldObj.difficultySetting.PEACEFUL && MoCreatures.isHuntingEnabled())
         {
             EntityPlayer entityplayer = worldObj.getClosestVulnerablePlayerToEntity(this, getAttackRange());
             if (!getIsTamed() && (entityplayer != null) && getIsAdult() && getIsHungry())
@@ -445,7 +431,7 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
             }
             if ((rand.nextInt(80) == 0) && getIsHungry())
             {
-                EntityLiving entityliving = getClosestTarget(this, getAttackRange());
+                EntityLivingBase entityliving = getClosestTarget(this, getAttackRange());
                 setHungry(false);
                 return entityliving;
             }
@@ -459,37 +445,35 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
         int i = MathHelper.floor_double(posX);
         int j = MathHelper.floor_double(boundingBox.minY);
         int k = MathHelper.floor_double(posZ);
-        //String s = MoCTools.BiomeName(worldObj, i, j, k);
+
         BiomeGenBase currentbiome = MoCTools.Biomekind(worldObj, i, j, k);
-        
-        if (currentbiome.temperature <= 0.05F)
+
+        if (BiomeDictionary.isBiomeOfType(currentbiome, Type.FROZEN))
         {
             setType(6); //snow leopard
             return true;
         }
-        
+
         int l = 0;
         {
             l = checkNearBigKitties(12D);
-            if (l == 7)
+
+           
+            if (l == 2)
+            {
+                l = 1;
+            }
+            else if (l == 1 && rand.nextInt(3) == 0)
+            {
+                l = 2;
+            }
+            else if (l == 7)
             {
                 l = 5;
             }
         }
         setType(l);
-       /* if (s.equals("Taiga") || s.equals("FrozenOcean") || s.equals("FrozenRiver") || s.equals("Ice Plains") || s.equals("Ice Mountains") || s.equals("TaigaHills"))
-        {
-            setType(6);// = 6;//snow leopard
-            //return true;
-        }*/
         return true;
-    }
-
-    @Override
-    public boolean getCanSpawnHere()
-    {
-        if (MoCTools.isNearTorch(this)) { return false; }
-        return (MoCreatures.proxy.getFrequency(this.getEntityName()) > 0) && super.getCanSpawnHere();
     }
 
     // TODO move somewhere else
@@ -508,8 +492,8 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
             {
                 for (int i2 = i1; i2 < j1; i2++)
                 {
-                    int j2 = worldObj.getBlockId(k1, l1, i2);
-                    if ((j2 != 0) && (Block.blocksList[j2].blockMaterial == Material.snow)) { return true; }
+                    Block block = worldObj.getBlock(k1, l1, i2);
+                    if ((block != Blocks.air) && (block.getMaterial() == Material.snow)) { return true; }
                 }
 
             }
@@ -519,44 +503,15 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
         return false;
     }
 
-
-    /*public EntityItem getClosestItem(Entity entity, double d, int i, int j)
+    public EntityLivingBase getClosestTarget(Entity entity, double d)
     {
         double d1 = -1D;
-        EntityItem entityitem = null;
-        List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand(d, d, d));
-        for (int k = 0; k < list.size(); k++)
-        {
-            Entity entity1 = (Entity) list.get(k);
-            if (!(entity1 instanceof EntityItem))
-            {
-                continue;
-            }
-            EntityItem entityitem1 = (EntityItem) entity1;
-            if ((entityitem1.item.itemID != i) && (j != 0) && (entityitem1.item.itemID != j))
-            {
-                continue;
-            }
-            double d2 = entityitem1.getDistanceSq(entity.posX, entity.posY, entity.posZ);
-            if (((d < 0.0D) || (d2 < (d * d))) && ((d1 == -1D) || (d2 < d1)))
-            {
-                d1 = d2;
-                entityitem = entityitem1;
-            }
-        }
-
-        return entityitem;
-    }*/
-
-    public EntityLiving getClosestTarget(Entity entity, double d)
-    {
-        double d1 = -1D;
-        EntityLiving entityliving = null;
+        EntityLivingBase entityliving = null;
         List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.expand(d, d, d));
         for (int i = 0; i < list.size(); i++)
         {
             Entity entity1 = (Entity) list.get(i);
-            if (!(entity1 instanceof EntityLiving) 
+            if (!(entity1 instanceof EntityLivingBase) 
                     || (entity1 == entity) 
                     || (entity1 == entity.riddenByEntity) 
                     || (entity1 == entity.ridingEntity) 
@@ -565,9 +520,10 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
                     ||(!getIsAdult() && ((entity1.width > 0.5D) || (entity1.height > 0.5D))) 
                     || (entity1 instanceof MoCEntityKittyBed) || (entity1 instanceof MoCEntityLitterBox) 
                     || ((entity1 instanceof EntityMob) && (!getIsTamed() || !getIsAdult())) 
-                    || (getIsTamed() && (entity1 instanceof MoCIMoCreature) && ((MoCIMoCreature)entity1).getIsTamed() ) 
+                    || (getIsTamed() && (entity1 instanceof IMoCEntity) && ((IMoCEntity)entity1).getIsTamed() ) 
                     || ((entity1 instanceof MoCEntityHorse) && !(MoCreatures.proxy.attackHorses)) 
                     || ((entity1 instanceof EntityWolf) && !(MoCreatures.proxy.attackWolves))
+                    || ((entity instanceof IMoCEntity) && !MoCreatures.isHuntingEnabled()) // don't attack if hunting is disabled
                     )
             {
                 continue;
@@ -579,16 +535,16 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
                     continue;
                 }
                 MoCEntityBigCat entitybigcat = (MoCEntityBigCat) entity1;
-                if ((getIsTamed() && entitybigcat.getIsTamed()) || (entitybigcat.getType() == 7) || ((getType() != 2) && (getType() == entitybigcat.getType())) || ((getType() == 2) && (entitybigcat.getType() == 1)) || (health < entitybigcat.health))
+                if ((getIsTamed() && entitybigcat.getIsTamed()) || (entitybigcat.getType() == 7) || ((getType() != 2) && (getType() == entitybigcat.getType())) || ((getType() == 2) && (entitybigcat.getType() == 1)) || (this.getHealth() < entitybigcat.getHealth()))
                 {
                     continue;
                 }
             }
             double d2 = entity1.getDistanceSq(entity.posX, entity.posY, entity.posZ);
-            if (((d < 0.0D) || (d2 < (d * d))) && ((d1 == -1D) || (d2 < d1)) && ((EntityLiving) entity1).canEntityBeSeen(entity))
+            if (((d < 0.0D) || (d2 < (d * d))) && ((d1 == -1D) || (d2 < d1)) && ((EntityLivingBase) entity1).canEntityBeSeen(entity))
             {
                 d1 = d2;
-                entityliving = (EntityLiving) entity1;
+                entityliving = (EntityLivingBase) entity1;
             }
         }
 
@@ -600,18 +556,18 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
     {
         if (getIsAdult())
         {
-            return "liondeath";
+            return "mocreatures:liondeath";
         }
         else
         {
-            return "cubdying";
+            return "mocreatures:cubdying";
         }
     }
 
     @Override
-    protected int getDropItemId()
+    protected Item getDropItem()
     {
-        return MoCreatures.bigcatclaw.itemID;
+        return MoCreatures.bigcatclaw;
     }
 
     @Override
@@ -619,11 +575,11 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
     {
         if (getIsAdult())
         {
-            return "lionhurt";
+            return "mocreatures:lionhurt";
         }
         else
         {
-            return "cubhurt";
+            return "mocreatures:cubhurt";
         }
     }
 
@@ -632,11 +588,11 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
     {
         if (getIsAdult())
         {
-            return "liongrunt";
+            return "mocreatures:liongrunt";
         }
         else
         {
-            return "cubgrunt";
+            return "mocreatures:cubgrunt";
         }
     }
 
@@ -659,46 +615,36 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
         return entitycreature;
     }
 
-    /*
-     * public int getMaxHealth() {
-     * return(dataWatcher.getWatchableObjectInt(21)); }
-     */
-
-    @Override
-    public int getMaxSpawnedInChunk()
-    {
-        return 3;
-    }
-
     @Override
     public boolean interact(EntityPlayer entityplayer)
     {
 
         if (super.interact(entityplayer)) { return false; }
         ItemStack itemstack = entityplayer.inventory.getCurrentItem();
-        if ((itemstack != null) && !getIsTamed() && getHasEaten() && (itemstack.itemID == MoCreatures.medallion.itemID))
+        if ((itemstack != null) && !getIsTamed() && getHasEaten() && (itemstack.getItem() == MoCreatures.medallion))
         {
-            if (--itemstack.stackSize == 0)
-            {
-                entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, null);
-            }
             if (MoCreatures.isServer())
             {
-                MoCTools.tameWithName((EntityPlayerMP) entityplayer, this);
+                MoCTools.tameWithName(entityplayer, this);
             }
-            return true;
+            if (getIsTamed() && --itemstack.stackSize == 0)
+            {
+                entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, null);
+                return true;
+            }
+
+            return false;
         }
-        if ((itemstack != null) && getIsTamed() && (itemstack.itemID == MoCreatures.whip.itemID))
+        if ((itemstack != null) && getIsTamed() && (itemstack.getItem() == MoCreatures.whip))
         {
             setSitting(!getIsSitting());
             return true;
         }
-        if ((itemstack != null) && getIsTamed() && (itemstack.itemID == Item.porkRaw.itemID || itemstack.itemID == Item.fishRaw.itemID))
+        if ((itemstack != null) && getIsTamed() && (itemstack.getItem() == Items.porkchop || itemstack.getItem() == Items.fish))
         {
-            health = getMaxHealth();
-            worldObj.playSoundAtEntity(this, "eating", 1.0F, 1.0F + ((rand.nextFloat() - rand.nextFloat()) * 0.2F));
+            this.setHealth(getMaxHealth());
+            worldObj.playSoundAtEntity(this, "mocreatures:eating", 1.0F, 1.0F + ((rand.nextFloat() - rand.nextFloat()) * 0.2F));
             setHungry(false);
-            //setEaten(true);
         }
         return false;
 
@@ -713,31 +659,18 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
         return getIsSitting();
     }
 
-    /*@Override
-    public void setDead()
-    {
-        if (MoCreatures.isServer() && getIsTamed() && (health > 0))
-        {
-            return;
-        }
-        else
-        {
-            super.setDead();
-        }
-    }*/
-
     //drops medallion on death
     @Override
     public void onDeath(DamageSource damagesource)
     {
-    	if (MoCreatures.isServer())
+        if (MoCreatures.isServer())
         {
-        	if (getIsTamed())
-        	{
-        		MoCTools.dropCustomItem(this, this.worldObj, new ItemStack(MoCreatures.medallion, 1));
-        	}
+            if (getIsTamed())
+            {
+                MoCTools.dropCustomItem(this, this.worldObj, new ItemStack(MoCreatures.medallion, 1));
+            }
         }
-    	super.onDeath(damagesource);
+        super.onDeath(damagesource);
     }
     
     @Override
@@ -746,9 +679,10 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
 
         super.onLivingUpdate();
 
-        if ((rand.nextInt(300) == 0) && (health <= getMaxHealth()) && (deathTime == 0) && !worldObj.isRemote)
+        if ((rand.nextInt(300) == 0) && (this.getHealth() <= getMaxHealth()) && (deathTime == 0) && !worldObj.isRemote)
         {
-            health++;
+            //health++;
+            this.setHealth(getHealth() + 1);
         }
         if (!getIsAdult() && (rand.nextInt(250) == 0))
         {
@@ -777,7 +711,7 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
         }
         if ((deathTime == 0) && getIsHungry() && !getIsSitting())
         {
-            EntityItem entityitem = getClosestItem(this, 12D, Item.porkRaw.itemID, Item.fishRaw.itemID);
+            EntityItem entityitem = getClosestItem(this, 12D, Items.porkchop, Items.fish);
             if (entityitem != null)
             {
                 float f = entityitem.getDistanceToEntity(this);
@@ -788,12 +722,12 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
                 if ((f < 2.0F) && (entityitem != null) && (deathTime == 0))
                 {
                     entityitem.setDead();
-                    health = getMaxHealth();
+                    this.setHealth(getMaxHealth());
                     if (!getIsAdult() && (getEdad() < 80))
                     {
                         setEaten(true);
                     }
-                    worldObj.playSoundAtEntity(this, "eating", 1.0F, 1.0F + ((rand.nextFloat() - rand.nextFloat()) * 0.2F));
+                    worldObj.playSoundAtEntity(this, "mocreatures:eating", 1.0F, 1.0F + ((rand.nextFloat() - rand.nextFloat()) * 0.2F));
                     setHungry(false);
                 }
             }
@@ -831,7 +765,5 @@ public class MoCEntityBigCat extends MoCEntityAnimal {
     @Override
     public void dropMyStuff() 
     {
-        
-        
     }
 }

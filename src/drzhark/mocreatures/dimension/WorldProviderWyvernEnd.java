@@ -5,7 +5,7 @@ import net.minecraft.util.ChunkCoordinates;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldProvider;
+import net.minecraft.world.WorldProviderSurface;
 import net.minecraft.world.chunk.IChunkProvider;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -13,22 +13,15 @@ import drzhark.mocreatures.MoCreatures;
 
 //this one is a copy of the end world provider
 
-public class WorldProviderWyvernEnd extends WorldProvider
+public class WorldProviderWyvernEnd extends WorldProviderSurface
 {
-//    private IRenderHandler skyRenderer;
-
-	/**
+    /**
      * creates a new world chunk manager for WorldProvider
      */
     public void registerWorldChunkManager()
     {
         this.worldChunkMgr = new WorldChunkManagerWyvernLair(MoCreatures.WyvernLairBiome, 0.5F, 0.0F);
-        this.dimensionId = MoCreatures.WyvernLairDimensionID;
-        //MoCSkyRenderer mySkyRenderer = new MoCSkyRenderer();
-        //setSkyRenderer(mySkyRenderer);
-        //@SideOnly(Side.CLIENT)
-        //setSkyRenderer(new MoCSkyRenderer());
-        //this.hasNoSky = true;
+        setDimension(MoCreatures.WyvernLairDimensionID);
         setCustomSky();
     }
 
@@ -43,22 +36,13 @@ public class WorldProviderWyvernEnd extends WorldProvider
    
     private void setCustomSky()
     {
-    	if (MoCreatures.isServer())
-    	{
-    		return;
-    	}
-    	setSkyRenderer(new MoCSkyRenderer());
+        if (MoCreatures.isServer())
+        {
+            return;
+        }
+        setSkyRenderer(new MoCSkyRenderer());
     }
-//    /**
-//     * Calculates the angle of sun and moon in the sky relative to a specified time (usually worldTime)
-//     */
-//    @Override
-//    public float calculateCelestialAngle(long par1, float par3)
-//    {
-//        return 0.0F;
-//    }
 
-    
     @SideOnly(Side.CLIENT)
 
     /**
@@ -69,20 +53,7 @@ public class WorldProviderWyvernEnd extends WorldProvider
     {
         return null;
     }
-    
-//    @Override
-//    protected void generateLightBrightnessTable()
-//    {
-//        float var1 = 0.1F;
-//
-//        for (int var2 = 0; var2 <= 15; ++var2)
-//        {
-//            float var3 = 1.0F - (float)var2 / 15.0F;
-//            this.lightBrightnessTable[var2] = (1.0F - var3) / (var3 * 3.0F + 1.0F) * (1.0F - var1) + var1;
-//        }
-//    }
-    
-    
+
     @SideOnly(Side.CLIENT)
 
     /**
@@ -103,22 +74,14 @@ public class WorldProviderWyvernEnd extends WorldProvider
             var4 = 1.0F;
         }
 
-//        float var5 = (float)(var3 >> 16 & 255) / 255.0F;
-//        float var6 = (float)(var3 >> 8 & 255) / 255.0F;
-//        float var7 = (float)(var3 & 255) / 255.0F;
-        
-        float var5 = (float)(var3 >> 174 & 255) / 255.0F;
-        float var6 = (float)(var3 >> 117 & 255) / 255.0F;
-        float var7 = (float)(var3 >> 255 & 255) / 255.0F;
-        
-        var5 = 0/255.0F;
-        var6 = 98/255.0F;
-        var7 = 73/255.0F;
+        float var5 = 0/255.0F;
+        float var6 = 98/255.0F;
+        float var7 = 73/255.0F;
         
         var5 *= var4 * 0.0F + 0.15F;
         var6 *= var4 * 0.0F + 0.15F;
         var7 *= var4 * 0.0F + 0.15F;
-        return this.worldObj.getWorldVec3Pool().getVecFromPool((double)var5, (double)var6, (double)var7);
+        return Vec3.createVectorHelper((double)var5, (double)var6, (double)var7);
     }
 
     @SideOnly(Side.CLIENT)
@@ -140,7 +103,7 @@ public class WorldProviderWyvernEnd extends WorldProvider
      */
     public boolean isSurfaceWorld()
     {
-        return true;
+        return false;
     }
 
     @SideOnly(Side.CLIENT)
@@ -158,8 +121,7 @@ public class WorldProviderWyvernEnd extends WorldProvider
      */
     public boolean canCoordinateBeSpawn(int par1, int par2)
     {
-        int var3 = this.worldObj.getFirstUncoveredBlock(par1, par2);
-        return var3 == 0 ? false : Block.blocksList[var3].blockMaterial.blocksMovement();
+        return this.worldObj.getTopBlock(par1, par2).getMaterial().blocksMovement();
     }
 
     /**
@@ -176,7 +138,7 @@ public class WorldProviderWyvernEnd extends WorldProvider
     @Override
     public String getWelcomeMessage()
     {
-    	return "Entering the Wyvern Lair";
+        return "Entering the Wyvern Lair";
     }
     /**
      * Gets the hard-coded portal location to use when entering this dimension.
@@ -198,7 +160,7 @@ public class WorldProviderWyvernEnd extends WorldProvider
      */
     public boolean doesXZShowFog(int par1, int par2)
     {
-        return true;//true;
+        return true;
     }
 
     /**
@@ -208,76 +170,21 @@ public class WorldProviderWyvernEnd extends WorldProvider
     {
         return "Wyvern Lair";
     }
-    
-//    @SideOnly(Side.CLIENT)
-//    @Override
-//        public void setSkyRenderer(IRenderHandler skyRenderer)
-//        {
-//            this.skyRenderer = skyRenderer;
-//       }
-    
-    
-    
-	 public String getSunTexture()
-	 {
-		 return "/mocreatures.twinsuns.png";//"/sunRed.png";
-	 }
 
-	 /*public String getMoonTexture()
-	 {
-	 return "/moonGreen.png";
-	 }*/
+     public String getSunTexture()
+     {
+         return "/mocreatures.twinsuns.png";
+     }
 
-	 public boolean renderStars()
-	 {
-	 return true;
-	 }
-	 
-	 public boolean renderClouds()
-	 {
-	 return true;
-	 }
+    @Override
+    public String getSaveFolder()
+    {
+        return "MoCWyvernLair";
+    }
 
-	 //not active?
-	
-	 public boolean renderVoidFog()
-	 {
-		 return false;
-	 }
-
-	 public boolean renderEndSky()
-	 {
-	 return false;
-	 }
-	
-	
-	 public float setSunSize()
-	 {
-	 return 10.0F;
-	 }
-
-	 
-	 public float setMoonSize()
-	 {
-	 return 0.5F;
-	 }
-	 
-	 public float getStarBrightness(World world, float f)
-	    {
-	        return 1.0F;
-	    }
-	    
-	    
-	 
-	@Override
-		 public String getSaveFolder()
-		 {
-		        return "MoCWyvernLair";
-		 }
-		 
-		@Override
-		public double getMovementFactor()
-	    {
-			return 1.0;
-	    }
+    @Override
+    public double getMovementFactor()
+    {
+        return 1.0;
+    }
 }

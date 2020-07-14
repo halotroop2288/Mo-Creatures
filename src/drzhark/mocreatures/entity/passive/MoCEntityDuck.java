@@ -1,10 +1,11 @@
 package drzhark.mocreatures.entity.passive;
 
-import drzhark.mocreatures.MoCreatures;
-import drzhark.mocreatures.entity.MoCEntityAnimal;
+import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.world.World;
-
+import drzhark.mocreatures.MoCreatures;
+import drzhark.mocreatures.entity.MoCEntityAnimal;
 
 public class MoCEntityDuck extends MoCEntityAnimal//EntityChicken
 {
@@ -18,46 +19,41 @@ public class MoCEntityDuck extends MoCEntityAnimal//EntityChicken
     public MoCEntityDuck(World world)
     {
         super(world);
-        texture = MoCreatures.proxy.MODEL_TEXTURE + "duck.png";
+        texture = "duck.png";
         setSize(0.3F, 0.4F);
-        health = 4;
-        //timeUntilNextEgg = rand.nextInt(6000) + 6000;
+        //health = 4;
     }
 
-    @Override
-    public boolean getCanSpawnHere()
+    protected void applyEntityAttributes()
     {
-        return (MoCreatures.proxy.getFrequency(this.getEntityName()) > 0) && super.getCanSpawnHere();
-    }
-
-    @Override
-    public int getMaxHealth()
-    {
-        return 4;
+        super.applyEntityAttributes();
+        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(4.0D);
     }
 
     @Override
     protected String getDeathSound()
     {
-        return "duckhurt";
+        return "mocreatures:duckhurt";
     }
 
     @Override
     protected String getHurtSound()
     {
-        return "duckhurt";
+        return "mocreatures:duckhurt";
     }
 
     @Override
     protected String getLivingSound()
     {
-        return "duck";
+        return "mocreatures:duck";
     }
 
     @Override
     protected boolean canDespawn()
     {
-        return true;
+        if (MoCreatures.proxy.forceDespawns)
+            return !getIsTamed();
+        else return false;
     }
 
     @Override
@@ -91,30 +87,16 @@ public class MoCEntityDuck extends MoCEntityAnimal//EntityChicken
         }
 
         this.field_70886_e += this.field_70889_i * 2.0F;
-
-    }
-
-    /*@Override
-    public void readEntityFromNBT(NBTTagCompound nbttagcompound)
-    {
-        super.readEntityFromNBT(nbttagcompound);
     }
 
     @Override
-    public void setEntityDead()
+    protected void fall(float f)
     {
-        super.setEntityDead();
     }
 
     @Override
-    public void writeEntityToNBT(NBTTagCompound nbttagcompound)
+    protected Item getDropItem()
     {
-        super.writeEntityToNBT(nbttagcompound);
-    }*/
-
-    @Override
-    protected int getDropItemId()
-    {
-        return Item.feather.itemID;
+        return Items.feather;
     }
 }

@@ -1,11 +1,10 @@
 package drzhark.mocreatures.item;
 
-
 public class MoCItemHayStack extends MoCItem {
 
-    public MoCItemHayStack(int i)
+    public MoCItemHayStack(String name)
     {
-        super(i);
+        super(name);
         maxStackSize = 16;
     }
 }

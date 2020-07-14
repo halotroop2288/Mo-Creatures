@@ -1,13 +1,11 @@
 package drzhark.mocreatures.client.renderer.entity;
 
 import net.minecraft.client.renderer.entity.RenderLiving;
-import net.minecraft.entity.EntityLiving;
-
-import org.lwjgl.opengl.GL11;
-
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.ResourceLocation;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import drzhark.mocreatures.client.MoCClientProxy;
 import drzhark.mocreatures.client.model.MoCModelLitterBox;
 import drzhark.mocreatures.entity.item.MoCEntityLitterBox;
 
@@ -23,15 +21,13 @@ public class MoCRenderLitterBox extends RenderLiving {
     }
 
     @Override
-    protected void preRenderCallback(EntityLiving entityliving, float f)
+    protected void preRenderCallback(EntityLivingBase entityliving, float f)
     {
         MoCEntityLitterBox entitylitterbox = (MoCEntityLitterBox) entityliving;
         litterbox.usedlitter = entitylitterbox.getUsedLitter();
-        /*if (entityliving.ridingEntity == MoCClientProxy.mc.thePlayer)
-        {
+    }
 
-            GL11.glTranslatef(0.0F, 1.1F, 0.0F);
-
-        }*/
+    protected ResourceLocation getEntityTexture(Entity par1Entity) {
+        return ((MoCEntityLitterBox)par1Entity).getTexture();
     }
 }

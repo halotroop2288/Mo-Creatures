@@ -3,7 +3,7 @@ package drzhark.mocreatures.entity.item;
 import java.util.List;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
@@ -69,12 +69,12 @@ public class MoCEntityPlatform extends Entity {
     {
     }
 
-    private EntityLiving getMaster()
+    private EntityLivingBase getMaster()
     {
         List<Entity> entityList = worldObj.loadedEntityList;
         for (Entity ent : entityList)
         {
-            if (ent.entityId == mastersID && ent instanceof EntityLiving) { return (EntityLiving) ent; }
+            if (ent.getEntityId() == mastersID && ent instanceof EntityLivingBase) { return (EntityLivingBase) ent; }
         }
 
         return null;
@@ -83,19 +83,16 @@ public class MoCEntityPlatform extends Entity {
     @Override
     public void onUpdate()
     {
-        EntityLiving master = getMaster();
+        EntityLivingBase master = getMaster();
         if (master == null || this.riddenByEntity == null)
         {
             if (MoCreatures.isServer())
             {
-                //System.out.println("killing platform " + this.entityId);
                 this.setDead();
-
             }
             return;
         }
 
-        
         if (this.riddenByEntity != null && this.riddenByEntity instanceof EntityPlayer && ((EntityPlayer)riddenByEntity).isSneaking() && ++mountCount > 10)
         {
             riddenByEntity.mountEntity(null);
@@ -104,13 +101,10 @@ public class MoCEntityPlatform extends Entity {
            
         }
         yOffset = master.getMountedYOffset() * 0.7D;//1.8D;
-        //zOffset = 1.25D;
         this.rotationYaw = master.renderYawOffset;
         double newPosX = master.posX + (zOffset * Math.cos((MoCTools.realAngle(master.renderYawOffset - 90F)) / 57.29578F));
         double newPosZ = master.posZ + (zOffset * Math.sin((MoCTools.realAngle(master.renderYawOffset - 90F)) / 57.29578F));
         setLocationAndAngles(newPosX, master.posY + yOffset, newPosZ, master.rotationYaw, master.rotationPitch);
-        
-
     }
 
     public void setYOffset(double yOff)
@@ -140,8 +134,6 @@ public class MoCEntityPlatform extends Entity {
         }
     }
 
-    
-
     /**
      * (abstract) Protected helper method to write subclass entity data to NBT.
      */
@@ -157,5 +149,4 @@ public class MoCEntityPlatform extends Entity {
     protected void readEntityFromNBT(NBTTagCompound par1NBTTagCompound)
     {
     }
-
 }

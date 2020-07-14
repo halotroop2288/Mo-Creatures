@@ -2,25 +2,29 @@ package drzhark.mocreatures.client.renderer.entity;
 
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.entity.RenderLiving;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import drzhark.mocreatures.client.model.MoCModelJellyFish;
-import drzhark.mocreatures.entity.passive.MoCEntityJellyFish;
+import drzhark.mocreatures.entity.aquatic.MoCEntityJellyFish;
 
 @SideOnly(Side.CLIENT)
 public class MoCRenderJellyFish extends RenderLiving {
+
+    float depth = 0F;
+
     public MoCRenderJellyFish(ModelBase modelbase, float f)
     {
         super(modelbase, f);
-        tempJellyFish = (MoCModelJellyFish) modelbase;
     }
 
     @Override
-    protected void preRenderCallback(EntityLiving entityliving, float f)
+    protected void preRenderCallback(EntityLivingBase entityliving, float f)
     {
         GL11.glTranslatef(0.0F, depth, 0.0F);
         MoCEntityJellyFish jelly = (MoCEntityJellyFish) entityliving;
@@ -48,12 +52,10 @@ public class MoCRenderJellyFish extends RenderLiving {
     }
 
     @Override
-    public void doRenderLiving(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
+    public void doRender(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
     {
         MoCEntityJellyFish entityjellyfish = (MoCEntityJellyFish) entityliving;
         boolean flag = entityjellyfish.isGlowing();
-        //flag = true;
-        //tempJellyFish.typeInt = entityray.type;
 
         if (!entityjellyfish.isSwimming())
         {
@@ -77,22 +79,12 @@ public class MoCRenderJellyFish extends RenderLiving {
             GL11.glBlendFunc(770, 1);
             //GL11.glBlendFunc(770, GL11.GL_ONE);
         }
-        super.doRenderLiving(entityliving, d, d1, d2, f, f1);
+        super.doRender(entityliving, d, d1, d2, f, f1);
         GL11.glDisable(3042/*GL_BLEND*/);
         GL11.glPopMatrix();
 
     }
 
-    /*@Override
-    protected float handleRotationFloat(EntityLiving entityliving, float f)
-    {
-        MoCEntityJellyFish entityjellyfish = (MoCEntityJellyFish) entityliving;
-        //if(!entityjellyfish.getIsAdult())
-        //{
-            stretch(entityjellyfish);
-        //}
-        return entityliving.ticksExisted + f;
-    }*/
 
     protected void stretch(MoCEntityJellyFish entityjellyfish)
     {
@@ -112,6 +104,7 @@ public class MoCRenderJellyFish extends RenderLiving {
         GL11.glScalef(scale, scale2, scale);
     }
 
-    private final MoCModelJellyFish tempJellyFish;
-    float depth = 0F;
+    protected ResourceLocation getEntityTexture(Entity par1Entity) {
+        return ((MoCEntityJellyFish)par1Entity).getTexture();
+    }
 }

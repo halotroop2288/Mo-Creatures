@@ -1,53 +1,35 @@
 package drzhark.mocreatures.item;
 
+import net.minecraft.client.renderer.texture.IIconRegister;
+import net.minecraft.item.ItemFood;
+import cpw.mods.fml.common.registry.GameRegistry;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
-import net.minecraft.client.renderer.texture.IconRegister;
-import net.minecraft.item.ItemFood;
+import drzhark.mocreatures.MoCreatures;
 
-public class MoCItemFood extends ItemFood //implements ITextureProvider
+public class MoCItemFood extends ItemFood
 {
 
-    //private int healInt;
-
-    public MoCItemFood(int i, int j)
+    public MoCItemFood(String name, int j)
     {
-        super(i, j, 0.6F, false);
+        super(j, 0.6F, false);
+        this.setCreativeTab(MoCreatures.tabMoC);
+        this.setUnlocalizedName(name);
+        GameRegistry.registerItem(this, name);
         maxStackSize = 32;
-        //this.field_35430_a = 32;
-        //healInt = j;
     }
 
-    public MoCItemFood(int i, int j, float f, boolean flag)
+    public MoCItemFood(String name, int j, float f, boolean flag)
     {
-        super(i, j, f, flag);
+        super(j, f, flag);
+        this.setCreativeTab(MoCreatures.tabMoC);
+        this.setUnlocalizedName(name);
+        GameRegistry.registerItem(this, name);
     }
 
-    /*@Override
-    public ItemStack onItemRightClick(ItemStack itemstack, World world, EntityPlayer entityplayer)
-    {
-        itemstack.stackSize--;
-        entityplayer.heal(healInt);
-        return itemstack;
-    }*/
-
-    /*public String getTextureFile()
-    {
-        return "/mocreatures/items.png";
-    }*/
-    
     @SideOnly(Side.CLIENT)
-    public void registerIcons(IconRegister par1IconRegister)
+    public void registerIcons(IIconRegister par1IconRegister)
     {
         this.itemIcon = par1IconRegister.registerIcon("mocreatures"+ this.getUnlocalizedName().replaceFirst("item.", ":"));
     }
-
-    /*public ItemFood(int par1, int par2, float par3, boolean par4)
-    {
-        super(par1);
-        this.field_35430_a = 32;
-        this.healAmount = par2;
-        this.isWolfsFavoriteMeat = par4;
-        this.saturationModifier = par3;
-    }*/
 }

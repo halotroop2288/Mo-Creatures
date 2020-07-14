@@ -4,14 +4,17 @@ import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.entity.RenderLiving;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import drzhark.mocreatures.MoCreatures;
-import drzhark.mocreatures.entity.passive.MoCEntityDolphin;
+import drzhark.mocreatures.entity.aquatic.MoCEntityDolphin;
 
 @SideOnly(Side.CLIENT)
 public class MoCRenderDolphin extends RenderLiving {
@@ -22,10 +25,10 @@ public class MoCRenderDolphin extends RenderLiving {
     }
 
     @Override
-    public void doRenderLiving(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
+    public void doRender(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
     {
         MoCEntityDolphin entitydolphin = (MoCEntityDolphin) entityliving;
-        super.doRenderLiving(entitydolphin, d, d1, d2, f, f1);
+        super.doRender(entitydolphin, d, d1, d2, f, f1);
         boolean flag = MoCreatures.proxy.getDisplayPetName() && !(entitydolphin.getName()).isEmpty();
         boolean flag1 = MoCreatures.proxy.getDisplayPetHealth();
         //boolean flag2 = MoCreatures.proxy.getdisplayPetIcons();
@@ -104,10 +107,10 @@ public class MoCRenderDolphin extends RenderLiving {
         }
     }
 
-    public void doRenderLiving2(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
+    public void doRender2(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
     {
         MoCEntityDolphin entitydolphin = (MoCEntityDolphin) entityliving;
-        super.doRenderLiving(entitydolphin, d, d1, d2, f, f1);
+        super.doRender(entitydolphin, d, d1, d2, f, f1);
         if (entitydolphin.renderName())
         {
             float f2 = 1.6F;
@@ -170,7 +173,7 @@ public class MoCRenderDolphin extends RenderLiving {
     }
 
     @Override
-    protected float handleRotationFloat(EntityLiving entityliving, float f)
+    protected float handleRotationFloat(EntityLivingBase entityliving, float f)
     {
         stretch((MoCEntityDolphin) entityliving);
         return entityliving.ticksExisted + f;
@@ -179,5 +182,10 @@ public class MoCRenderDolphin extends RenderLiving {
     protected void stretch(MoCEntityDolphin entitydolphin)
     {
         GL11.glScalef(entitydolphin.getEdad() * 0.01F, entitydolphin.getEdad() * 0.01F, entitydolphin.getEdad() * 0.01F);
+    }
+
+
+    protected ResourceLocation getEntityTexture(Entity par1Entity) {
+        return ((MoCEntityDolphin)par1Entity).getTexture();
     }
 }

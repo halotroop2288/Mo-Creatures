@@ -1,17 +1,21 @@
 package drzhark.mocreatures.client.renderer.entity;
 
 import net.minecraft.client.model.ModelBase;
-import net.minecraft.entity.EntityLiving;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
+import drzhark.mocreatures.client.MoCClientProxy;
 import drzhark.mocreatures.client.model.MoCModelGolem;
 import drzhark.mocreatures.entity.monster.MoCEntityGolem;
 
 @SideOnly(Side.CLIENT)
-public class MoCRenderGolem extends MoCRenderAnimal {
+public class MoCRenderGolem extends MoCRenderMoC {
 
     private final ModelBase MoCModelG = new MoCModelGolem();
 
@@ -27,8 +31,8 @@ public class MoCRenderGolem extends MoCRenderAnimal {
     {
         boolean depth = true;
 
-        String effectTexture = par1Entity.getEffectTexture();
-        if (effectTexture != null)//(!effectTexture.isEmpty())//(par1Entity.getPowered())
+        ResourceLocation effectTexture = par1Entity.getEffectTexture();
+        if (effectTexture != null)
         {
             if (depth)
             {
@@ -42,8 +46,7 @@ public class MoCRenderGolem extends MoCRenderAnimal {
             if (par2 == 1)
             {
                 float var4 = (float) par1Entity.ticksExisted + par3;
-                //this.loadTexture("/armor/golemeffect.png");
-                this.loadTexture(effectTexture);
+                this.bindTexture(effectTexture);
                 GL11.glMatrixMode(GL11.GL_TEXTURE);
                 GL11.glLoadIdentity();
                 float var5 = var4 * 0.01F;
@@ -76,28 +79,12 @@ public class MoCRenderGolem extends MoCRenderAnimal {
      * Queries whether should render the specified pass or not.
      */
     @Override
-    protected int shouldRenderPass(EntityLiving par1EntityLiving, int par2, float par3)
+    protected int shouldRenderPass(EntityLivingBase par1EntityLiving, int par2, float par3)
     {
         return this.renderGPassModel((MoCEntityGolem) par1EntityLiving, par2, par3);
     }
 
-    @Override
-    protected void preRenderCallback(EntityLiving entityliving, float f)
-    {
-        MoCEntityGolem mocreature = (MoCEntityGolem) entityliving;
-        adjustTilt(mocreature);
-        super.preRenderCallback(entityliving, f);
-
+    protected ResourceLocation getEntityTexture(Entity par1Entity) {
+        return ((MoCEntityGolem)par1Entity).getTexture();
     }
-
-    protected void adjustTilt(MoCEntityGolem mocreature)
-    {
-        int i = mocreature.tiltOffset();
-
-        if (i != 0)
-        {
-            GL11.glRotatef((float) i * 10F, 0F, 0F, -1F);
-        }
-    }
-
 }

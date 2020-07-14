@@ -2,7 +2,10 @@ package drzhark.mocreatures.client.renderer.entity;
 
 import net.minecraft.block.material.Material;
 import net.minecraft.client.model.ModelBase;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
@@ -11,12 +14,16 @@ import cpw.mods.fml.relauncher.SideOnly;
 import drzhark.mocreatures.entity.passive.MoCEntitySnake;
 
 @SideOnly(Side.CLIENT)
-public class MoCRenderSnake extends MoCRenderAnimal {
+public class MoCRenderSnake extends MoCRenderMoC {
 
     public MoCRenderSnake(ModelBase modelbase, float f)
     {
         super(modelbase, 0.0F);
         //tempSnake = (MoCModelSnake) modelbase;
+    }
+
+    protected ResourceLocation getEntityTexture(Entity par1Entity) {
+        return ((MoCEntitySnake)par1Entity).getTexture();
     }
 
     protected void adjustHeight(EntityLiving entityliving, float FHeight)
@@ -25,7 +32,7 @@ public class MoCRenderSnake extends MoCRenderAnimal {
     }
 
     @Override
-    protected void preRenderCallback(EntityLiving entityliving, float f)
+    protected void preRenderCallback(EntityLivingBase entityliving, float f)
     {
         MoCEntitySnake entitysnake = (MoCEntitySnake) entityliving;
         stretch(entitysnake);

@@ -1,13 +1,11 @@
 package drzhark.mocreatures.entity.monster;
 
-
-
-import drzhark.mocreatures.MoCreatures;
-import drzhark.mocreatures.entity.MoCEntityMob;
-import net.minecraft.entity.Entity;
+import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
+import drzhark.mocreatures.entity.MoCEntityMob;
 
 public class MoCEntityWraith extends MoCEntityMob//MoCEntityFlyerMob
 {
@@ -15,12 +13,17 @@ public class MoCEntityWraith extends MoCEntityMob//MoCEntityFlyerMob
     {
         super(world);
         isCollidedVertically = false;
-        texture = MoCreatures.proxy.MODEL_TEXTURE + "wraith.png";
+        texture = "wraith.png";
         setSize(1.5F, 1.5F);
         isImmuneToFire = false;
-        //attackStrength = 2;
-        health = 10;
-        //moveSpeed = 1.3F;
+        //health = 10;
+    }
+
+    protected void applyEntityAttributes()
+    {
+        super.applyEntityAttributes();
+        this.getEntityAttribute(SharedMonsterAttributes.attackDamage).setBaseValue(worldObj.difficultySetting.getDifficultyId() == 1 ? 2.0D : 3.0D); // setAttackStrength
+        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(10.0D);
     }
 
     public boolean d2()
@@ -29,35 +32,27 @@ public class MoCEntityWraith extends MoCEntityMob//MoCEntityFlyerMob
     }
 
     @Override
-    public boolean getCanSpawnHere()
-    {
-        return (MoCreatures.proxy.getFrequency(this.getEntityName()) > 0)
-        //&& (worldObj.difficultySetting >= (((Integer) MoCreatures.wraithSpawnDifficulty.get()).intValue() + 1)) 
-        && super.getCanSpawnHere();
-    }
-
-    @Override
     protected String getDeathSound()
     {
-        return "wraithdying";
+        return "mocreatures:wraithdying";
     }
 
     @Override
-    protected int getDropItemId()
+    protected Item getDropItem()
     {
-        return Item.gunpowder.itemID;
+        return Items.gunpowder;
     }
 
     @Override
     protected String getHurtSound()
     {
-        return "wraithhurt";
+        return "mocreatures:wraithhurt";
     }
 
     @Override
     protected String getLivingSound()
     {
-        return "wraith";
+        return "mocreatures:wraith";
     }
 
     @Override
@@ -85,21 +80,8 @@ public class MoCEntityWraith extends MoCEntityMob//MoCEntityFlyerMob
     }
 
     @Override
-    public int getMaxHealth()
-    {
-        return 10;
-    }
-
-    @Override
     public float getMoveSpeed()
     {
         return 1.3F;
-    }
-
-    @Override
-    public int getAttackStrength(Entity par1Entity)
-    {
-        if (worldObj.difficultySetting == 1) { return 2; }
-        return 3;
     }
 }

@@ -1,38 +1,23 @@
 package drzhark.mocreatures.item;
 
-import drzhark.mocreatures.MoCreatures;
-import drzhark.mocreatures.entity.item.MoCEntityKittyBed;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
+import drzhark.mocreatures.MoCreatures;
+import drzhark.mocreatures.entity.item.MoCEntityKittyBed;
 
 public class MoCItemKittyBed extends MoCItem {
 
-    public int itemcolor;
-
-    public MoCItemKittyBed(int i)
+    public MoCItemKittyBed(String name)
     {
-        super(i);
+        super(name);
         maxStackSize = 8;
-        setHasSubtypes(true);
-    }
-
-    public MoCItemKittyBed(int i, int j)
-    {
-        this(i);
-        itemcolor = j;
-    }
-
-    @Override
-    public String getUnlocalizedName(ItemStack itemstack)
-    {
-        return (new StringBuilder()).append(super.getUnlocalizedName()).append(".").append(itemstack.getItemDamage()).toString();
+        //setHasSubtypes(true);
     }
 
     @Override
     public ItemStack onItemRightClick(ItemStack itemstack, World world, EntityPlayer entityplayer)
     {
-
         if (MoCreatures.isServer())
         {
             itemstack.stackSize--;
@@ -45,5 +30,4 @@ public class MoCItemKittyBed extends MoCItem {
         }
         return itemstack;
     }
-
 }

@@ -1,8 +1,11 @@
 package drzhark.mocreatures.client.renderer.entity;
 
 import net.minecraft.client.model.ModelBase;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.MathHelper;
+import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
@@ -11,7 +14,11 @@ import cpw.mods.fml.relauncher.SideOnly;
 import drzhark.mocreatures.entity.passive.MoCEntityBird;
 
 @SideOnly(Side.CLIENT)
-public class MoCRenderBird extends MoCRenderAnimal {
+public class MoCRenderBird extends MoCRenderMoC {
+
+    protected ResourceLocation getEntityTexture(Entity par1Entity) {
+        return ((MoCEntityBird)par1Entity).getTexture();
+    }
 
     public MoCRenderBird(ModelBase modelbase, float f)
     {
@@ -19,7 +26,7 @@ public class MoCRenderBird extends MoCRenderAnimal {
     }
 
     @Override
-    public void doRenderLiving(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
+    public void doRender(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
     {
 
         /*if (!worldObj.multiplayerWorld)
@@ -28,12 +35,12 @@ public class MoCRenderBird extends MoCRenderAnimal {
         {
             entitybird.chooseType();
         }*/
-        super.doRenderLiving(entityliving, d, d1, d2, f, f1);
+        super.doRender(entityliving, d, d1, d2, f, f1);
 
     }
 
     @Override
-    protected float handleRotationFloat(EntityLiving entityliving, float f)
+    protected float handleRotationFloat(EntityLivingBase entityliving, float f)
     {
         MoCEntityBird entitybird = (MoCEntityBird) entityliving;
         float f1 = entitybird.winge + ((entitybird.wingb - entitybird.winge) * f);
@@ -42,7 +49,7 @@ public class MoCRenderBird extends MoCRenderAnimal {
     }
 
     @Override
-    protected void preRenderCallback(EntityLiving entityliving, float f)
+    protected void preRenderCallback(EntityLivingBase entityliving, float f)
     {
         if (!entityliving.worldObj.isRemote && (entityliving.ridingEntity != null))
         {

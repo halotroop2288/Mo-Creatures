@@ -1,6 +1,9 @@
 package drzhark.mocreatures.client.renderer.entity;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.opengl.GL11;
 
@@ -11,21 +14,22 @@ import drzhark.mocreatures.client.model.MoCModelScorpion;
 import drzhark.mocreatures.entity.monster.MoCEntityScorpion;
 
 @SideOnly(Side.CLIENT)
-public class MoCRenderScorpion extends MoCRenderAnimal {
+public class MoCRenderScorpion extends MoCRenderMoC {
+
     public MoCRenderScorpion(MoCModelScorpion modelbase, float f)
     {
         super(modelbase, f);
     }
 
     @Override
-    public void doRenderLiving(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
+    public void doRender(EntityLiving entityliving, double d, double d1, double d2, float f, float f1)
     {
         MoCEntityScorpion entityscorpion = (MoCEntityScorpion) entityliving;
-        super.doRenderLiving(entityscorpion, d, d1, d2, f, f1);
+        super.doRender(entityscorpion, d, d1, d2, f, f1);
     }
 
     @Override
-    protected void preRenderCallback(EntityLiving entityliving, float f)
+    protected void preRenderCallback(EntityLivingBase entityliving, float f)
     {
         MoCEntityScorpion entityscorpion = (MoCEntityScorpion) entityliving;
 
@@ -67,7 +71,7 @@ public class MoCRenderScorpion extends MoCRenderAnimal {
 
     protected void adjustHeight(EntityLiving entityliving)
     {
-        GL11.glTranslatef(0.0F, -0.2F, 0.0F);
+        GL11.glTranslatef(0.0F, -0.1F, 0.0F);
     }
 
     protected void rotateAnimal(EntityLiving entityliving)
@@ -86,4 +90,7 @@ public class MoCRenderScorpion extends MoCRenderAnimal {
         GL11.glScalef(f, f, f);
     }
 
+    protected ResourceLocation getEntityTexture(Entity par1Entity) {
+        return ((MoCEntityScorpion)par1Entity).getTexture();
+    }
 }
