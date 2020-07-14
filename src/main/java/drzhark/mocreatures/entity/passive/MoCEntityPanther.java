@@ -22,13 +22,9 @@ public class MoCEntityPanther extends MoCEntityNewBigCat {
             case 1:
                 return MoCreatures.proxy.getTexture("BCpuma.png");
             case 2:
-                return MoCreatures.proxy.getTexture("BCpuma.png"); //winged panther
+                return MoCreatures.proxy.getTexture("BCpuma.png");
             case 3:
-                return MoCreatures.proxy.getTexture("BCpanthard.png"); //panther X leopard
-            case 4:
-                return MoCreatures.proxy.getTexture("BCpanthger.png"); //panther X tiger
-            case 5:
-                return MoCreatures.proxy.getTexture("BClither.png"); //panther X lion
+                return MoCreatures.proxy.getTexture("BCpanthard.png");
             default:
                 return MoCreatures.proxy.getTexture("BCpuma.png");
         }
@@ -86,21 +82,13 @@ public class MoCEntityPanther extends MoCEntityNewBigCat {
         if (mate instanceof MoCEntityLeopard && ((MoCEntityLeopard) mate).getType() == 1) {
             return 3; //panthard
         }
-        if (mate instanceof MoCEntityTiger && ((MoCEntityTiger) mate).getType() == 1) {
-            return 4; //panthger
-        }
-        if (mate instanceof MoCEntityLion && ((MoCEntityLion) mate).getType() == 2) {
-            return 5; //lither
-        }
         return 1;
     }
 
     @Override
     public boolean compatibleMate(Entity mate) {
         return (mate instanceof MoCEntityLeopard && ((MoCEntityLeopard) mate).getType() == 1)
-                || (mate instanceof MoCEntityPanther && ((MoCEntityPanther) mate).getType() == 1)
-                || (mate instanceof MoCEntityTiger && ((MoCEntityTiger) mate).getType() == 1)
-                || (mate instanceof MoCEntityLion && ((MoCEntityLion) mate).getType() == 2);
+                || (mate instanceof MoCEntityPanther && ((MoCEntityPanther) mate).getType() == 1);
     }
 
     @Override
@@ -120,8 +108,7 @@ public class MoCEntityPanther extends MoCEntityNewBigCat {
 
     @Override
     public int getMaxEdad() {
-        if (getType() >= 4) return 110;
-    	return 100;
+        return 100;
     }
 
     @Override

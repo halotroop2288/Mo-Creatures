@@ -35,7 +35,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.pathfinding.PathNavigateGround;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
@@ -87,8 +87,8 @@ public class MoCEntityNewBigCat extends MoCEntityTameableAnimal {
         super.applyEntityAttributes();
         this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(40D);
         this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.25D);
-        this.getAttributeMap().registerAttribute(SharedMonsterAttributes.attackDamage);
-        this.getEntityAttribute(SharedMonsterAttributes.attackDamage).setBaseValue(5.0D);
+        this.getAttributeMap().registerAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
+        this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(5.0D);
         this.getEntityAttribute(SharedMonsterAttributes.followRange).setBaseValue(8.0D);
     }
 
@@ -99,7 +99,7 @@ public class MoCEntityNewBigCat extends MoCEntityTameableAnimal {
     public void selectType() {
         this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(calculateMaxHealth());
         this.setHealth(getMaxHealth());
-        this.getEntityAttribute(SharedMonsterAttributes.attackDamage).setBaseValue(calculateAttackDmg());
+        this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(calculateAttackDmg());
         this.getEntityAttribute(SharedMonsterAttributes.followRange).setBaseValue(getAttackRange());
         if (getIsAdult()) {
             setEdad(getMaxEdad());
@@ -323,6 +323,7 @@ public class MoCEntityNewBigCat extends MoCEntityTameableAnimal {
             }
         }
         super.onDeath(damagesource);
+
     }
 
     public void spawnGhost() {
@@ -378,11 +379,6 @@ public class MoCEntityNewBigCat extends MoCEntityTameableAnimal {
                     setEdad(getMaxEdad());
                     setAdult(true);
                 }
-            }
-            
-            if (!getIsGhost() && getEdad() <10)
-            {
-            	this.setDead();
             }
 
             /*if (getHasEaten() && rand.nextInt(300) == 0)
@@ -525,7 +521,7 @@ public class MoCEntityNewBigCat extends MoCEntityTameableAnimal {
 
     @Override
     public boolean readytoBreed() {
-        return this.riddenByEntity == null && this.ridingEntity == null && this.getIsTamed() && this.getHasEaten() && this.getIsAdult()
+        return this.riddenByEntity == null && this.getRidingEntity() == null && this.getIsTamed() && this.getHasEaten() && this.getIsAdult()
                 && !this.getIsGhost();
     }
 
@@ -579,8 +575,7 @@ public class MoCEntityNewBigCat extends MoCEntityTameableAnimal {
         nbttagcompound.setBoolean("Saddle", getIsRideable());
         nbttagcompound.setBoolean("Sitting", getIsSitting());
         nbttagcompound.setBoolean("Chested", getIsChested());
-        nbttagcompound.setBoolean("Ghost", getIsGhost());
-        nbttagcompound.setBoolean("Amulet", getHasAmulet());
+
         if (getIsChested() && this.localchest != null) {
             NBTTagList nbttaglist = new NBTTagList();
             for (int i = 0; i < this.localchest.getSizeInventory(); i++) {
@@ -604,8 +599,7 @@ public class MoCEntityNewBigCat extends MoCEntityTameableAnimal {
         setRideable(nbttagcompound.getBoolean("Saddle"));
         setSitting(nbttagcompound.getBoolean("Sitting"));
         setIsChested(nbttagcompound.getBoolean("Chested"));
-        setIsGhost(nbttagcompound.getBoolean("Ghost"));
-        setHasAmulet(nbttagcompound.getBoolean("Amulet"));
+
         if (getIsChested()) {
             NBTTagList nbttaglist = nbttagcompound.getTagList("Items", 10);
             this.localchest = new MoCAnimalChest("BigCatChest", 18);
@@ -724,7 +718,7 @@ public class MoCEntityNewBigCat extends MoCEntityTameableAnimal {
                     this.worldObj.getBlockState(
                             new BlockPos(MathHelper.floor_double(this.posX), MathHelper.floor_double(this.posY - 0.20000000298023221D
                                     - this.prevRotationPitch), MathHelper.floor_double(this.posZ))).getBlock();
-            if (block != Blocks.air) {
+            if (block != Blocks.AIR) {
                 SoundType stepsound = block.stepSound;
                 this.worldObj.playSoundAtEntity(this, stepsound.getStepSound(), stepsound.getVolume() * 0.5F, stepsound.getFrequency() * 0.75F);
             }

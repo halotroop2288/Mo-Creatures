@@ -25,10 +25,10 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.MathHelper;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.BiomeGenBase;
+import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
@@ -63,8 +63,8 @@ public class MoCEntityBear extends MoCEntityTameableAnimal {
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
         this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(30D);
-        this.getAttributeMap().registerAttribute(SharedMonsterAttributes.attackDamage);
-        this.getEntityAttribute(SharedMonsterAttributes.attackDamage).setBaseValue(2.0D);
+        this.getAttributeMap().registerAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
+        this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(2.0D);
         this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.25D);
     }
 
@@ -106,7 +106,7 @@ public class MoCEntityBear extends MoCEntityTameableAnimal {
                 setType(3);
             }
             this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(calculateMaxHealth());
-            this.getEntityAttribute(SharedMonsterAttributes.attackDamage).setBaseValue(getAttackStrength());
+            this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(getAttackStrength());
             this.setHealth(getMaxHealth());
         }
     }
@@ -234,7 +234,7 @@ public class MoCEntityBear extends MoCEntityTameableAnimal {
     public boolean attackEntityFrom(DamageSource damagesource, float i) {
         if (super.attackEntityFrom(damagesource, i)) {
             Entity entity = damagesource.getEntity();
-            if ((this.riddenByEntity == entity) || (this.ridingEntity == entity)) {
+            if ((this.riddenByEntity == entity) || (this.getRidingEntity() == entity)) {
                 return true;
             }
             if (entity != this && entity instanceof EntityLivingBase && super.shouldAttackPlayers() && this.getType() != 3) {
@@ -271,26 +271,26 @@ public class MoCEntityBear extends MoCEntityTameableAnimal {
         /**
          * panda bears and cubs will sit down every now and then
          */
-        if ((MoCreatures.isServer()) && !getIsTamed() && (getType() == 3 || (!getIsAdult() && getEdad() < 60)) && (this.rand.nextInt(300) == 0)) {
+        if ((MoCreatures.isServer()) && (getType() == 3 || (!getIsAdult() && getEdad() < 60)) && (this.rand.nextInt(300) == 0)) {
             setBearState(2);
         }
 
         /**
-         * Sitting non tamed bears will resume on fours stance every now and then
+         * Sitting bears will resume on fours stance every now and then
          */
-        if ((MoCreatures.isServer()) && (getBearState() == 2) && !getIsTamed() && (this.rand.nextInt(800) == 0)) {
+        if ((MoCreatures.isServer()) && (getBearState() == 2) && (this.rand.nextInt(800) == 0)) {
             setBearState(0);
         }
 
-        if ((MoCreatures.isServer()) && (getBearState() == 2) && !getIsTamed() && !this.getNavigator().noPath()) {
+        if ((MoCreatures.isServer()) && (getBearState() == 2) && !this.getNavigator().noPath()) {
             setBearState(0);
         }
 
         /**
-         * Adult non tamed non panda bears will stand on hind legs if close to player
+         * Adult non panda bears will stand on hind legs if close to player
          */
 
-        if ((MoCreatures.isServer()) && !getIsTamed() && this.standingCounter == 0 && getBearState() != 2 && getIsAdult() && getType() != 3) {
+        if ((MoCreatures.isServer()) && this.standingCounter == 0 && getBearState() != 2 && getIsAdult() && getType() != 3) {
             EntityPlayer entityplayer1 = this.worldObj.getClosestPlayerToEntity(this, 4D);
             if ((entityplayer1 != null && this.canEntityBeSeen(entityplayer1)) || (this.rand.nextInt(2000) == 0)) {
                 this.standingCounter = 1;
@@ -346,14 +346,6 @@ public class MoCEntityBear extends MoCEntityTameableAnimal {
 
             return true;
         }
-        if ((itemstack != null) && getIsTamed() && (itemstack.getItem() == MoCreatures.whip)) {
-            if (getBearState() == 0) {
-                setBearState(2);
-            }else {
-                setBearState(0);
-            }
-            return true;
-        }
         return false;
     }
 
@@ -391,7 +383,7 @@ public class MoCEntityBear extends MoCEntityTameableAnimal {
         int k = MathHelper.floor_double(this.posZ);
         BlockPos pos = new BlockPos(i, j, k);
 
-        BiomeGenBase currentbiome = MoCTools.Biomekind(this.worldObj, pos);
+        Biome currentbiome = MoCTools.Biomekind(this.worldObj, pos);
         try {
             if (BiomeDictionary.isBiomeOfType(currentbiome, Type.SNOWY)) {
                 setType(4);
