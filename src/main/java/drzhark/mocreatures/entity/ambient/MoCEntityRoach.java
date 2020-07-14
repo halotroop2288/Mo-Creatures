@@ -1,7 +1,6 @@
 package drzhark.mocreatures.entity.ambient;
 
 import com.google.common.base.Predicate;
-import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityInsect;
 import drzhark.mocreatures.entity.ai.EntityAIFleeFromEntityMoC;
 import net.minecraft.entity.Entity;
@@ -20,7 +19,7 @@ public class MoCEntityRoach extends MoCEntityInsect
 
     @Override
     protected void initEntityAI() {
-    	this.tasks.addTask(3, new EntityAIFleeFromEntityMoC(this, new Predicate<Entity>() {
+        this.tasks.addTask(3, new EntityAIFleeFromEntityMoC(this, new Predicate<Entity>() {
 
             public boolean apply(Entity entity) {
                 return !(entity instanceof MoCEntityCrab) && (entity.height > 0.3F || entity.width > 0.3F);
@@ -32,7 +31,7 @@ public class MoCEntityRoach extends MoCEntityInsect
     public void onLivingUpdate() {
         super.onLivingUpdate();
 
-        if (MoCreatures.isServer()) {
+        if (!this.world.isRemote) {
 
             if (getIsFlying() && this.rand.nextInt(50) == 0) {
                 setIsFlying(false);
@@ -58,8 +57,8 @@ public class MoCEntityRoach extends MoCEntityInsect
     }
 
     @Override
-    public boolean isMyFavoriteFood(ItemStack par1ItemStack) {
-        return par1ItemStack != null && par1ItemStack.getItem() == Items.ROTTEN_FLESH;
+    public boolean isMyFavoriteFood(ItemStack stack) {
+        return !stack.isEmpty() && stack.getItem() == Items.ROTTEN_FLESH;
     }
 
     @Override

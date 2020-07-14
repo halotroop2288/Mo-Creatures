@@ -6,7 +6,7 @@ import drzhark.mocreatures.entity.MoCEntityTameableAnimal;
 import drzhark.mocreatures.entity.ai.EntityAIFollowAdult;
 import drzhark.mocreatures.entity.ai.EntityAIPanicMoC;
 import drzhark.mocreatures.entity.ai.EntityAIWanderMoC2;
-import drzhark.mocreatures.util.MoCSoundEvents;
+import drzhark.mocreatures.init.MoCSoundEvents;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -28,8 +28,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
 
 public class MoCEntityGoat extends MoCEntityTameableAnimal {
 
@@ -82,19 +80,19 @@ public class MoCEntityGoat extends MoCEntityTameableAnimal {
     }
 
     public boolean getUpset() {
-    	return ((Boolean)this.dataManager.get(IS_UPSET)).booleanValue();
+        return ((Boolean)this.dataManager.get(IS_UPSET)).booleanValue();
     }
 
     public boolean getCharging() {
-    	return ((Boolean)this.dataManager.get(IS_CHARGING)).booleanValue();
+        return ((Boolean)this.dataManager.get(IS_CHARGING)).booleanValue();
     }
 
     public void setUpset(boolean flag) {
-    	this.dataManager.set(IS_UPSET, Boolean.valueOf(flag));
+        this.dataManager.set(IS_UPSET, Boolean.valueOf(flag));
     }
 
     public void setCharging(boolean flag) {
-    	this.dataManager.set(IS_CHARGING, Boolean.valueOf(flag));
+        this.dataManager.set(IS_CHARGING, Boolean.valueOf(flag));
     }
 
     @Override
@@ -186,7 +184,7 @@ public class MoCEntityGoat extends MoCEntityTameableAnimal {
     @Override
     public void onLivingUpdate() {
         super.onLivingUpdate();
-        if (!MoCreatures.isServer()) {
+        if (this.world.isRemote) {
             if (this.rand.nextInt(100) == 0) {
                 setSwingEar(true);
             }
@@ -212,7 +210,7 @@ public class MoCEntityGoat extends MoCEntityTameableAnimal {
             this.hungry = false;
         }
 
-        if (MoCreatures.isServer() && (getEdad() < 90 || getType() > 4 && getEdad() < 100) && this.rand.nextInt(500) == 0) {
+        if (!this.world.isRemote && (getEdad() < 90 || getType() > 4 && getEdad() < 100) && this.rand.nextInt(500) == 0) {
             setEdad(getEdad() + 1);
             if (getType() == 1 && getEdad() > 70) {
                 int i = this.rand.nextInt(6) + 2;
@@ -236,7 +234,7 @@ public class MoCEntityGoat extends MoCEntityTameableAnimal {
             }
 
             if (!getCharging()) {
-                this.getNavigator().clearPathEntity();
+                this.getNavigator().clearPath();
             }
 
             if (getAttackTarget() != null)// && rand.nextInt(100)==0)
@@ -259,17 +257,17 @@ public class MoCEntityGoat extends MoCEntityTameableAnimal {
         }
 
         if (!getUpset() && !getCharging()) {
-            EntityPlayer entityplayer1 = this.worldObj.getClosestPlayerToEntity(this, 24D);
+            EntityPlayer entityplayer1 = this.world.getClosestPlayerToEntity(this, 24D);
             if (entityplayer1 != null) {// Behaviour that happens only close to player :)
 
                 // is there food around? only check with player near
                 EntityItem entityitem = getClosestEntityItem(this, 10D);
                 if (entityitem != null) {
-                    float f = entityitem.getDistanceToEntity(this);
+                    float f = entityitem.getDistance(this);
                     if (f > 2.0F) {
-                        int i = MathHelper.floor_double(entityitem.posX);
-                        int j = MathHelper.floor_double(entityitem.posY);
-                        int k = MathHelper.floor_double(entityitem.posZ);
+                        int i = MathHelper.floor(entityitem.posX);
+                        int j = MathHelper.floor(entityitem.posY);
+                        int k = MathHelper.floor(entityitem.posZ);
                         faceLocation(i, j, k, 30F);
 
                         getMyOwnPath(entityitem, f);
@@ -300,12 +298,8 @@ public class MoCEntityGoat extends MoCEntityTameableAnimal {
     }
 
     @Override
-    public boolean isMyFavoriteFood(ItemStack par1ItemStack) {
-        Item item1 = null;
-        if (par1ItemStack != null) {
-            item1 = par1ItemStack.getItem();
-        }
-        return (item1 != null && MoCTools.isItemEdible(item1));
+    public boolean isMyFavoriteFood(ItemStack stack) {
+        return !stack.isEmpty() && MoCTools.isItemEdible(stack.getItem());
     }
 
     @Override
@@ -393,7 +387,7 @@ public class MoCEntityGoat extends MoCEntityTameableAnimal {
     @Override
     public boolean attackEntityFrom(DamageSource damagesource, float i) {
         if (super.attackEntityFrom(damagesource, i)) {
-            Entity entity = damagesource.getEntity();
+            Entity entity = damagesource.getTrueSource();
 
             if (entity != this && entity instanceof EntityLivingBase && super.shouldAttackPlayers() && getType() > 4) {
                 setAttackTarget((EntityLivingBase) entity);
@@ -439,7 +433,7 @@ public class MoCEntityGoat extends MoCEntityTameableAnimal {
         if (getEating()) {
             this.eatcount += 1;
             if (this.eatcount == 2) {
-                EntityPlayer entityplayer1 = this.worldObj.getClosestPlayerToEntity(this, 3D);
+                EntityPlayer entityplayer1 = this.world.getClosestPlayerToEntity(this, 3D);
                 if (entityplayer1 != null) {
                     MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_GOAT_EATING);
                 }
@@ -508,12 +502,14 @@ public class MoCEntityGoat extends MoCEntityTameableAnimal {
     }
 
     @Override
-    public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
-        if (super.processInteract(player, hand, stack)) {
-            return true;
+    public boolean processInteract(EntityPlayer player, EnumHand hand) {
+        final Boolean tameResult = this.processTameInteract(player, hand);
+        if (tameResult != null) {
+            return tameResult;
         }
-        boolean onMainHand = (hand == EnumHand.MAIN_HAND);
-        if (stack != null && stack.getItem() == Items.BUCKET) {
+
+        final ItemStack stack = player.getHeldItem(hand);
+        if (!stack.isEmpty() && stack.getItem() == Items.BUCKET) {
             if (getType() > 4) {
                 setUpset(true);
                 setAttackTarget(player);
@@ -523,26 +519,33 @@ public class MoCEntityGoat extends MoCEntityTameableAnimal {
                 return false;
             }
 
-            player.inventory.setInventorySlotContents(player.inventory.currentItem, new ItemStack(Items.MILK_BUCKET));
+            stack.shrink(1);
+            if (stack.isEmpty()) {
+                player.setHeldItem(hand, ItemStack.EMPTY);
+            }
+            player.addItemStackToInventory(new ItemStack(Items.MILK_BUCKET));
             return true;
         }
 
-        if (getIsTamed() && onMainHand && (stack != null) && (MoCTools.isItemEdible(stack.getItem()))) {
-                if (--stack.stackSize == 0) {
-                    player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
-                }
-                this.setHealth(getMaxHealth());
-                MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_GOAT_EATING);
-                return true;
-        }
-
-        if (MoCreatures.isServer() && onMainHand && !getIsTamed() && (stack != null) && MoCTools.isItemEdible(stack.getItem())) {
-            if (MoCTools.tameWithName(player, this)) {
-                return true;
+        if (getIsTamed() && !stack.isEmpty() && (MoCTools.isItemEdible(stack.getItem()))) {
+            stack.shrink(1);
+            if (stack.isEmpty()) {
+                player.setHeldItem(hand, ItemStack.EMPTY);
             }
+            this.setHealth(getMaxHealth());
+            MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_GOAT_EATING);
+            return true;
         }
 
-        return false;
+        if (!getIsTamed() && !stack.isEmpty() && MoCTools.isItemEdible(stack.getItem())) {
+            if (!this.world.isRemote) {
+                MoCTools.tameWithName(player, this);
+            }
+
+            return true;
+        }
+
+        return super.processInteract(player, hand);
 
     }
 
@@ -563,7 +566,7 @@ public class MoCEntityGoat extends MoCEntityTameableAnimal {
     }
 
     @Override
-    protected SoundEvent getHurtSound() {
+    protected SoundEvent getHurtSound(DamageSource source) {
         return MoCSoundEvents.ENTITY_GOAT_HURT;
     }
 

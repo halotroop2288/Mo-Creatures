@@ -12,19 +12,22 @@ public class SpawnTickHandler {
 
     @SubscribeEvent
     public void worldTick(WorldTickEvent event) {
-        WorldServer worldObj = (WorldServer) event.world;
-        EnvironmentSettings environment = CMSUtils.getEnvironment(worldObj);
+        final WorldServer world = (WorldServer) event.world;
+        final EnvironmentSettings environment = CMSUtils.getEnvironment(world);
+        if (environment == null) {
+            return;
+        }
         for (EntitySpawnType entitySpawnType : environment.entitySpawnTypes.values()) {
             if (entitySpawnType.name().equals("UNDEFINED")) {
                 continue;
             }
-            if (worldObj != null && (worldObj.getWorldInfo().getWorldTotalTime() % entitySpawnType.getSpawnTickRate() == 0L)
+            if (world != null && (world.getWorldInfo().getWorldTotalTime() % entitySpawnType.getSpawnTickRate() == 0L)
                     && entitySpawnType.allowSpawning() && entitySpawnType.getSpawnCap() > 0) {
                 int spawnAmount = 0;
 
-                if (worldObj.playerEntities.size() > 0) {
+                if (world.playerEntities.size() > 0) {
                     spawnAmount =
-                            CustomSpawner.INSTANCE.doCustomSpawning(worldObj, entitySpawnType, entitySpawnType.getMobSpawnRange());
+                            CustomSpawner.INSTANCE.doCustomSpawning(world, entitySpawnType, entitySpawnType.getMobSpawnRange());
                     if (CustomSpawner.debug) {
                         environment.envLog.logger.info("[" + environment.name() + "]" + "CustomSpawner Spawned " + spawnAmount + entitySpawnType.getEnumCreatureType());
                     }

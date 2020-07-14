@@ -6,17 +6,18 @@ import net.minecraft.world.World;
 
 public class MoCEntityClownFish extends MoCEntitySmallFish{
 
-	public MoCEntityClownFish(World world) {
-		super(world);
-	}
-	
-	@Override
+    public MoCEntityClownFish(World world) {
+        super(world);
+        this.setType(4);
+    }
+    
+    @Override
     public ResourceLocation getTexture() {
-		return MoCreatures.proxy.getTexture("smallfish_clownfish.png");
+        return MoCreatures.proxy.getTexture("smallfish_clownfish.png");
     }
 
-	@Override
-	protected int getEggNumber() {
-		return 83;
-	}
+    @Override
+    protected int getEggNumber() {
+        return 83;
+    }
 }

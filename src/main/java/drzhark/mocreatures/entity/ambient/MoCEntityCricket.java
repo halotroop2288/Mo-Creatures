@@ -3,7 +3,7 @@ package drzhark.mocreatures.entity.ambient;
 import drzhark.mocreatures.MoCTools;
 import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityInsect;
-import drzhark.mocreatures.util.MoCSoundEvents;
+import drzhark.mocreatures.init.MoCSoundEvents;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
@@ -45,19 +45,19 @@ public class MoCEntityCricket extends MoCEntityInsect
     @Override
     public void onLivingUpdate() {
         super.onLivingUpdate();
-        if (MoCreatures.isServer()) {
+        if (!this.world.isRemote) {
             if (getIsFlying() && this.rand.nextInt(50) == 0) {
                 setIsFlying(false);
             }
 
             if (getIsFlying() || !this.onGround) {
-                EntityPlayer ep = this.worldObj.getClosestPlayerToEntity(this, 5D);
+                EntityPlayer ep = this.world.getClosestPlayerToEntity(this, 5D);
                 if (ep != null && --this.soundCounter == -1) {
                     MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_CRICKET_FLY);
                     this.soundCounter = 10;
                 }
             } else if (!DimensionManager.getWorld(0).isDaytime()) {
-                EntityPlayer ep = this.worldObj.getClosestPlayerToEntity(this, 12D);
+                EntityPlayer ep = this.world.getClosestPlayerToEntity(this, 12D);
                 if (ep != null && --this.soundCounter == -1) {
                     MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_CRICKET_AMBIENT);
                     this.soundCounter = 20;
@@ -73,7 +73,7 @@ public class MoCEntityCricket extends MoCEntityInsect
     @Override
     public void onUpdate() {
         super.onUpdate();
-        if (MoCreatures.isServer()) {
+        if (!this.world.isRemote) {
             if (onGround && ((motionX > 0.05D) || (motionZ > 0.05D) || (motionX < -0.05D) || (motionZ < -0.05D)))
                 if (this.jumpCounter == 0 && this.onGround
                         && ((this.motionX > 0.05D) || (this.motionZ > 0.05D) || (this.motionX < -0.05D) || (this.motionZ < -0.05D))) {

@@ -1,13 +1,13 @@
 package drzhark.mocreatures.entity.passive;
 
 import drzhark.mocreatures.MoCTools;
-import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityTameableAnimal;
 import drzhark.mocreatures.entity.ai.EntityAIFleeFromPlayer;
 import drzhark.mocreatures.entity.ai.EntityAIHunt;
 import drzhark.mocreatures.entity.ai.EntityAINearestAttackableTargetMoC;
 import drzhark.mocreatures.entity.ai.EntityAIWanderMoC2;
-import drzhark.mocreatures.util.MoCSoundEvents;
+import drzhark.mocreatures.init.MoCItems;
+import drzhark.mocreatures.init.MoCSoundEvents;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
@@ -45,7 +45,7 @@ public class MoCEntityCrocodile extends MoCEntityTameableAnimal {
 
     @Override
     protected void initEntityAI() {
-    	this.tasks.addTask(3, new EntityAIFleeFromPlayer(this, 0.8D, 4D));
+        this.tasks.addTask(3, new EntityAIFleeFromPlayer(this, 0.8D, 4D));
         this.tasks.addTask(4, new EntityAIAttackMelee(this, 1.0D, true));
         this.tasks.addTask(7, new EntityAIWanderMoC2(this, 0.9D));
         this.tasks.addTask(9, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
@@ -72,27 +72,27 @@ public class MoCEntityCrocodile extends MoCEntityTameableAnimal {
     }
 
     public boolean getIsBiting() {
-    	return ((Boolean)this.dataManager.get(IS_BITING)).booleanValue();
+        return ((Boolean)this.dataManager.get(IS_BITING)).booleanValue();
     }
 
     public boolean getIsSitting() {
-    	return ((Boolean)this.dataManager.get(IS_RESTING)).booleanValue();
+        return ((Boolean)this.dataManager.get(IS_RESTING)).booleanValue();
     }
 
     public boolean getHasCaughtPrey() {
-    	return ((Boolean)this.dataManager.get(EATING_PREY)).booleanValue();
+        return ((Boolean)this.dataManager.get(EATING_PREY)).booleanValue();
     }
 
     public void setBiting(boolean flag) {
-    	this.dataManager.set(IS_BITING, Boolean.valueOf(flag));
+        this.dataManager.set(IS_BITING, Boolean.valueOf(flag));
     }
 
     public void setIsSitting(boolean flag) {
-    	this.dataManager.set(IS_RESTING, Boolean.valueOf(flag));
+        this.dataManager.set(IS_RESTING, Boolean.valueOf(flag));
     }
 
     public void setHasCaughtPrey(boolean flag) {
-    	this.dataManager.set(EATING_PREY, Boolean.valueOf(flag));
+        this.dataManager.set(EATING_PREY, Boolean.valueOf(flag));
     }
 
     @Override
@@ -126,16 +126,16 @@ public class MoCEntityCrocodile extends MoCEntityTameableAnimal {
             if (this.getAttackTarget() != null) {
                 setIsSitting(false);
             }
-            if (MoCreatures.isServer() && this.getAttackTarget() != null || isSwimming() || getHasCaughtPrey() || this.rand.nextInt(500) == 0)// isInsideOfMaterial(Material.WATER)
+            if (!this.world.isRemote && this.getAttackTarget() != null || isSwimming() || getHasCaughtPrey() || this.rand.nextInt(500) == 0)// isInsideOfMaterial(Material.WATER)
             {
                 setIsSitting(false);
                 this.biteProgress = 0;
             }
 
         } else {
-            if (MoCreatures.isServer() && (this.rand.nextInt(500) == 0) && this.getAttackTarget() == null && !getHasCaughtPrey() && !isSwimming()) {
+            if (!this.world.isRemote && (this.rand.nextInt(500) == 0) && this.getAttackTarget() == null && !getHasCaughtPrey() && !isSwimming()) {
                 setIsSitting(true);
-                this.getNavigator().clearPathEntity();
+                this.getNavigator().clearPath();
             }
 
         }
@@ -145,7 +145,7 @@ public class MoCEntityCrocodile extends MoCEntityTameableAnimal {
         }
 
         //TODO replace with move to water AI
-        if (MoCreatures.isServer() && this.rand.nextInt(500) == 0 && !this.waterbound && !getIsSitting() && !isSwimming()) {
+        if (!this.world.isRemote && this.rand.nextInt(500) == 0 && !this.waterbound && !getIsSitting() && !isSwimming()) {
             MoCTools.MoveToWater(this);
         }
 
@@ -170,7 +170,7 @@ public class MoCEntityCrocodile extends MoCEntityTameableAnimal {
                         ((EntityLivingBase) this.getRidingEntity()).deathTime = 0;
                     }
 
-                    if (MoCreatures.isServer() && this.rand.nextInt(50) == 0) {
+                    if (!this.world.isRemote && this.rand.nextInt(50) == 0) {
                         this.getRidingEntity().attackEntityFrom(DamageSource.causeMobDamage(this), 2);
                     }
                 }
@@ -193,7 +193,7 @@ public class MoCEntityCrocodile extends MoCEntityTameableAnimal {
 
                 //the following if to be removed from SMP
 
-                if (!this.worldObj.isRemote && this.isBeingRidden() && this.getRidingEntity() instanceof EntityPlayer) {
+                if (!this.world.isRemote && this.isBeingRidden() && this.getRidingEntity() instanceof EntityPlayer) {
                     //TODO 4FIX
                     //MoCreatures.mc.gameSettings.thirdPersonView = 1;
                 }
@@ -240,7 +240,7 @@ public class MoCEntityCrocodile extends MoCEntityTameableAnimal {
         }
 
         //TODO FIX!!!!
-        /*if (MoCreatures.isServer() && entityIn.getRidingEntity() == null && this.rand.nextInt(3) == 0) {
+        /*if (!this.world.isRemote && entityIn.getRidingEntity() == null && this.rand.nextInt(3) == 0) {
             entityIn.mountEntity(this);
             this.setHasCaughtPrey(true);
             return false;
@@ -255,7 +255,7 @@ public class MoCEntityCrocodile extends MoCEntityTameableAnimal {
     public boolean attackEntityFrom(DamageSource damagesource, float i) {
         if (this.isBeingRidden()) {
 
-            Entity entity = damagesource.getEntity();
+            Entity entity = damagesource.getTrueSource();
             if (entity != null && this.getRidingEntity() == entity) {
                 if (this.rand.nextInt(2) != 0) {
                     return false;
@@ -266,7 +266,7 @@ public class MoCEntityCrocodile extends MoCEntityTameableAnimal {
 
         }
         if (super.attackEntityFrom(damagesource, i)) {
-            Entity entity = damagesource.getEntity();
+            Entity entity = damagesource.getTrueSource();
 
             if (this.isBeingRidden() && this.getRidingEntity() == entity) {
                 if ((entity != this) && entity instanceof EntityLivingBase && super.shouldAttackPlayers()) {
@@ -317,7 +317,7 @@ public class MoCEntityCrocodile extends MoCEntityTameableAnimal {
     }
 
     @Override
-    protected SoundEvent getHurtSound() {
+    protected SoundEvent getHurtSound(DamageSource source) {
         return MoCSoundEvents.ENTITY_CROCODILE_HURT;
     }
 
@@ -331,7 +331,7 @@ public class MoCEntityCrocodile extends MoCEntityTameableAnimal {
 
     @Override
     protected Item getDropItem() {
-        return MoCreatures.hideCroc;
+        return MoCItems.hideCroc;
     }
 
     public boolean isSpinning() {
@@ -342,7 +342,7 @@ public class MoCEntityCrocodile extends MoCEntityTameableAnimal {
     public void onDeath(DamageSource damagesource) {
 
         unMount();
-        MoCTools.checkForTwistedEntities(this.worldObj);
+        MoCTools.checkForTwistedEntities(this.world);
         super.onDeath(damagesource);
     }
 
@@ -376,10 +376,5 @@ public class MoCEntityCrocodile extends MoCEntityTameableAnimal {
     @Override
     public boolean isReadyToHunt() {
         return this.isNotScared() && !this.isMovementCeased() && !this.isBeingRidden() && !this.getHasCaughtPrey();
-    }
-
-    @Override
-    public void moveEntityWithHeading(float strafe, float forward) {
-        moveEntityWithHeadingBypassRider(strafe, forward);
     }
 }

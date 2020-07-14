@@ -1,12 +1,12 @@
 package drzhark.mocreatures.entity.aquatic;
 
 import com.google.common.base.Predicate;
-
 import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityTameableAquatic;
 import drzhark.mocreatures.entity.ai.EntityAIFleeFromEntityMoC;
 import drzhark.mocreatures.entity.ai.EntityAIPanicMoC;
 import drzhark.mocreatures.entity.ai.EntityAIWanderMoC2;
+import drzhark.mocreatures.init.MoCItems;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.init.Items;
@@ -26,9 +26,35 @@ public class MoCEntitySmallFish extends MoCEntityTameableAquatic {
         setEdad(70 + this.rand.nextInt(30));
     }
 
+    public static MoCEntitySmallFish createEntity(World world, int type) {
+        if (type == 1) {
+            return new MoCEntityAnchovy(world);
+        }
+        if (type == 2) {
+            return new MoCEntityAngelFish(world);
+        }
+        if (type == 3) {
+            return new MoCEntityAngler(world);
+        }
+        if (type == 4) {
+            return new MoCEntityClownFish(world);
+        }
+        if (type == 5) {
+            return new MoCEntityGoldFish(world);
+        }
+        if (type == 6) {
+            return new MoCEntityHippoTang(world);
+        }
+        if (type == 7) {
+            return new MoCEntityManderin(world);
+        }
+
+        return new MoCEntityClownFish(world);
+    }
+
     @Override
     protected void initEntityAI() {
-    	this.tasks.addTask(1, new EntityAIPanicMoC(this, 1.3D));
+        this.tasks.addTask(1, new EntityAIPanicMoC(this, 1.3D));
         this.tasks.addTask(2, new EntityAIFleeFromEntityMoC(this, new Predicate<Entity>() {
 
             public boolean apply(Entity entity) {
@@ -48,7 +74,7 @@ public class MoCEntitySmallFish extends MoCEntityTameableAquatic {
     @Override
     public void selectType() {
         if (getType() == 0) {
-            setType(this.rand.nextInt(7) + 1);
+            setType(this.rand.nextInt(fishNames.length) + 1);
         }
 
     }
@@ -89,7 +115,7 @@ public class MoCEntitySmallFish extends MoCEntityTameableAquatic {
         } else {
             int j = this.rand.nextInt(2);
             for (int k = 0; k < j; k++) {
-                entityDropItem(new ItemStack(MoCreatures.mocegg, 1, getEggNumber()), 0.0F);
+                entityDropItem(new ItemStack(MoCItems.mocegg, 1, getEggNumber()), 0.0F);
             }
         }
     }
@@ -98,7 +124,7 @@ public class MoCEntitySmallFish extends MoCEntityTameableAquatic {
     public void onLivingUpdate() {
         super.onLivingUpdate();
 
-        if ((MoCreatures.isServer())) {
+        if (!this.world.isRemote) {
 
             if (getIsTamed() && this.rand.nextInt(100) == 0 && getHealth() < getMaxHealth()) {
                 this.setHealth(getMaxHealth());
@@ -192,13 +218,13 @@ public class MoCEntitySmallFish extends MoCEntityTameableAquatic {
     
     @Override
     public float getAdjustedZOffset() {
-    	if (!isInWater()) {
+        if (!isInWater()) {
             return 0.1F;
         }
         return 0F;
     }
     
     protected int getEggNumber() {
-		return 80;
-	}
+        return 80;
+    }
 }

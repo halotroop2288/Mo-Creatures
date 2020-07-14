@@ -1,23 +1,16 @@
 package drzhark.mocreatures.entity.passive;
 
-import javax.annotation.Nullable;
-
+import drzhark.mocreatures.MoCreatures;
+import drzhark.mocreatures.entity.IMoCTameable;
+import drzhark.mocreatures.init.MoCItems;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIAttackMelee;
-import net.minecraft.entity.ai.EntityAISwimming;
-import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import drzhark.mocreatures.MoCreatures;
-import drzhark.mocreatures.entity.IMoCTameable;
-import drzhark.mocreatures.entity.ai.EntityAIFollowAdult;
-import drzhark.mocreatures.entity.ai.EntityAIWanderMoC2;
 
 public class MoCEntityLiger extends MoCEntityBigCat {
 
@@ -28,42 +21,46 @@ public class MoCEntityLiger extends MoCEntityBigCat {
     @Override
     public void selectType() {
         if (getType() == 0) {
-        	setType(1);
+            setType(1);
     }
         super.selectType();
     }
 
     @Override
     public ResourceLocation getTexture() {
-        return MoCreatures.proxy.getTexture("BCliger.png");
+        return MoCreatures.proxy.getTexture("bcliger.png");
     }
 
     @Override
-    public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
-        if (super.processInteract(player, hand, stack)) {
-            return true;
+    public boolean processInteract(EntityPlayer player, EnumHand hand) {
+        final Boolean tameResult = this.processTameInteract(player, hand);
+        if (tameResult != null) {
+            return tameResult;
         }
-        boolean onMainHand = (hand == EnumHand.MAIN_HAND);
-        if ((stack != null) && onMainHand && getIsTamed() && (getType() == 1) && (stack.getItem() == MoCreatures.essencelight)) {
-            if (--stack.stackSize == 0) {
-                player.inventory.setInventorySlotContents(player.inventory.currentItem, new ItemStack(Items.GLASS_BOTTLE));
+
+        final ItemStack stack = player.getHeldItem(hand);
+        if (!stack.isEmpty() && getIsTamed() && (getType() == 1) && (stack.getItem() == MoCItems.essencelight)) {
+            stack.shrink(1);
+            if (stack.isEmpty()) {
+                player.setHeldItem(hand, new ItemStack(Items.GLASS_BOTTLE));
             } else {
                 player.inventory.addItemStackToInventory(new ItemStack(Items.GLASS_BOTTLE));
             }
             setType(getType() + 1);
             return true;
         }
-        
-        if (getIsRideable() && getIsAdult() && (!this.isBeingRidden())) {
-            player.rotationYaw = this.rotationYaw;
-            player.rotationPitch = this.rotationPitch;
-            setSitting(false);
-            if (MoCreatures.isServer()) {
-                player.startRiding(this);
+
+        if (this.getIsRideable() && this.getIsAdult() && (!this.getIsChested() || !player.isSneaking()) && !this.isBeingRidden()) {
+            if (!this.world.isRemote && player.startRiding(this)) {
+                player.rotationYaw = this.rotationYaw;
+                player.rotationPitch = this.rotationPitch;
+                setSitting(false);
             }
+
             return true;
         }
-        return false;
+
+        return super.processInteract(player, hand);
     }
     @Override
     public String getOffspringClazz(IMoCTameable mate) {
@@ -98,11 +95,6 @@ public class MoCEntityLiger extends MoCEntityBigCat {
     @Override
     public int getMaxEdad() {
         return 135;
-    }
-
-    @Override
-    public String getClazzString() {
-        return "Liger";
     }
 
     @Override

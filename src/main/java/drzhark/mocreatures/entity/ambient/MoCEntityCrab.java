@@ -8,6 +8,7 @@ import drzhark.mocreatures.entity.ai.EntityAIFleeFromEntityMoC;
 import drzhark.mocreatures.entity.ai.EntityAIFollowOwnerPlayer;
 import drzhark.mocreatures.entity.ai.EntityAIPanicMoC;
 import drzhark.mocreatures.entity.ai.EntityAIWanderMoC2;
+import drzhark.mocreatures.init.MoCItems;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EnumCreatureAttribute;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -29,7 +30,7 @@ public class MoCEntityCrab extends MoCEntityTameableAmbient
 
     @Override
     protected void initEntityAI() {
-    	this.tasks.addTask(2, new EntityAIPanicMoC(this, 1.0D));
+        this.tasks.addTask(2, new EntityAIPanicMoC(this, 1.0D));
         this.tasks.addTask(1, new EntityAIFleeFromEntityMoC(this, new Predicate<Entity>() {
 
             public boolean apply(Entity entity) {
@@ -80,12 +81,12 @@ public class MoCEntityCrab extends MoCEntityTameableAmbient
 
     @Override
     protected Item getDropItem() {
-        return MoCreatures.crabraw;
+        return MoCItems.crabraw;
     }
 
     @Override
     public boolean isOnLadder() {
-        return this.isCollidedHorizontally;
+        return this.collidedHorizontally;
     }
 
     public boolean climbing() {

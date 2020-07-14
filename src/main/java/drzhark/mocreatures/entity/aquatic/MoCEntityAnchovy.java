@@ -6,17 +6,18 @@ import net.minecraft.world.World;
 
 public class MoCEntityAnchovy extends MoCEntitySmallFish{
 
-	public MoCEntityAnchovy(World world) {
-		super(world);
-	}
-	
-	@Override
+    public MoCEntityAnchovy(World world) {
+        super(world);
+        this.setType(1);
+    }
+    
+    @Override
     public ResourceLocation getTexture() {
-		return MoCreatures.proxy.getTexture("smallfish_anchovy.png");
+        return MoCreatures.proxy.getTexture("smallfish_anchovy.png");
     }
 
-	@Override
-	protected int getEggNumber() {
-		return 80;
-	}
+    @Override
+    protected int getEggNumber() {
+        return 80;
+    }
 }

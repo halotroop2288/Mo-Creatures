@@ -1,14 +1,10 @@
 package drzhark.mocreatures.entity.aquatic;
 
-import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityTameableAquatic;
 import drzhark.mocreatures.entity.ai.EntityAIWanderMoC2;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
 
 public class MoCEntityRay extends MoCEntityTameableAquatic {
 
@@ -18,7 +14,7 @@ public class MoCEntityRay extends MoCEntityTameableAquatic {
 
     @Override
     protected void initEntityAI() {
-    	this.tasks.addTask(2, new EntityAIWanderMoC2(this, 1.0D, 80));
+        this.tasks.addTask(2, new EntityAIWanderMoC2(this, 1.0D, 80));
     }
     
     public boolean isPoisoning() {
@@ -26,21 +22,23 @@ public class MoCEntityRay extends MoCEntityTameableAquatic {
     }
 
     @Override
-    public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
-        if (super.processInteract(player, hand, stack)) {
-            return true;
+    public boolean processInteract(EntityPlayer player, EnumHand hand) {
+        final Boolean tameResult = this.processTameInteract(player, hand);
+        if (tameResult != null) {
+            return tameResult;
         }
 
         if (!this.isBeingRidden() && getType() == 1) {
-            player.rotationYaw = this.rotationYaw;
-            player.rotationPitch = this.rotationPitch;
-            player.posY = this.posY;
-            if (MoCreatures.isServer()) {
-                player.startRiding(this);
+            if (!this.world.isRemote && player.startRiding(this)) {
+                player.rotationYaw = this.rotationYaw;
+                player.rotationPitch = this.rotationPitch;
+                player.posY = this.posY;
             }
+
             return true;
         }
-        return false;
+
+        return super.processInteract(player, hand);
     }
 
     @Override

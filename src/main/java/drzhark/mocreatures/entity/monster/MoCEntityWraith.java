@@ -1,11 +1,10 @@
 package drzhark.mocreatures.entity.monster;
 
-import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityMob;
 import drzhark.mocreatures.entity.ai.EntityAINearestAttackableTargetMoC;
+import drzhark.mocreatures.init.MoCSoundEvents;
 import drzhark.mocreatures.network.MoCMessageHandler;
 import drzhark.mocreatures.network.message.MoCMessageAnimation;
-import drzhark.mocreatures.util.MoCSoundEvents;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -14,6 +13,7 @@ import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -26,7 +26,7 @@ public class MoCEntityWraith extends MoCEntityMob//MoCEntityFlyerMob
 
     public MoCEntityWraith(World world) {
         super(world);
-        this.isCollidedVertically = false;
+        this.collidedVertically = false;
         this.texture = "wraith.png";
         setSize(1.5F, 1.5F);
         this.isImmuneToFire = false;
@@ -34,7 +34,7 @@ public class MoCEntityWraith extends MoCEntityMob//MoCEntityFlyerMob
 
     @Override
     protected void initEntityAI() {
-    	this.tasks.addTask(2, new EntityAIAttackMelee(this, 1.0D, true));
+        this.tasks.addTask(2, new EntityAIAttackMelee(this, 1.0D, true));
         this.tasks.addTask(8, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
         this.targetTasks.addTask(1, new EntityAINearestAttackableTargetMoC(this, EntityPlayer.class, true));
     }
@@ -43,7 +43,7 @@ public class MoCEntityWraith extends MoCEntityMob//MoCEntityFlyerMob
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
         this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE)
-                .setBaseValue(this.worldObj.getDifficulty().getDifficultyId() == 1 ? 2.0D : 3.0D); // setAttackStrength
+                .setBaseValue(this.world.getDifficulty().getDifficultyId() == 1 ? 2.0D : 3.0D); // setAttackStrength
         this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(10.0D);
         this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.25D);
     }
@@ -59,7 +59,7 @@ public class MoCEntityWraith extends MoCEntityMob//MoCEntityFlyerMob
     }
 
     @Override
-    protected SoundEvent getHurtSound() {
+    protected SoundEvent getHurtSound(DamageSource source) {
         return MoCSoundEvents.ENTITY_WRAITH_HURT;
     }
 
@@ -107,10 +107,10 @@ public class MoCEntityWraith extends MoCEntityMob//MoCEntityFlyerMob
      * Starts attack counters and synchronizes animations with clients
      */
     private void startArmSwingAttack() {
-        if (MoCreatures.isServer()) {
+        if (!this.world.isRemote) {
             this.attackCounter = 1;
             MoCMessageHandler.INSTANCE.sendToAllAround(new MoCMessageAnimation(this.getEntityId(), 1),
-                    new TargetPoint(this.worldObj.provider.getDimensionType().getId(), this.posX, this.posY, this.posZ, 64));
+                    new TargetPoint(this.world.provider.getDimensionType().getId(), this.posX, this.posY, this.posZ, 64));
         }
     }
 

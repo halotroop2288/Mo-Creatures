@@ -41,7 +41,7 @@ public class EntityAIFollowHerd extends EntityAIBase {
         }
 
         List<EntityLiving> list =
-                this.theAnimal.worldObj.getEntitiesWithinAABB(this.theAnimal.getClass(),
+                this.theAnimal.world.getEntitiesWithinAABB(this.theAnimal.getClass(),
                         this.theAnimal.getEntityBoundingBox().expand(this.maxRange, 4.0D, this.maxRange));
         EntityLiving entityliving = null;
         double d0 = Double.MAX_VALUE;
@@ -49,7 +49,7 @@ public class EntityAIFollowHerd extends EntityAIBase {
 
         while (iterator.hasNext()) {
             EntityLiving entityliving1 = iterator.next();
-            double d1 = this.theAnimal.getDistanceSqToEntity(entityliving1);
+            double d1 = this.theAnimal.getDistanceSq(entityliving1);
             if (d1 >= this.minRange && this.theAnimal != entityliving1) {
                 d0 = d1;
                 entityliving = entityliving1;
@@ -76,13 +76,13 @@ public class EntityAIFollowHerd extends EntityAIBase {
      * Returns whether an in-progress EntityAIBase should continue executing
      */
     @Override
-    public boolean continueExecuting() {
+    public boolean shouldContinueExecuting() {
         if (this.theAnimal instanceof IMoCEntity && ((IMoCEntity) this.theAnimal).isMovementCeased()) { //System.out.println("returning, movement ceased");
             return false;
         } else if (!this.herdAnimal.isEntityAlive()) {
             return false;
         } else {
-            double d0 = this.theAnimal.getDistanceSqToEntity(this.herdAnimal);
+            double d0 = this.theAnimal.getDistanceSq(this.herdAnimal);
             return d0 >= this.minRange && d0 <= this.maxRange;
         }
     }

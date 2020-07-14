@@ -1,95 +1,96 @@
 package drzhark.mocreatures.entity.passive;
 
-import javax.annotation.Nullable;
-
+import drzhark.mocreatures.MoCTools;
+import drzhark.mocreatures.MoCreatures;
+import drzhark.mocreatures.entity.IMoCTameable;
+import drzhark.mocreatures.init.MoCItems;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import drzhark.mocreatures.MoCTools;
-import drzhark.mocreatures.MoCreatures;
-import drzhark.mocreatures.entity.IMoCTameable;
 
 public class MoCEntityPolarBear extends MoCEntityBear{
 
-	public MoCEntityPolarBear(World world) {
-		super(world);
-	}
-	
-	@Override
+    public MoCEntityPolarBear(World world) {
+        super(world);
+    }
+    
+    @Override
     public void selectType() {
         if (getType() == 0) {
-        	setType(1);
+            setType(1);
         }
         super.selectType();
     }
-	
-	@Override
+    
+    @Override
     public ResourceLocation getTexture() {
-		return MoCreatures.proxy.getTexture("bearpolar.png");
-	}
-	
-	@Override
-	public float getBearSize() {
-		return 1.4F;
+        return MoCreatures.proxy.getTexture("bearpolar.png");
     }
-	
-	@Override
+    
+    @Override
+    public float getBearSize() {
+        return 1.4F;
+    }
+    
+    @Override
     public int getMaxEdad() {
-		return 140;
-	}
-	
-	@Override
-	public float calculateMaxHealth() {
-		return 50;
+        return 140;
     }
-	
-	public double getAttackRange() {
+    
+    @Override
+    public float calculateMaxHealth() {
+        return 50;
+    }
+    
+    public double getAttackRange() {
         int factor = 1;
-        if (this.worldObj.getDifficulty().getDifficultyId() > 1) {
+        if (this.world.getDifficulty().getDifficultyId() > 1) {
             factor = 2;
         }
         return 8D * factor;
     }
-	
-	@Override
-	public int getAttackStrength() {
-        int factor = (this.worldObj.getDifficulty().getDifficultyId());
+    
+    @Override
+    public int getAttackStrength() {
+        int factor = (this.world.getDifficulty().getDifficultyId());
         return 4 * factor;
     }
-	
-	@Override
+    
+    @Override
     public boolean shouldAttackPlayers() {
         return super.shouldAttackPlayers();
     }
-	
-	@Override
-    public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
-        if (super.processInteract(player, hand, stack)) {
-            return true;
+    
+    @Override
+    public boolean processInteract(EntityPlayer player, EnumHand hand) {
+        final Boolean tameResult = this.processTameInteract(player, hand);
+        if (tameResult != null) {
+            return tameResult;
         }
-        boolean onMainHand = (hand == EnumHand.MAIN_HAND);
-        ItemStack itemstack = player.inventory.getCurrentItem();
-        if ((itemstack != null) && onMainHand && this.getEdad() < 80 && MoCTools.isItemEdibleforCarnivores(itemstack.getItem())) {
-            if (--itemstack.stackSize == 0) {
-                player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
+
+        final ItemStack stack = player.getHeldItem(hand);
+        if (!stack.isEmpty() && this.getEdad() < 80 && MoCTools.isItemEdibleforCarnivores(stack.getItem())) {
+            stack.shrink(1);
+            if (stack.isEmpty()) {
+                player.setHeldItem(hand, ItemStack.EMPTY);
             }
 
-            if (!getIsTamed() && MoCreatures.isServer()) {
+            if (!getIsTamed() && !this.world.isRemote) {
                 MoCTools.tameWithName(player, this);
             }
 
             this.setHealth(getMaxHealth());
             eatingAnimal();
-            if (MoCreatures.isServer() && !getIsAdult() && (getEdad() < 100)) {
+            if (!this.world.isRemote && !getIsAdult() && (getEdad() < 100)) {
                 setEdad(getEdad() + 1);
             }
 
             return true;
         }
-        if ((itemstack != null) && getIsTamed() && (itemstack.getItem() == MoCreatures.whip)) {
+        if (!stack.isEmpty() && getIsTamed() && (stack.getItem() == MoCItems.whip)) {
             if (getBearState() == 0) {
                 setBearState(2);
             }else {
@@ -97,29 +98,30 @@ public class MoCEntityPolarBear extends MoCEntityBear{
             }
             return true;
         }
-        if (getIsRideable() && getIsAdult() && (!this.isBeingRidden())) {
-            player.rotationYaw = this.rotationYaw;
-            player.rotationPitch = this.rotationPitch;
-            setBearState(0);
-            if (MoCreatures.isServer()) {
-                player.startRiding(this);
+        if (this.getIsRideable() && this.getIsAdult() && (!this.getIsChested() || !player.isSneaking()) && !this.isBeingRidden()) {
+            if (!this.world.isRemote && player.startRiding(this)) {
+                player.rotationYaw = this.rotationYaw;
+                player.rotationPitch = this.rotationPitch;
+                setBearState(0);
             }
+
             return true;
         }
-        return false;
+
+        return super.processInteract(player, hand);
     }
-	
-	@Override
-	public String getOffspringClazz(IMoCTameable mate) {
-        return "PolarBear";
+    
+    @Override
+    public String getOffspringClazz(IMoCTameable mate) {
+        return "WildPolarBear";
     }
 
-	@Override
+    @Override
     public int getOffspringTypeInt(IMoCTameable mate) {
         return 1;
     }
 
-	@Override
+    @Override
     public boolean compatibleMate(Entity mate) {
         return mate instanceof MoCEntityPolarBear;
     }

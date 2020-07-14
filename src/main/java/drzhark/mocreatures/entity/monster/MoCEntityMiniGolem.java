@@ -1,11 +1,10 @@
 package drzhark.mocreatures.entity.monster;
 
 import drzhark.mocreatures.MoCTools;
-import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityMob;
 import drzhark.mocreatures.entity.ai.EntityAINearestAttackableTargetMoC;
 import drzhark.mocreatures.entity.item.MoCEntityThrowableRock;
-import drzhark.mocreatures.util.MoCSoundEvents;
+import drzhark.mocreatures.init.MoCSoundEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -16,6 +15,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -36,7 +36,7 @@ public class MoCEntityMiniGolem extends MoCEntityMob {
 
     @Override
     protected void initEntityAI() {
-    	this.tasks.addTask(0, new EntityAISwimming(this));
+        this.tasks.addTask(0, new EntityAISwimming(this));
         this.tasks.addTask(2, new EntityAIAttackMelee(this, 1.0D, true));
         this.tasks.addTask(8, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
         this.targetTasks.addTask(1, new EntityAINearestAttackableTargetMoC(this, EntityPlayer.class, true));
@@ -58,26 +58,26 @@ public class MoCEntityMiniGolem extends MoCEntityMob {
     }
 
     public boolean getIsAngry() {
-    	return ((Boolean)this.dataManager.get(ANGRY)).booleanValue();
+        return ((Boolean)this.dataManager.get(ANGRY)).booleanValue();
     }
 
     public void setIsAngry(boolean flag) {
-    	this.dataManager.set(ANGRY, Boolean.valueOf(flag));
+        this.dataManager.set(ANGRY, Boolean.valueOf(flag));
     }
 
     public boolean getHasRock() {
-    	return ((Boolean)this.dataManager.get(HAS_ROCK)).booleanValue();
+        return ((Boolean)this.dataManager.get(HAS_ROCK)).booleanValue();
     }
 
     public void setHasRock(boolean flag) {
-    	this.dataManager.set(HAS_ROCK, Boolean.valueOf(flag));
+        this.dataManager.set(HAS_ROCK, Boolean.valueOf(flag));
     }
 
     @Override
     public void onLivingUpdate() {
         super.onLivingUpdate();
 
-        if (MoCreatures.isServer()) {
+        if (!this.world.isRemote) {
             if (this.getAttackTarget() == null) {
                 setIsAngry(false);
 
@@ -91,7 +91,7 @@ public class MoCEntityMiniGolem extends MoCEntityMob {
                 }
 
                 if (getHasRock()) {
-                    this.getNavigator().clearPathEntity();
+                    this.getNavigator().clearPath();
                     attackWithTRock();
                 }
             }
@@ -107,8 +107,8 @@ public class MoCEntityMiniGolem extends MoCEntityMob {
         }
 
         //creates a dummy Trock on top of it
-        MoCEntityThrowableRock trock = new MoCEntityThrowableRock(this.worldObj, this, this.posX, this.posY + 1.5D, this.posZ);
-        this.worldObj.spawnEntityInWorld(trock);
+        MoCEntityThrowableRock trock = new MoCEntityThrowableRock(this.world, this, this.posX, this.posY + 1.5D, this.posZ);
+        this.world.spawnEntity(trock);
         trock.setState(tRockState);
         trock.setBehavior(1);
         this.tempRock = trock;
@@ -135,7 +135,7 @@ public class MoCEntityMiniGolem extends MoCEntityMob {
 
         if (this.tcounter >= 50) {
             //throws a newly spawned Trock and destroys the held Trock
-            if (this.getAttackTarget() != null && this.getDistanceToEntity(this.getAttackTarget()) < 48F) {
+            if (this.getAttackTarget() != null && this.getDistance(this.getAttackTarget()) < 48F) {
                 MoCTools.ThrowStone(this, this.getAttackTarget(), this.tempRock.getState(), 10D, 0.25D);
             }
 
@@ -167,7 +167,7 @@ public class MoCEntityMiniGolem extends MoCEntityMob {
     }
 
     @Override
-    protected SoundEvent getHurtSound() {
+    protected SoundEvent getHurtSound(DamageSource source) {
         return MoCSoundEvents.ENTITY_GOLEM_HURT;
     }
 

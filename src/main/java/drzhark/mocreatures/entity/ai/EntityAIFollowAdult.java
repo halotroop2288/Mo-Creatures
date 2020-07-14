@@ -29,7 +29,7 @@ public class EntityAIFollowAdult extends EntityAIBase {
             return false;
         } else {
             List<EntityLiving> list =
-                    this.childAnimal.worldObj.getEntitiesWithinAABB(this.childAnimal.getClass(),
+                    this.childAnimal.world.getEntitiesWithinAABB(this.childAnimal.getClass(),
                             this.childAnimal.getEntityBoundingBox().expand(8.0D, 4.0D, 8.0D));
             EntityLiving entityliving = null;
             double d0 = Double.MAX_VALUE;
@@ -39,7 +39,7 @@ public class EntityAIFollowAdult extends EntityAIBase {
                 EntityLiving entityliving1 = iterator.next();
 
                 if (((IMoCEntity) entityliving1).getIsAdult()) {
-                    double d1 = this.childAnimal.getDistanceSqToEntity(entityliving1);
+                    double d1 = this.childAnimal.getDistanceSq(entityliving1);
 
                     if (d1 <= d0) {
                         d0 = d1;
@@ -63,13 +63,13 @@ public class EntityAIFollowAdult extends EntityAIBase {
      * Returns whether an in-progress EntityAIBase should continue executing
      */
     @Override
-    public boolean continueExecuting() {
+    public boolean shouldContinueExecuting() {
         if (((IMoCEntity) this.childAnimal).getIsAdult()) {
             return false;
         } else if (!this.parentAnimal.isEntityAlive()) {
             return false;
         } else {
-            double d0 = this.childAnimal.getDistanceSqToEntity(this.parentAnimal);
+            double d0 = this.childAnimal.getDistanceSq(this.parentAnimal);
             return d0 >= 9.0D && d0 <= 256.0D;
         }
     }

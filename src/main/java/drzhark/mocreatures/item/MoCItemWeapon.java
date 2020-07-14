@@ -35,7 +35,7 @@ public class MoCItemWeapon extends MoCItem {
         this.material = par2ToolMaterial;
         this.maxStackSize = 1;
         this.setMaxDamage(par2ToolMaterial.getMaxUses());
-        this.attackDamage = 4F + par2ToolMaterial.getDamageVsEntity();
+        this.attackDamage = 4F + par2ToolMaterial.getAttackDamage();
     }
 
     /**
@@ -54,8 +54,8 @@ public class MoCItemWeapon extends MoCItem {
     /**
      * Returns the amount of damage this item will deal. One heart of damage is equal to 2 damage points.
      */
-    public float getDamageVsEntity() {
-        return this.material.getDamageVsEntity();
+    public float getAttackDamage() {
+        return this.material.getAttackDamage();
     }
 
     public float getStrVsBlock(ItemStack stack, IBlockState state) {
@@ -142,9 +142,10 @@ public class MoCItemWeapon extends MoCItem {
      * pressed. Args: itemStack, world, entityPlayer
      */
     @Override
-    public ActionResult<ItemStack> onItemRightClick(ItemStack itemStackIn, World worldIn, EntityPlayer playerIn, EnumHand hand) {
-        playerIn.setActiveHand(hand);
-        return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, itemStackIn);
+    public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer player, EnumHand hand) {
+        final ItemStack stack = player.getHeldItem(hand);
+        player.setActiveHand(hand);
+        return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, stack);
     }
 
     /**
@@ -202,7 +203,7 @@ public class MoCItemWeapon extends MoCItem {
     public Multimap<String, AttributeModifier> getItemAttributeModifiers(EntityEquipmentSlot equipmentSlot) {
         Multimap<String, AttributeModifier> multimap = super.getItemAttributeModifiers(equipmentSlot);
         if (equipmentSlot == EntityEquipmentSlot.MAINHAND) {
-            multimap.put(SharedMonsterAttributes.ATTACK_DAMAGE.getAttributeUnlocalizedName(), new AttributeModifier(ATTACK_DAMAGE_MODIFIER, "Weapon modifier",
+            multimap.put(SharedMonsterAttributes.ATTACK_DAMAGE.getName(), new AttributeModifier(ATTACK_DAMAGE_MODIFIER, "Weapon modifier",
                     (double) this.attackDamage, 0));
         }
         return multimap;

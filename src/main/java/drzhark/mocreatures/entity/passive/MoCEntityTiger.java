@@ -2,6 +2,7 @@ package drzhark.mocreatures.entity.passive;
 
 import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.IMoCTameable;
+import drzhark.mocreatures.init.MoCItems;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -10,8 +11,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
 
 public class MoCEntityTiger extends MoCEntityBigCat {
 
@@ -36,15 +35,15 @@ public class MoCEntityTiger extends MoCEntityBigCat {
     public ResourceLocation getTexture() {
         switch (getType()) {
             case 1:
-                return MoCreatures.proxy.getTexture("BCtiger.png");
+                return MoCreatures.proxy.getTexture("bctiger.png");
             case 2:
-                return MoCreatures.proxy.getTexture("BCwhiteTiger.png");
+                return MoCreatures.proxy.getTexture("bcwhitetiger.png");
             case 3:
-                return MoCreatures.proxy.getTexture("BCwhiteTiger.png"); //winged tiger
+                return MoCreatures.proxy.getTexture("bcwhitetiger.png"); //winged tiger
             /*case 4:
-            	return MoCreatures.proxy.getTexture("BCleoger.png"); // Tiger x Leopard
+                return MoCreatures.proxy.getTexture("bcleoger.png"); // Tiger x Leopard
             */default:
-                return MoCreatures.proxy.getTexture("BCtiger.png");
+                return MoCreatures.proxy.getTexture("bctiger.png");
         }
     }
 
@@ -54,31 +53,34 @@ public class MoCEntityTiger extends MoCEntityBigCat {
     }
 
     @Override
-    public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
-        if (super.processInteract(player, hand, stack)) {
-            return true;
+    public boolean processInteract(EntityPlayer player, EnumHand hand) {
+        final Boolean tameResult = this.processTameInteract(player, hand);
+        if (tameResult != null) {
+            return tameResult;
         }
-        boolean onMainHand = (hand == EnumHand.MAIN_HAND);
-        if ((stack != null) && onMainHand && getIsTamed() && getType() == 2 && (stack.getItem() == MoCreatures.essencelight)) {
-            if (--stack.stackSize == 0) {
-                player.inventory.setInventorySlotContents(player.inventory.currentItem, new ItemStack(Items.GLASS_BOTTLE));
+
+        final ItemStack stack = player.getHeldItem(hand);
+        if (!stack.isEmpty() && getIsTamed() && getType() == 2 && (stack.getItem() == MoCItems.essencelight)) {
+            stack.shrink(1);
+            if (stack.isEmpty()) {
+                player.setHeldItem(hand, new ItemStack(Items.GLASS_BOTTLE));
             } else {
                 player.inventory.addItemStackToInventory(new ItemStack(Items.GLASS_BOTTLE));
             }
             setType(3);
             return true;
         }
-        if (getIsRideable() && getIsAdult() && (!this.isBeingRidden())) {
-            player.rotationYaw = this.rotationYaw;
-            player.rotationPitch = this.rotationPitch;
-            setSitting(false);
-            if (MoCreatures.isServer()) {
-                player.startRiding(this);
+        if (this.getIsRideable() && this.getIsAdult() && (!this.getIsChested() || !player.isSneaking()) && !this.isBeingRidden()) {
+            if (!this.world.isRemote && player.startRiding(this)) {
+                player.rotationYaw = this.rotationYaw;
+                player.rotationPitch = this.rotationPitch;
+                setSitting(false);
             }
+
             return true;
         }
 
-        return false;
+        return super.processInteract(player, hand);
     }
 
     @Override
@@ -92,11 +94,6 @@ public class MoCEntityTiger extends MoCEntityBigCat {
         if (mate instanceof MoCEntityLeopard && ((MoCEntityPanther) mate).getType() == 1) {
             return "Leoger";
         }
-        return "Tiger";
-    }
-
-    @Override
-    public String getClazzString() {
         return "Tiger";
     }
 
@@ -119,7 +116,7 @@ public class MoCEntityTiger extends MoCEntityBigCat {
         return (mate instanceof MoCEntityTiger && ((MoCEntityTiger) mate).getType() < 3)
                 || (mate instanceof MoCEntityLion && ((MoCEntityLion) mate).getType() == 2)
                 || (mate instanceof MoCEntityLeopard && ((MoCEntityLeopard) mate).getType() == 1)
-        		|| (mate instanceof MoCEntityPanther && ((MoCEntityPanther) mate).getType() == 1);
+                || (mate instanceof MoCEntityPanther && ((MoCEntityPanther) mate).getType() == 1);
     }
 
     @Override

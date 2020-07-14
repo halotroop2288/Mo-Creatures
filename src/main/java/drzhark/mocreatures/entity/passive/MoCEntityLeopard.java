@@ -6,7 +6,6 @@ import drzhark.mocreatures.entity.IMoCTameable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -15,8 +14,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
-
-import javax.annotation.Nullable;
 
 public class MoCEntityLeopard extends MoCEntityBigCat {
 
@@ -35,14 +32,14 @@ public class MoCEntityLeopard extends MoCEntityBigCat {
 
     @Override
     public boolean checkSpawningBiome() {
-        int i = MathHelper.floor_double(this.posX);
-        int j = MathHelper.floor_double(getEntityBoundingBox().minY);
-        int k = MathHelper.floor_double(this.posZ);
+        int i = MathHelper.floor(this.posX);
+        int j = MathHelper.floor(getEntityBoundingBox().minY);
+        int k = MathHelper.floor(this.posZ);
         BlockPos pos = new BlockPos(i, j, k);
 
-        Biome currentbiome = MoCTools.Biomekind(this.worldObj, pos);
+        Biome currentbiome = MoCTools.Biomekind(this.world, pos);
         try {
-            if (BiomeDictionary.isBiomeOfType(currentbiome, Type.SNOWY)) {
+            if (BiomeDictionary.hasType(currentbiome, Type.SNOWY)) {
                 setType(2); //snow leopard
                 return true;
             }
@@ -56,30 +53,32 @@ public class MoCEntityLeopard extends MoCEntityBigCat {
     public ResourceLocation getTexture() {
         switch (getType()) {
             case 1:
-                return MoCreatures.proxy.getTexture("BCleopard.png");
+                return MoCreatures.proxy.getTexture("bcleopard.png");
             case 2:
-                return MoCreatures.proxy.getTexture("BCsnowLeopard.png");
+                return MoCreatures.proxy.getTexture("bcsnowleopard.png");
             default:
-                return MoCreatures.proxy.getTexture("BCleopard.png");
+                return MoCreatures.proxy.getTexture("bcleopard.png");
         }
     }
 
     @Override
-    public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
-        if (super.processInteract(player, hand, stack)) {
+    public boolean processInteract(EntityPlayer player, EnumHand hand) {
+        final Boolean tameResult = this.processTameInteract(player, hand);
+        if (tameResult != null) {
+            return tameResult;
+        }
+
+        if (this.getIsRideable() && this.getIsAdult() && (!this.getIsChested() || !player.isSneaking()) && !this.isBeingRidden()) {
+            if (!this.world.isRemote && player.startRiding(this)) {
+                player.rotationYaw = this.rotationYaw;
+                player.rotationPitch = this.rotationPitch;
+                setSitting(false);
+            }
+
             return true;
         }
 
-        if (getIsRideable() && getIsAdult() && (!this.isBeingRidden())) {
-            player.rotationYaw = this.rotationYaw;
-            player.rotationPitch = this.rotationPitch;
-            setSitting(false);
-            if (MoCreatures.isServer()) {
-                player.startRiding(this);
-            }
-            return true;
-        }
-        return false;
+        return super.processInteract(player, hand);
     }
 
     @Override
@@ -136,11 +135,6 @@ public class MoCEntityLeopard extends MoCEntityBigCat {
     @Override
     public int getMaxEdad() {
         return 95;
-    }
-
-    @Override
-    public String getClazzString() {
-        return "Leopard";
     }
 
     @Override

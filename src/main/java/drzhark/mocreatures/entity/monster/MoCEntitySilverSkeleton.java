@@ -1,8 +1,8 @@
 package drzhark.mocreatures.entity.monster;
 
-import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityMob;
 import drzhark.mocreatures.entity.ai.EntityAINearestAttackableTargetMoC;
+import drzhark.mocreatures.init.MoCItems;
 import drzhark.mocreatures.network.MoCMessageHandler;
 import drzhark.mocreatures.network.message.MoCMessageAnimation;
 import net.minecraft.block.Block;
@@ -16,6 +16,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -34,7 +35,7 @@ public class MoCEntitySilverSkeleton extends MoCEntityMob {
 
     @Override
     protected void initEntityAI() {
-    	this.tasks.addTask(0, new EntityAISwimming(this));
+        this.tasks.addTask(0, new EntityAISwimming(this));
         this.tasks.addTask(2, new EntityAIAttackMelee(this, 1.0D, true));
         this.tasks.addTask(8, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
         this.targetTasks.addTask(1, new EntityAINearestAttackableTargetMoC(this, EntityPlayer.class, true));
@@ -50,7 +51,7 @@ public class MoCEntitySilverSkeleton extends MoCEntityMob {
 
     @Override
     public void onLivingUpdate() {
-        if (MoCreatures.isServer()) {
+        if (!this.world.isRemote) {
             if (this.getAttackTarget() == null) {
                 setSprinting(false);
             } else {
@@ -72,7 +73,7 @@ public class MoCEntitySilverSkeleton extends MoCEntityMob {
     @Override
     protected Item getDropItem() {
         if (this.rand.nextInt(10) == 0) {
-            return MoCreatures.silversword;
+            return MoCItems.silversword;
         }
         return Items.BONE;
 
@@ -95,17 +96,17 @@ public class MoCEntitySilverSkeleton extends MoCEntityMob {
      * Starts attack counters and synchronizes animations with clients
      */
     private void startAttackAnimation() {
-        if (MoCreatures.isServer()) {
+        if (!this.world.isRemote) {
             boolean leftArmW = this.rand.nextInt(2) == 0;
 
             if (leftArmW) {
                 this.attackCounterLeft = 1;
                 MoCMessageHandler.INSTANCE.sendToAllAround(new MoCMessageAnimation(this.getEntityId(), 1),
-                        new TargetPoint(this.worldObj.provider.getDimensionType().getId(), this.posX, this.posY, this.posZ, 64));
+                        new TargetPoint(this.world.provider.getDimensionType().getId(), this.posX, this.posY, this.posZ, 64));
             } else {
                 this.attackCounterRight = 1;
                 MoCMessageHandler.INSTANCE.sendToAllAround(new MoCMessageAnimation(this.getEntityId(), 2),
-                        new TargetPoint(this.worldObj.provider.getDimensionType().getId(), this.posX, this.posY, this.posZ, 64));
+                        new TargetPoint(this.world.provider.getDimensionType().getId(), this.posX, this.posY, this.posZ, 64));
             }
         }
     }
@@ -130,7 +131,7 @@ public class MoCEntitySilverSkeleton extends MoCEntityMob {
     }
 
     @Override
-    protected SoundEvent getHurtSound() {
+    protected SoundEvent getHurtSound(DamageSource source) {
         return SoundEvents.ENTITY_SKELETON_HURT;
     }
 

@@ -1,16 +1,13 @@
 package drzhark.mocreatures.entity.passive;
 
-import javax.annotation.Nullable;
-
+import drzhark.mocreatures.MoCreatures;
+import drzhark.mocreatures.entity.IMoCTameable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-import drzhark.mocreatures.MoCreatures;
-import drzhark.mocreatures.entity.IMoCTameable;
 
 public class MoCEntityLither extends MoCEntityBigCat {
 
@@ -21,31 +18,34 @@ public class MoCEntityLither extends MoCEntityBigCat {
     @Override
     public void selectType() {
         if (getType() == 0) {
-        	setType(1);
+            setType(1);
     }
         super.selectType();
     }
 
     @Override
     public ResourceLocation getTexture() {
-        return MoCreatures.proxy.getTexture("BClither.png");
+        return MoCreatures.proxy.getTexture("bclither.png");
     }
 
     @Override
-    public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
-        if (super.processInteract(player, hand, stack)) {
-            return true;
+    public boolean processInteract(EntityPlayer player, EnumHand hand) {
+        final Boolean tameResult = this.processTameInteract(player, hand);
+        if (tameResult != null) {
+            return tameResult;
         }
-        if (getIsRideable() && getIsAdult() && (!this.isBeingRidden())) {
-            player.rotationYaw = this.rotationYaw;
-            player.rotationPitch = this.rotationPitch;
-            setSitting(false);
-            if (MoCreatures.isServer()) {
-                player.startRiding(this);
+
+        if (this.getIsRideable() && this.getIsAdult() && (!this.getIsChested() || !player.isSneaking()) && !this.isBeingRidden()) {
+            if (!this.world.isRemote && player.startRiding(this)) {
+                player.rotationYaw = this.rotationYaw;
+                player.rotationPitch = this.rotationPitch;
+                setSitting(false);
             }
+
             return true;
         }
-        return false;
+
+        return super.processInteract(player, hand);
     }
     
     @Override
@@ -81,11 +81,6 @@ public class MoCEntityLither extends MoCEntityBigCat {
     @Override
     public int getMaxEdad() {
         return 110;
-    }
-
-    @Override
-    public String getClazzString() {
-        return "Lither";
     }
 
     @Override

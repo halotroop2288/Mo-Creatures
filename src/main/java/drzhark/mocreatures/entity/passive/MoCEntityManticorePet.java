@@ -4,12 +4,9 @@ import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.IMoCTameable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
-
-import javax.annotation.Nullable;
 
 public class MoCEntityManticorePet extends MoCEntityBigCat {
 
@@ -31,15 +28,15 @@ public class MoCEntityManticorePet extends MoCEntityBigCat {
     public ResourceLocation getTexture() {
         switch (getType()) {
             case 1:
-                return MoCreatures.proxy.getTexture("BCmanticore.png");
+                return MoCreatures.proxy.getTexture("bcmanticore.png");
             case 2:
-                return MoCreatures.proxy.getTexture("BCmanticoreDark.png");
+                return MoCreatures.proxy.getTexture("bcmanticoredark.png");
             case 3:
-                return MoCreatures.proxy.getTexture("BCmanticoreBlue.png");
+                return MoCreatures.proxy.getTexture("bcmanticoreblue.png");
             case 4:
-                return MoCreatures.proxy.getTexture("BCmanticoreGreen.png");
+                return MoCreatures.proxy.getTexture("bcmanticoregreen.png");
             default:
-                return MoCreatures.proxy.getTexture("BCmanticore.png");
+                return MoCreatures.proxy.getTexture("bcmanticore.png");
         }
     }
 
@@ -54,30 +51,27 @@ public class MoCEntityManticorePet extends MoCEntityBigCat {
     }
 
     @Override
-    public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
-        if (super.processInteract(player, hand, stack)) {
-            return true;
+    public boolean processInteract(EntityPlayer player, EnumHand hand) {
+        final Boolean tameResult = this.processTameInteract(player, hand);
+        if (tameResult != null) {
+            return tameResult;
         }
-        if (getIsRideable() && getIsAdult() && (!this.isBeingRidden())) {
-            player.rotationYaw = this.rotationYaw;
-            player.rotationPitch = this.rotationPitch;
-            setSitting(false);
-            if (MoCreatures.isServer()) {
-                player.startRiding(this);
+
+        if (this.getIsRideable() && this.getIsAdult() && (!this.getIsChested() || !player.isSneaking()) && !this.isBeingRidden()) {
+            if (!this.world.isRemote && player.startRiding(this)) {
+                player.rotationYaw = this.rotationYaw;
+                player.rotationPitch = this.rotationPitch;
+                setSitting(false);
             }
+
             return true;
         }
 
-        return false;
+        return super.processInteract(player, hand);
     }
 
     @Override
     public String getOffspringClazz(IMoCTameable mate) {
-        return "";
-    }
-
-    @Override
-    public String getClazzString() {
         return "";
     }
 

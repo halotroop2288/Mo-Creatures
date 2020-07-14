@@ -1,7 +1,6 @@
 package drzhark.mocreatures.entity.ambient;
 
 import drzhark.mocreatures.MoCTools;
-import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityInsect;
 import drzhark.mocreatures.entity.ai.EntityAIWanderMoC2;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -15,7 +14,7 @@ import net.minecraft.world.World;
 
 public class MoCEntityAnt extends MoCEntityInsect {
 
-	private static final DataParameter<Boolean> FOUND_FOOD = EntityDataManager.<Boolean>createKey(MoCEntityAnt.class, DataSerializers.BOOLEAN);
+    private static final DataParameter<Boolean> FOUND_FOOD = EntityDataManager.<Boolean>createKey(MoCEntityAnt.class, DataSerializers.BOOLEAN);
     
     public MoCEntityAnt(World world) {
         super(world);
@@ -24,7 +23,7 @@ public class MoCEntityAnt extends MoCEntityInsect {
 
     @Override
     protected void initEntityAI() {
-    	this.tasks.addTask(1, new EntityAIWanderMoC2(this, 1.2D));
+        this.tasks.addTask(1, new EntityAIWanderMoC2(this, 1.2D));
     }
     
     @Override
@@ -40,32 +39,35 @@ public class MoCEntityAnt extends MoCEntityInsect {
     }
 
     public boolean getHasFood() {
-    	return ((Boolean)this.dataManager.get(FOUND_FOOD)).booleanValue();
+        return ((Boolean)this.dataManager.get(FOUND_FOOD)).booleanValue();
     }
 
     public void setHasFood(boolean flag) {
-    	this.dataManager.set(FOUND_FOOD, Boolean.valueOf(flag));
+        this.dataManager.set(FOUND_FOOD, Boolean.valueOf(flag));
     }
 
     @Override
     public void onLivingUpdate() {
         super.onLivingUpdate();
 
-        if (MoCreatures.isServer()) {
+        if (!this.world.isRemote) {
             if (!getHasFood()) {
                 EntityItem entityitem = MoCTools.getClosestFood(this, 8D);
-                if (entityitem != null && entityitem.getRidingEntity() == null) {
-                    float f = entityitem.getDistanceToEntity(this);
+                if (entityitem == null || entityitem.isDead) {
+                    return;
+                }
+                if (entityitem.getRidingEntity() == null) {
+                    float f = entityitem.getDistance(this);
                     if (f > 1.0F) {
-                        int i = MathHelper.floor_double(entityitem.posX);
-                        int j = MathHelper.floor_double(entityitem.posY);
-                        int k = MathHelper.floor_double(entityitem.posZ);
+                        int i = MathHelper.floor(entityitem.posX);
+                        int j = MathHelper.floor(entityitem.posY);
+                        int k = MathHelper.floor(entityitem.posZ);
                         faceLocation(i, j, k, 30F);
 
                         getMyOwnPath(entityitem, f);
                         return;
                     }
-                    if ((f < 1.0F) && (entityitem != null)) {
+                    if (f < 1.0F) {
                         exchangeItem(entityitem);
                         setHasFood(true);
                         return;
@@ -92,10 +94,10 @@ public class MoCEntityAnt extends MoCEntityInsect {
     }
 
     private void exchangeItem(EntityItem entityitem) {
-        EntityItem cargo = new EntityItem(this.worldObj, this.posX, this.posY + 0.2D, this.posZ, entityitem.getEntityItem());
+        EntityItem cargo = new EntityItem(this.world, this.posX, this.posY + 0.2D, this.posZ, entityitem.getItem());
         entityitem.setDead();
-        if (MoCreatures.isServer()) {
-            this.worldObj.spawnEntityInWorld(cargo);
+        if (!this.world.isRemote) {
+            this.world.spawnEntity(cargo);
         }
     }
 
@@ -105,8 +107,8 @@ public class MoCEntityAnt extends MoCEntityInsect {
     }
 
     @Override
-    public boolean isMyFavoriteFood(ItemStack par1ItemStack) {
-        return par1ItemStack != null && MoCTools.isItemEdible(par1ItemStack.getItem());
+    public boolean isMyFavoriteFood(ItemStack stack) {
+        return !stack.isEmpty() && MoCTools.isItemEdible(stack.getItem());
     }
 
     @Override

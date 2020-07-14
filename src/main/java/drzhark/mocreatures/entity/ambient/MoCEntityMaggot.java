@@ -17,7 +17,7 @@ public class MoCEntityMaggot extends MoCEntityAmbient {
     
     @Override
     protected void initEntityAI() {
-    	this.tasks.addTask(1, new EntityAIWanderMoC2(this, 0.8D));
+        this.tasks.addTask(1, new EntityAIWanderMoC2(this, 0.8D));
     }
     
     @Override
@@ -38,7 +38,7 @@ public class MoCEntityMaggot extends MoCEntityAmbient {
 
     @Override
     public boolean isOnLadder() {
-        return this.isCollidedHorizontally;
+        return this.collidedHorizontally;
     }
 
     public boolean climbing() {

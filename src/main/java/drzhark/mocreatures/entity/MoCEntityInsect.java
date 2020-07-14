@@ -1,7 +1,6 @@
 package drzhark.mocreatures.entity;
 
 import drzhark.mocreatures.MoCTools;
-import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.ai.EntityAIWanderMoC2;
 import drzhark.mocreatures.network.MoCMessageHandler;
 import drzhark.mocreatures.network.message.MoCMessageAnimation;
@@ -56,25 +55,25 @@ public class MoCEntityInsect extends MoCEntityAmbient {
     }
 
     public boolean getIsFlying() {
-    	return ((Boolean)this.dataManager.get(IS_FLYING)).booleanValue();
+        return ((Boolean)this.dataManager.get(IS_FLYING)).booleanValue();
     }
 
     public void setIsFlying(boolean flag) {
-    	this.dataManager.set(IS_FLYING, Boolean.valueOf(flag));
+        this.dataManager.set(IS_FLYING, Boolean.valueOf(flag));
     }
 
     @Override
     public void onLivingUpdate() {
         super.onLivingUpdate();
 
-        if (MoCreatures.isServer()) {
+        if (!this.world.isRemote) {
             if (!getIsFlying() && isOnLadder() && !this.onGround) {
                 MoCMessageHandler.INSTANCE.sendToAllAround(new MoCMessageAnimation(this.getEntityId(), 1),
-                        new TargetPoint(this.worldObj.provider.getDimensionType().getId(), this.posX, this.posY, this.posZ, 64));
+                        new TargetPoint(this.world.provider.getDimensionType().getId(), this.posX, this.posY, this.posZ, 64));
             }
 
             if (isFlyer() && !getIsFlying() && this.rand.nextInt(getFlyingFreq()) == 0) {
-                List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(4D, 4D, 4D));
+                List<Entity> list = this.world.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(4D, 4D, 4D));
                 for (int i = 0; i < list.size(); i++) {
                     Entity entity1 = list.get(i);
                     if (!(entity1 instanceof EntityLivingBase)) {
@@ -151,7 +150,7 @@ public class MoCEntityInsect extends MoCEntityAmbient {
 
     @Override
     public boolean isOnLadder() {
-        return this.isCollidedHorizontally;
+        return this.collidedHorizontally;
     }
 
     public boolean climbing() {

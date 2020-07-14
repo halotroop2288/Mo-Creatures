@@ -1,9 +1,8 @@
 package drzhark.mocreatures.entity.ambient;
 
 import drzhark.mocreatures.MoCTools;
-import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityInsect;
-import drzhark.mocreatures.util.MoCSoundEvents;
+import drzhark.mocreatures.init.MoCSoundEvents;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
@@ -22,13 +21,13 @@ public class MoCEntityFly extends MoCEntityInsect {
     public void onLivingUpdate() {
         super.onLivingUpdate();
 
-        if (MoCreatures.isServer()) {
+        if (!this.world.isRemote) {
 
             if (getIsFlying() && this.rand.nextInt(200) == 0) {
                 setIsFlying(false);
             }
             if (getIsFlying() && --this.soundCount == -1) {
-                EntityPlayer ep = this.worldObj.getClosestPlayerToEntity(this, 5D);
+                EntityPlayer ep = this.world.getClosestPlayerToEntity(this, 5D);
                 if (ep != null) {
                     MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_FLY_AMBIENT);
                     this.soundCount = 55;
@@ -38,8 +37,8 @@ public class MoCEntityFly extends MoCEntityInsect {
     }
 
     @Override
-    public boolean isMyFavoriteFood(ItemStack par1ItemStack) {
-        return par1ItemStack != null && par1ItemStack.getItem() == Items.ROTTEN_FLESH;
+    public boolean isMyFavoriteFood(ItemStack stack) {
+        return !stack.isEmpty() && stack.getItem() == Items.ROTTEN_FLESH;
     }
 
     @Override
