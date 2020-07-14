@@ -7,14 +7,16 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
-public class MoCEntityTiger extends MoCEntityNewBigCat {
+import javax.annotation.Nullable;
+
+public class MoCEntityTiger extends MoCEntityBigCat {
 
     public MoCEntityTiger(World world) {
         super(world);
-        // TODO Auto-generated constructor stub
     }
 
     @Override
@@ -39,7 +41,9 @@ public class MoCEntityTiger extends MoCEntityNewBigCat {
                 return MoCreatures.proxy.getTexture("BCwhiteTiger.png");
             case 3:
                 return MoCreatures.proxy.getTexture("BCwhiteTiger.png"); //winged tiger
-            default:
+            /*case 4:
+            	return MoCreatures.proxy.getTexture("BCleoger.png"); // Tiger x Leopard
+            */default:
                 return MoCreatures.proxy.getTexture("BCtiger.png");
         }
     }
@@ -50,41 +54,26 @@ public class MoCEntityTiger extends MoCEntityNewBigCat {
     }
 
     @Override
-    public boolean interact(EntityPlayer entityplayer) {
-
-        if (super.interact(entityplayer)) {
-            return false;
+    public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
+        if (super.processInteract(player, hand, stack)) {
+            return true;
         }
-        ItemStack itemstack = entityplayer.inventory.getCurrentItem();
-        if ((itemstack != null) && getIsTamed() && getType() == 2 && (itemstack.getItem() == MoCreatures.essencelight)) {
-            if (--itemstack.stackSize == 0) {
-                entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, new ItemStack(Items.glass_bottle));
+        boolean onMainHand = (hand == EnumHand.MAIN_HAND);
+        if ((stack != null) && onMainHand && getIsTamed() && getType() == 2 && (stack.getItem() == MoCreatures.essencelight)) {
+            if (--stack.stackSize == 0) {
+                player.inventory.setInventorySlotContents(player.inventory.currentItem, new ItemStack(Items.GLASS_BOTTLE));
             } else {
-                entityplayer.inventory.addItemStackToInventory(new ItemStack(Items.glass_bottle));
+                player.inventory.addItemStackToInventory(new ItemStack(Items.GLASS_BOTTLE));
             }
             setType(3);
             return true;
         }
-        //TODO ERASE! TESTING ONLY
-        /*if (itemstack != null && (itemstack.getItem() == MoCreatures.essencefire))
-        {
-            setType(getType()+1);
-            if (getType() >9) setType(1);
-            setEdad(getMaxEdad());
-            return true;
-        }
-        if (itemstack != null && (itemstack.getItem() == MoCreatures.essenceundead))
-        {
-            this.setIsGhost(!getIsGhost());
-            return true;
-        }*/
-
-        if (getIsRideable() && getIsAdult() && (this.riddenByEntity == null)) {
-            entityplayer.rotationYaw = this.rotationYaw;
-            entityplayer.rotationPitch = this.rotationPitch;
+        if (getIsRideable() && getIsAdult() && (!this.isBeingRidden())) {
+            player.rotationYaw = this.rotationYaw;
+            player.rotationPitch = this.rotationPitch;
             setSitting(false);
             if (MoCreatures.isServer()) {
-                entityplayer.mountEntity(this);
+                player.startRiding(this);
             }
             return true;
         }
@@ -95,7 +84,13 @@ public class MoCEntityTiger extends MoCEntityNewBigCat {
     @Override
     public String getOffspringClazz(IMoCTameable mate) {
         if (mate instanceof MoCEntityLion && ((MoCEntityLion) mate).getType() == 2) {
-            return "Lion";
+            return "Liger";
+        }
+        if (mate instanceof MoCEntityPanther && ((MoCEntityPanther) mate).getType() == 1) {
+            return "Panthger";
+        }
+        if (mate instanceof MoCEntityLeopard && ((MoCEntityPanther) mate).getType() == 1) {
+            return "Leoger";
         }
         return "Tiger";
     }
@@ -108,7 +103,13 @@ public class MoCEntityTiger extends MoCEntityNewBigCat {
     @Override
     public int getOffspringTypeInt(IMoCTameable mate) {
         if (mate instanceof MoCEntityLion && ((MoCEntityLion) mate).getType() == 2) {
-            return 4; //liger
+            return 1;//4; //liger
+        }
+        if (mate instanceof MoCEntityLeopard && ((MoCEntityLeopard) mate).getType() == 1) {
+            return 1;//4; //leoger
+        }
+        if (mate instanceof MoCEntityPanther && ((MoCEntityPanther) mate).getType() == 1) {
+            return 1;//4; //panthger
         }
         return this.getType();
     }
@@ -116,7 +117,9 @@ public class MoCEntityTiger extends MoCEntityNewBigCat {
     @Override
     public boolean compatibleMate(Entity mate) {
         return (mate instanceof MoCEntityTiger && ((MoCEntityTiger) mate).getType() < 3)
-                || (mate instanceof MoCEntityLion && ((MoCEntityLion) mate).getType() == 2);
+                || (mate instanceof MoCEntityLion && ((MoCEntityLion) mate).getType() == 2)
+                || (mate instanceof MoCEntityLeopard && ((MoCEntityLeopard) mate).getType() == 1)
+        		|| (mate instanceof MoCEntityPanther && ((MoCEntityPanther) mate).getType() == 1);
     }
 
     @Override
@@ -166,6 +169,6 @@ public class MoCEntityTiger extends MoCEntityNewBigCat {
     
     @Override
     public float getMoveSpeed() {
-            return 1.6F;
+            return 1.5F;
     }
 }

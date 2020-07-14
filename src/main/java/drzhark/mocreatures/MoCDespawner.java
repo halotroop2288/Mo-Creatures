@@ -1,7 +1,7 @@
 package drzhark.mocreatures;
 
 import drzhark.customspawner.utils.CMSUtils;
-import drzhark.mocreatures.utils.MoCLog;
+import drzhark.mocreatures.util.MoCLog;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EnumCreatureType;
@@ -24,6 +24,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class MoCDespawner {
@@ -37,12 +38,14 @@ public class MoCDespawner {
     public MoCDespawner() {
         this.biomeList = new ArrayList<Biome>();
         try {
-            for (Biome Biome : Biome.getBiomeGenArray()) {
-                if (Biome == null) {
+        	Iterator<Biome> iterator = Biome.REGISTRY.iterator();
+            while (iterator.hasNext()) {
+            	Biome biome = iterator.next();
+                if (biome == null) {
                     continue;
                 }
 
-                this.biomeList.add(Biome);
+                this.biomeList.add(biome);
             }
 
             this.vanillaClassList = new ArrayList<Class<? extends EntityLiving>>();
@@ -145,7 +148,7 @@ public class MoCDespawner {
         if (i > lightLevel) {
             if (debug) {
                 MoCLog.logger.info("Denied spawn! for " + entity.getName() + ". LightLevel over threshold of " + lightLevel
-                        + " in dimension " + worldObj.provider.getDimensionId() + " at coords " + x + ", " + y + ", " + z);
+                        + " in dimension " + worldObj.provider.getDimensionType().getId() + " at coords " + x + ", " + y + ", " + z);
             }
         }
         return i <= lightLevel;
@@ -163,10 +166,10 @@ public class MoCDespawner {
             blockLightLevel = CMSUtils.getLightFromNeighbors(worldObj.getChunkFromChunkCoords(x >> 4, z >> 4), x & 15, y, z & 15);
         }
         if (blockLightLevel < minDespawnLightLevel && maxDespawnLightLevel != -1) {
-            //if (debug) CMSUtils.getEnvironment(worldObj).envLog.logger.info("Denied spawn! for " + entity.getName() + blockLightLevel + " under minimum threshold of " + minDespawnLightLevel + " in dimension " + worldObj.provider.getDimensionId() + " at coords " + x + ", " + y + ", " + z);
+            //if (debug) CMSUtils.getEnvironment(worldObj).envLog.logger.info("Denied spawn! for " + entity.getName() + blockLightLevel + " under minimum threshold of " + minDespawnLightLevel + " in dimension " + worldObj.provider.getDimensionType().getId() + " at coords " + x + ", " + y + ", " + z);
             return false;
         } else if (blockLightLevel > maxDespawnLightLevel && maxDespawnLightLevel != -1) {
-            //if (debug) CMSUtils.getEnvironment(worldObj).envLog.logger.info("Denied spawn! for " + entity.getName() + blockLightLevel + " over maximum threshold of " + maxDespawnLightLevel + " in dimension " + worldObj.provider.getDimensionId() + " at coords " + x + ", " + y + ", " + z);
+            //if (debug) CMSUtils.getEnvironment(worldObj).envLog.logger.info("Denied spawn! for " + entity.getName() + blockLightLevel + " over maximum threshold of " + maxDespawnLightLevel + " in dimension " + worldObj.provider.getDimensionType().getId() + " at coords " + x + ", " + y + ", " + z);
             return false;
         }
         return true;

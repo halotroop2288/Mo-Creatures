@@ -8,30 +8,40 @@ import drzhark.mocreatures.entity.ai.EntityAINearestAttackableTargetMoC;
 import drzhark.mocreatures.entity.passive.MoCEntityPetScorpion;
 import drzhark.mocreatures.network.MoCMessageHandler;
 import drzhark.mocreatures.network.message.MoCMessageAnimation;
+import drzhark.mocreatures.util.MoCSoundEvents;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.EnumCreatureAttribute;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIAttackOnCollide;
+import net.minecraft.entity.ai.EntityAIAttackMelee;
 import net.minecraft.entity.ai.EntityAIFleeSun;
 import net.minecraft.entity.ai.EntityAILeapAtTarget;
 import net.minecraft.entity.ai.EntityAIRestrictSun;
 import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
+import net.minecraft.init.MobEffects;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.potion.Potion;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+
+import javax.annotation.Nullable;
 
 public class MoCEntityScorpion extends MoCEntityMob {
 
@@ -40,6 +50,9 @@ public class MoCEntityScorpion extends MoCEntityMob {
     public int mouthCounter;
     public int armCounter;
 
+    private static final DataParameter<Boolean> IS_PICKED = EntityDataManager.<Boolean>createKey(MoCEntityScorpion.class, DataSerializers.BOOLEAN);
+    private static final DataParameter<Boolean> HAS_BABIES = EntityDataManager.<Boolean>createKey(MoCEntityScorpion.class, DataSerializers.BOOLEAN);
+    
     public MoCEntityScorpion(World world) {
         super(world);
         setSize(1.4F, 0.9F);
@@ -54,8 +67,12 @@ public class MoCEntityScorpion extends MoCEntityMob {
                 setHasBabies(false);
             }
         }
-        this.tasks.addTask(0, new EntityAISwimming(this));
-        this.tasks.addTask(1, new EntityAIAttackOnCollide(this, 1.0D, true));
+    }
+
+    @Override
+    protected void initEntityAI() {
+    	this.tasks.addTask(0, new EntityAISwimming(this));
+        this.tasks.addTask(1, new EntityAIAttackMelee(this, 1.0D, true));
         this.tasks.addTask(2, new EntityAIRestrictSun(this));
         this.tasks.addTask(7, new EntityAIFleeSun(this, 1.0D));
         this.tasks.addTask(5, new EntityAIFleeFromPlayer(this, 1.2D, 4D));
@@ -66,8 +83,8 @@ public class MoCEntityScorpion extends MoCEntityMob {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(18.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.3D);
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(18.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.3D);
         this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(3.0D);
     }
 
@@ -99,16 +116,16 @@ public class MoCEntityScorpion extends MoCEntityMob {
     @Override
     protected void entityInit() {
         super.entityInit();
-        this.dataWatcher.addObject(24, Byte.valueOf((byte) 0)); // isPicked - 0 false 1 true
-        this.dataWatcher.addObject(23, Byte.valueOf((byte) 0)); // has babies - 0 false 1 true
+        this.dataManager.register(IS_PICKED, Boolean.valueOf(false));
+        this.dataManager.register(HAS_BABIES, Boolean.valueOf(false)); 
     }
 
     public boolean getHasBabies() {
-        return getIsAdult() && (this.dataWatcher.getWatchableObjectByte(23) == 1);
+    	return ((Boolean)this.dataManager.get(HAS_BABIES)).booleanValue();
     }
 
     public boolean getIsPicked() {
-        return (this.dataWatcher.getWatchableObjectByte(24) == 1);
+    	return ((Boolean)this.dataManager.get(IS_PICKED)).booleanValue();
     }
 
     public boolean getIsPoisoning() {
@@ -116,19 +133,17 @@ public class MoCEntityScorpion extends MoCEntityMob {
     }
 
     public void setHasBabies(boolean flag) {
-        byte input = (byte) (flag ? 1 : 0);
-        this.dataWatcher.updateObject(23, Byte.valueOf(input));
+    	this.dataManager.set(HAS_BABIES, Boolean.valueOf(flag));
     }
 
     public void setPicked(boolean flag) {
-        byte input = (byte) (flag ? 1 : 0);
-        this.dataWatcher.updateObject(24, Byte.valueOf(input));
+    	this.dataManager.set(IS_PICKED, Boolean.valueOf(flag));
     }
 
     public void setPoisoning(boolean flag) {
         if (flag && MoCreatures.isServer()) {
             MoCMessageHandler.INSTANCE.sendToAllAround(new MoCMessageAnimation(this.getEntityId(), 0),
-                    new TargetPoint(this.worldObj.provider.getDimensionId(), this.posX, this.posY, this.posZ, 64));
+                    new TargetPoint(this.worldObj.provider.getDimensionType().getId(), this.posX, this.posY, this.posZ, 64));
         }
         this.isPoisoning = flag;
     }
@@ -174,14 +189,14 @@ public class MoCEntityScorpion extends MoCEntityMob {
         }
 
         if (MoCreatures.isServer() && (this.armCounter == 10 || this.armCounter == 40)) {
-            this.worldObj.playSoundAtEntity(this, "mocreatures:scorpionclaw", 1.0F, 1.0F + ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F));
+            MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_SCORPION_CLAW);
         }
 
         if (this.armCounter != 0 && this.armCounter++ > 24) {
             this.armCounter = 0;
         }
 
-        if (MoCreatures.isServer() && this.riddenByEntity == null && this.getIsAdult() && !this.getHasBabies() && this.rand.nextInt(100) == 0) {
+        if (MoCreatures.isServer() && !this.isBeingRidden() && this.getIsAdult() && !this.getHasBabies() && this.rand.nextInt(100) == 0) {
             MoCTools.findMobRider(this);
             /*List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(4D, 2D, 4D));
             for (int i = 0; i < list.size(); i++) {
@@ -201,8 +216,7 @@ public class MoCEntityScorpion extends MoCEntityMob {
         if (getIsPoisoning()) {
             this.poisontimer++;
             if (this.poisontimer == 1) {
-                this.worldObj.playSoundAtEntity(this, "mocreatures:scorpionsting", 1.0F,
-                        1.0F + ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F));
+                MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_SCORPION_STING);
             }
             if (this.poisontimer > 50) {
                 this.poisontimer = 0;
@@ -242,13 +256,13 @@ public class MoCEntityScorpion extends MoCEntityMob {
                 if (flag) {
                     MoCreatures.poisonPlayer((EntityPlayer) entityIn);
                 }
-                ((EntityLivingBase) entityIn).addPotionEffect(new PotionEffect(Potion.poison.id, 70, 0));
+                ((EntityLivingBase) entityIn).addPotionEffect(new PotionEffect(MobEffects.POISON, 70, 0));
             } else if (getType() == 4)// blue scorpions
             {
                 if (flag) {
                     MoCreatures.freezePlayer((EntityPlayer) entityIn);
                 }
-                ((EntityLivingBase) entityIn).addPotionEffect(new PotionEffect(Potion.moveSlowdown.id, 70, 0));
+                ((EntityLivingBase) entityIn).addPotionEffect(new PotionEffect(MobEffects.SLOWNESS, 70, 0));
 
             } else if (getType() == 3)// red scorpions
             {
@@ -266,7 +280,7 @@ public class MoCEntityScorpion extends MoCEntityMob {
     public void swingArm() {
         if (MoCreatures.isServer()) {
             MoCMessageHandler.INSTANCE.sendToAllAround(new MoCMessageAnimation(this.getEntityId(), 1),
-                    new TargetPoint(this.worldObj.provider.getDimensionId(), this.posX, this.posY, this.posZ, 64));
+                    new TargetPoint(this.worldObj.provider.getDimensionType().getId(), this.posX, this.posY, this.posZ, 64));
         }
     }
 
@@ -285,41 +299,40 @@ public class MoCEntityScorpion extends MoCEntityMob {
         if (MoCreatures.isServer() && getIsAdult() && getHasBabies()) {
             int k = this.rand.nextInt(5);
             for (int i = 0; i < k; i++) {
-                MoCEntityScorpion entityscorpy = new MoCEntityScorpion(this.worldObj);
+                MoCEntityPetScorpion entityscorpy = new MoCEntityPetScorpion(this.worldObj);
                 entityscorpy.setPosition(this.posX, this.posY, this.posZ);
                 entityscorpy.setAdult(false);
                 entityscorpy.setEdad(20);
                 entityscorpy.setType(getType());
                 this.worldObj.spawnEntityInWorld(entityscorpy);
-                this.worldObj.playSoundAtEntity(this, "mob.chickenplop", 1.0F, ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F) + 1.0F);
-
+                MoCTools.playCustomSound(entityscorpy, SoundEvents.ENTITY_CHICKEN_EGG);
             }
         }
     }
 
     @Override
-    protected String getDeathSound() {
-        return "mocreatures:scorpiondying";
+    protected SoundEvent getDeathSound() {
+        return MoCSoundEvents.ENTITY_SCORPION_DEATH;
     }
 
     @Override
-    protected String getHurtSound() {
-        return "mocreatures:scorpionhurt";
+    protected SoundEvent getHurtSound() {
+        return MoCSoundEvents.ENTITY_SCORPION_HURT;
     }
 
     @Override
-    protected String getLivingSound() {
+    protected SoundEvent getAmbientSound() {
         if (MoCreatures.isServer()) {
             MoCMessageHandler.INSTANCE.sendToAllAround(new MoCMessageAnimation(this.getEntityId(), 3),
-                    new TargetPoint(this.worldObj.provider.getDimensionId(), this.posX, this.posY, this.posZ, 64));
+                    new TargetPoint(this.worldObj.provider.getDimensionType().getId(), this.posX, this.posY, this.posZ, 64));
         }
-        return "mocreatures:scorpiongrunt";
+        return MoCSoundEvents.ENTITY_SCORPION_AMBIENT;
     }
 
     @Override
     protected Item getDropItem() {
         if (!getIsAdult()) {
-            return Items.string;
+            return Items.STRING;
         }
 
         boolean flag = (this.rand.nextInt(100) < MoCreatures.proxy.rareItemDropChance);
@@ -346,7 +359,7 @@ public class MoCEntityScorpion extends MoCEntityMob {
                 }
                 return MoCreatures.chitinFrost;
             default:
-                return Items.string;
+                return Items.STRING;
         }
     }
 
@@ -437,40 +450,16 @@ public class MoCEntityScorpion extends MoCEntityMob {
     }
 
     @Override
-    public boolean interact(EntityPlayer entityplayer) {
-        if (super.interact(entityplayer)) {
-            return false;
-        }
-
-        if (MoCreatures.isServer() && this.getRidingEntity() == null && !getIsAdult() && getEdad() < 60) {
-            MoCEntityPetScorpion entitypetscorpy = new MoCEntityPetScorpion(this.worldObj);
-            entitypetscorpy.setPosition(this.posX, this.posY, this.posZ);
-            entitypetscorpy.setAdult(false);
-            entitypetscorpy.setEdad(this.getEdad());
-            entitypetscorpy.setType(getType());
-            this.worldObj.spawnEntityInWorld(entitypetscorpy);
-            entitypetscorpy.rotationYaw = entityplayer.rotationYaw;
-            entitypetscorpy.mountEntity(entityplayer);
-            MoCTools.tameWithName(entityplayer, entitypetscorpy);
-            //entitypetscorpy.setPicked(true);
-            this.setDead();
-            return true;
-
-        }
-        return false;
-    }
-
-    @Override
     public double getMountedYOffset() {
         return (this.height * 0.75D) - 0.15D;
     }
 
     @Override
-    public void updateRiderPosition() {
+    public void updatePassenger(Entity passenger) {
         double dist = (0.2D);
         double newPosX = this.posX + (dist * Math.sin(this.renderYawOffset / 57.29578F));
         double newPosZ = this.posZ - (dist * Math.cos(this.renderYawOffset / 57.29578F));
-        this.riddenByEntity.setPosition(newPosX, this.posY + getMountedYOffset() + this.riddenByEntity.getYOffset(), newPosZ);
-        this.riddenByEntity.rotationYaw = this.rotationYaw;
+        passenger.setPosition(newPosX, this.posY + getMountedYOffset() + passenger.getYOffset(), newPosZ);
+        passenger.rotationYaw = this.rotationYaw;
     }
 }

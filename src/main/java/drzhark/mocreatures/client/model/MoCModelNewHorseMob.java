@@ -15,11 +15,11 @@ public class MoCModelNewHorseMob extends MoCModelNewHorse {
         int type = entityhorse.getType();
         boolean wings = (entityhorse.isFlyer());
         boolean eating = (entityhorse.eatingCounter != 0);//entityhorse.getEating();
-        boolean standing = (entityhorse.standCounter != 0 && entityhorse.riddenByEntity == null);
+        boolean standing = (entityhorse.standCounter != 0 && entityhorse.getRidingEntity() == null);
         boolean openMouth = (entityhorse.mouthCounter != 0);
         boolean moveTail = (entityhorse.tailCounter != 0);
         boolean flapwings = (entityhorse.wingFlapCounter != 0);
-        boolean rider = (entityhorse.riddenByEntity != null);
+        boolean rider = (entityhorse.isBeingRidden());
         boolean floating = (entityhorse.isFlyer() && entityhorse.isOnAir());
 
         setRotationAngles(f, f1, f2, f3, f4, f5, eating, rider, floating, standing, false, moveTail, wings, flapwings, false, 0);

@@ -8,7 +8,7 @@ import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.Vec3d;
 
 public class EntityAIWanderMoC2 extends EntityAIBase {
 
@@ -39,7 +39,7 @@ public class EntityAIWanderMoC2 extends EntityAIBase {
         if (this.entity instanceof IMoCEntity && ((IMoCEntity) this.entity).isMovementCeased()) {
             return false;
         }
-        if (this.entity.riddenByEntity != null && !(this.entity instanceof MoCEntityAnt || this.entity instanceof MoCEntityMob)) {
+        if (this.entity.isBeingRidden() && !(this.entity instanceof MoCEntityAnt || this.entity instanceof MoCEntityMob)) {
             return false;
         }
 
@@ -55,13 +55,17 @@ public class EntityAIWanderMoC2 extends EntityAIBase {
             }
         }
 
-        Vec3 vec3 = RandomPositionGenerator.findRandomTarget(this.entity, 10, 7);
+        Vec3d vec3 = RandomPositionGeneratorMoCFlyer.findRandomTarget(this.entity, 10, 12);
 
         if (vec3 != null && this.entity instanceof IMoCEntity && this.entity.getNavigator() instanceof PathNavigateFlyer) {
             int distToFloor = MoCTools.distanceToFloor(this.entity);
             int finalYHeight = distToFloor + MathHelper.floor_double(vec3.yCoord - this.entity.posY);
-            if ((finalYHeight > ((IMoCEntity) this.entity).maxFlyingHeight()) || (finalYHeight < ((IMoCEntity) this.entity).minFlyingHeight())) {
-                //System.out.println("vector height bigger than max flying height");
+            if ((finalYHeight < ((IMoCEntity) this.entity).minFlyingHeight())) {
+                //System.out.println("vector height " + finalYHeight + " smaller than min flying height " + ((IMoCEntity) this.entity).minFlyingHeight());
+                return false;
+            }
+            if ((finalYHeight > ((IMoCEntity) this.entity).maxFlyingHeight())){
+                //System.out.println("vector height " + finalYHeight + " bigger than max flying height " + ((IMoCEntity) this.entity).maxFlyingHeight());
                 return false;
             }
 
@@ -85,7 +89,7 @@ public class EntityAIWanderMoC2 extends EntityAIBase {
      */
     @Override
     public boolean continueExecuting() {
-        return !this.entity.getNavigator().noPath() && this.entity.riddenByEntity == null;
+        return !this.entity.getNavigator().noPath() && !entity.isBeingRidden();
     }
 
     /**

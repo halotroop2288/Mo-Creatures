@@ -6,23 +6,30 @@ import drzhark.mocreatures.entity.MoCEntityTameableAnimal;
 import drzhark.mocreatures.entity.ai.EntityAIFollowAdult;
 import drzhark.mocreatures.entity.ai.EntityAIPanicMoC;
 import drzhark.mocreatures.entity.ai.EntityAIWanderMoC2;
+import drzhark.mocreatures.util.MoCSoundEvents;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIAttackOnCollide;
+import net.minecraft.entity.ai.EntityAIAttackMelee;
 import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
+import net.minecraft.init.MobEffects;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.pathfinding.PathNavigateGround;
-import net.minecraft.potion.Potion;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+
+import javax.annotation.Nullable;
 
 public class MoCEntityGoat extends MoCEntityTameableAnimal {
 
@@ -39,18 +46,21 @@ public class MoCEntityGoat extends MoCEntityTameableAnimal {
     private int tailcount; // 90 to -45
     private int earcount; // 20 to 40 default = 30
     private int eatcount;
-
-    //private float moveSpeed;
-
+    private static final DataParameter<Boolean> IS_CHARGING = EntityDataManager.<Boolean>createKey(MoCEntityGoat.class, DataSerializers.BOOLEAN);
+    private static final DataParameter<Boolean> IS_UPSET = EntityDataManager.<Boolean>createKey(MoCEntityGoat.class, DataSerializers.BOOLEAN);
+    
     public MoCEntityGoat(World world) {
         super(world);
         setSize(0.8F, 1F);
         setEdad(70);
-        ((PathNavigateGround) this.getNavigator()).setAvoidsWater(true);
+    }
+
+    @Override
+    protected void initEntityAI() {
         this.tasks.addTask(1, new EntityAISwimming(this));
         this.tasks.addTask(2, new EntityAIPanicMoC(this, 1.0D));
         this.tasks.addTask(4, new EntityAIFollowAdult(this, 1.0D));
-        this.tasks.addTask(5, new EntityAIAttackOnCollide(this, 1.0D, true));
+        this.tasks.addTask(5, new EntityAIAttackMelee(this, 1.0D, true));
         this.tasks.addTask(6, new EntityAIWanderMoC2(this, 1.0D));
         this.tasks.addTask(7, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
     }
@@ -58,35 +68,33 @@ public class MoCEntityGoat extends MoCEntityTameableAnimal {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(12.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(12.0D);
         this.getAttributeMap().registerAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
         this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(1.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.25D);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.25D);
     }
 
     @Override
     protected void entityInit() {
         super.entityInit();
-        this.dataWatcher.addObject(23, Byte.valueOf((byte) 0)); // isCharging - 0 false 1 true
-        this.dataWatcher.addObject(24, Byte.valueOf((byte) 0)); // isUpset - 0 false 1 true
+        this.dataManager.register(IS_CHARGING, Boolean.valueOf(false));
+        this.dataManager.register(IS_UPSET, Boolean.valueOf(false));
     }
 
     public boolean getUpset() {
-        return (this.dataWatcher.getWatchableObjectByte(24) == 1);
+    	return ((Boolean)this.dataManager.get(IS_UPSET)).booleanValue();
     }
 
     public boolean getCharging() {
-        return (this.dataWatcher.getWatchableObjectByte(23) == 1);
+    	return ((Boolean)this.dataManager.get(IS_CHARGING)).booleanValue();
     }
 
     public void setUpset(boolean flag) {
-        byte input = (byte) (flag ? 1 : 0);
-        this.dataWatcher.updateObject(24, Byte.valueOf(input));
+    	this.dataManager.set(IS_UPSET, Boolean.valueOf(flag));
     }
 
     public void setCharging(boolean flag) {
-        byte input = (byte) (flag ? 1 : 0);
-        this.dataWatcher.updateObject(23, Byte.valueOf(input));
+    	this.dataManager.set(IS_CHARGING, Boolean.valueOf(flag));
     }
 
     @Override
@@ -164,8 +172,8 @@ public class MoCEntityGoat extends MoCEntityTameableAnimal {
             this.motionY = 0.5D;
         }
 
-        if (isPotionActive(Potion.jump)) {
-            this.motionY += (getActivePotionEffect(Potion.jump).getAmplifier() + 1) * 0.1F;
+        if (isPotionActive(MobEffects.JUMP_BOOST)) {
+            this.motionY += (getActivePotionEffect(MobEffects.JUMP_BOOST).getAmplifier() + 1) * 0.1F;
         }
         if (isSprinting()) {
             float f = this.rotationYaw * 0.01745329F;
@@ -268,8 +276,7 @@ public class MoCEntityGoat extends MoCEntityTameableAnimal {
                         return;
                     }
                     if ((f < 2.0F) && (entityitem != null) && (this.deathTime == 0) && this.rand.nextInt(50) == 0) {
-                        this.worldObj.playSoundAtEntity(this, "mocreatures:goateating", 1.0F,
-                                1.0F + ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F));
+                        MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_GOAT_EATING);
                         setEating(true);
 
                         entityitem.setDead();
@@ -325,7 +332,7 @@ public class MoCEntityGoat extends MoCEntityTameableAnimal {
         this.attacking = 30;
         if (entityIn instanceof MoCEntityGoat) {
             MoCTools.bigsmack(this, entityIn, 0.4F);
-            MoCTools.playCustomSound(this, "goatsmack", worldObj);
+            MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_GOAT_SMACK);
             if (this.rand.nextInt(3) == 0) {
                 calm();
                 ((MoCEntityGoat) entityIn).calm();
@@ -379,7 +386,6 @@ public class MoCEntityGoat extends MoCEntityTameableAnimal {
         return this.eating;
     }
 
-    @Override
     public void setEating(boolean flag) {
         this.eating = flag;
     }
@@ -405,7 +411,7 @@ public class MoCEntityGoat extends MoCEntityTameableAnimal {
         if (getSwingLeg()) {
             this.movecount += 5;
             if (this.movecount == 30) {
-                this.worldObj.playSoundAtEntity(this, "mocreatures:goatdigg", 1.0F, 1.0F + ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F));
+                MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_GOAT_DIGG);
             }
 
             if (this.movecount > 100) {
@@ -435,8 +441,7 @@ public class MoCEntityGoat extends MoCEntityTameableAnimal {
             if (this.eatcount == 2) {
                 EntityPlayer entityplayer1 = this.worldObj.getClosestPlayerToEntity(this, 3D);
                 if (entityplayer1 != null) {
-                    this.worldObj.playSoundAtEntity(this, "mocreatures:goateating", 1.0F,
-                            1.0F + ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F));
+                    MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_GOAT_EATING);
                 }
             }
             if (this.eatcount > 25) {
@@ -503,39 +508,36 @@ public class MoCEntityGoat extends MoCEntityTameableAnimal {
     }
 
     @Override
-    public boolean interact(EntityPlayer entityplayer) {
-        if (super.interact(entityplayer)) {
-            return false;
+    public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
+        if (super.processInteract(player, hand, stack)) {
+            return true;
         }
-        ItemStack itemstack = entityplayer.inventory.getCurrentItem();
-        if (itemstack != null && itemstack.getItem() == Items.bucket) {
+        boolean onMainHand = (hand == EnumHand.MAIN_HAND);
+        if (stack != null && stack.getItem() == Items.BUCKET) {
             if (getType() > 4) {
                 setUpset(true);
-                setAttackTarget(entityplayer);
+                setAttackTarget(player);
                 return false;
             }
             if (getType() == 1) {
                 return false;
             }
 
-            entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, new ItemStack(Items.milk_bucket));
+            player.inventory.setInventorySlotContents(player.inventory.currentItem, new ItemStack(Items.MILK_BUCKET));
             return true;
         }
 
-        if (getIsTamed()) {
-            if ((itemstack != null) && (MoCTools.isItemEdible(itemstack.getItem()))) {
-                if (--itemstack.stackSize == 0) {
-                    entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, null);
+        if (getIsTamed() && onMainHand && (stack != null) && (MoCTools.isItemEdible(stack.getItem()))) {
+                if (--stack.stackSize == 0) {
+                    player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
                 }
                 this.setHealth(getMaxHealth());
-                this.worldObj
-                        .playSoundAtEntity(this, "mocreatures:goateating", 1.0F, 1.0F + ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F));
+                MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_GOAT_EATING);
                 return true;
-            }
         }
 
-        if (MoCreatures.isServer() && !getIsTamed() && (itemstack != null) && MoCTools.isItemEdible(itemstack.getItem())) {
-            if (MoCTools.tameWithName(entityplayer, this)) {
+        if (MoCreatures.isServer() && onMainHand && !getIsTamed() && (stack != null) && MoCTools.isItemEdible(stack.getItem())) {
+            if (MoCTools.tameWithName(player, this)) {
                 return true;
             }
         }
@@ -561,31 +563,31 @@ public class MoCEntityGoat extends MoCEntityTameableAnimal {
     }
 
     @Override
-    protected String getHurtSound() {
-        return "mocreatures:goathurt";
+    protected SoundEvent getHurtSound() {
+        return MoCSoundEvents.ENTITY_GOAT_HURT;
     }
 
     @Override
-    protected String getLivingSound() {
+    protected SoundEvent getAmbientSound() {
         setBleating(true);
         if (getType() == 1) {
-            return "mocreatures:goatkid";
+            return MoCSoundEvents.ENTITY_GOAT_AMBIENT_BABY;
         }
         if (getType() > 2 && getType() < 5) {
-            return "mocreatures:goatfemale";
+            return MoCSoundEvents.ENTITY_GOAT_AMBIENT_FEMALE;
         }
 
-        return "mocreatures:goatgrunt";
+        return MoCSoundEvents.ENTITY_GOAT_AMBIENT;
     }
 
     @Override
-    protected String getDeathSound() {
-        return "mocreatures:goatdying";
+    protected SoundEvent getDeathSound() {
+        return MoCSoundEvents.ENTITY_GOAT_DEATH;
     }
 
     @Override
     protected Item getDropItem() {
-        return Items.leather;
+        return Items.LEATHER;
     }
 
     @Override

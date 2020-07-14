@@ -4,13 +4,18 @@ import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.IMoCTameable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
-public class MoCEntityManticorePet extends MoCEntityNewBigCat {
+import javax.annotation.Nullable;
+
+public class MoCEntityManticorePet extends MoCEntityBigCat {
 
     public MoCEntityManticorePet(World world) {
         super(world);
+        this.chestName = "ManticoreChest";
     }
 
     @Override
@@ -49,27 +54,16 @@ public class MoCEntityManticorePet extends MoCEntityNewBigCat {
     }
 
     @Override
-    public boolean interact(EntityPlayer entityplayer) {
-
-        if (super.interact(entityplayer)) {
-            return false;
-        }
-
-        /*ItemStack itemstack = entityplayer.inventory.getCurrentItem();
-        if (itemstack != null && (itemstack.getItem() == MoCreatures.essencefire))
-        {
-            setType(getType()+1);
-            if (getType() >4) setType(1);
-            setEdad(getMaxEdad()-1);
+    public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
+        if (super.processInteract(player, hand, stack)) {
             return true;
         }
-        */
-        if (getIsRideable() && getIsAdult() && (this.riddenByEntity == null)) {
-            entityplayer.rotationYaw = this.rotationYaw;
-            entityplayer.rotationPitch = this.rotationPitch;
+        if (getIsRideable() && getIsAdult() && (!this.isBeingRidden())) {
+            player.rotationYaw = this.rotationYaw;
+            player.rotationPitch = this.rotationPitch;
             setSitting(false);
             if (MoCreatures.isServer()) {
-                entityplayer.mountEntity(this);
+                player.startRiding(this);
             }
             return true;
         }

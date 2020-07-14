@@ -3,69 +3,69 @@ package drzhark.mocreatures.entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.ResourceLocation;
 
+import java.util.UUID;
+
 public interface IMoCEntity {
 
-    public void selectType();
+    void selectType();
 
-    public String getPetName();
+    String getPetName();
 
-    public void setPetName(String name);
+    void setPetName(String name);
 
-    public boolean getIsTamed();
+    int getOwnerPetId();
 
-    public void setTamed(boolean flag);
+    void setOwnerPetId(int petId);
 
-    public boolean getIsAdult();
+    UUID getOwnerId();
 
-    public void setAdult(boolean flag);
+    boolean getIsTamed();
 
-    public boolean checkSpawningBiome();
+    boolean getIsAdult();
 
-    public boolean getCanSpawnHere();
+    void setAdult(boolean flag);
 
-    public void performAnimation(int i);
+    boolean checkSpawningBiome();
 
-    public boolean renderName();
+    boolean getCanSpawnHere();
 
-    public int nameYOffset();
+    void performAnimation(int i);
 
-    public void makeEntityJump();
+    boolean renderName();
 
-    public void makeEntityDive();
+    int nameYOffset();
 
-    public float getSizeFactor();
+    void makeEntityJump();
 
-    public float getAdjustedYOffset();
+    void makeEntityDive();
 
-    public String getOwnerName();
+    float getSizeFactor();
 
-    public void setOwner(String username);
+    float getAdjustedYOffset();
 
-    public void setArmorType(byte i);
+    void setArmorType(int i);
 
-    public int getType();
+    int getType();
 
-    public void setType(int i);
+    void setType(int i);
 
-    public void dismountEntity();
+    float rollRotationOffset();
 
-    public float rollRotationOffset();
+    float pitchRotationOffset();
 
-    public float pitchRotationOffset();
+    void setEdad(int i);
 
-    public void setEdad(int i);
+    int getEdad();
 
-    public int getEdad();
+    float yawRotationOffset();
 
-    public float yawRotationOffset();
+    float getAdjustedZOffset();
 
-    public float getAdjustedZOffset();
+    float getAdjustedXOffset();
 
-    public float getAdjustedXOffset();
+    ResourceLocation getTexture();
 
-    public ResourceLocation getTexture();
-
-    public boolean canAttackTarget(EntityLivingBase entity);
+    boolean canAttackTarget(EntityLivingBase entity);
 
     boolean getIsSitting(); // is the entity sitting, for animations and AI
 
@@ -75,17 +75,17 @@ public interface IMoCEntity {
 
     boolean shouldAttackPlayers();
 
-    public double getDivingDepth();
+    double getDivingDepth();
 
-    public boolean isDiving();
+    boolean isDiving();
 
-    public void forceEntityJump();
+    void forceEntityJump();
 
-    public int maxFlyingHeight();
+    int maxFlyingHeight();
 
-    public int minFlyingHeight();
+    int minFlyingHeight();
 
-    public boolean isFlyer();
+    boolean isFlyer();
 
-    public boolean getIsFlying();
+    boolean getIsFlying();
 }

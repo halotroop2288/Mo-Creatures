@@ -11,11 +11,12 @@ import drzhark.mocreatures.entity.item.MoCEntityEgg;
 import drzhark.mocreatures.inventory.MoCAnimalChest;
 import drzhark.mocreatures.network.MoCMessageHandler;
 import drzhark.mocreatures.network.message.MoCMessageAnimation;
+import drzhark.mocreatures.util.MoCSoundEvents;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.EnumCreatureAttribute;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIAttackOnCollide;
+import net.minecraft.entity.ai.EntityAIAttackMelee;
 import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.item.EntityItem;
@@ -23,23 +24,28 @@ import net.minecraft.entity.passive.EntityAnimal;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
-import net.minecraft.inventory.InventoryLargeChest;
+import net.minecraft.init.MobEffects;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.pathfinding.PathNavigateGround;
-import net.minecraft.potion.Potion;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+
+import javax.annotation.Nullable;
 
 public class MoCEntityWyvern extends MoCEntityTameableAnimal {
 
     public MoCAnimalChest localchest;
-    public MoCAnimalChest emptychest;
     public ItemStack localstack;
     public int mouthCounter;
     public int wingFlapCounter;
@@ -52,10 +58,17 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
     private int transformCounter;
     private int tCounter;
     private float fTransparency;
+    private static final DataParameter<Boolean> RIDEABLE = EntityDataManager.<Boolean>createKey(MoCEntityWyvern.class, DataSerializers.BOOLEAN);
+    private static final DataParameter<Boolean> CHESTED = EntityDataManager.<Boolean>createKey(MoCEntityWyvern.class, DataSerializers.BOOLEAN);
+    private static final DataParameter<Boolean> SITTING = EntityDataManager.<Boolean>createKey(MoCEntityWyvern.class, DataSerializers.BOOLEAN);
+    private static final DataParameter<Boolean> GHOST = EntityDataManager.<Boolean>createKey(MoCEntityWyvern.class, DataSerializers.BOOLEAN);
+    private static final DataParameter<Boolean> FLYING = EntityDataManager.<Boolean>createKey(MoCEntityWyvern.class, DataSerializers.BOOLEAN);
+    private static final DataParameter<Integer> ARMOR_TYPE = EntityDataManager.<Integer>createKey(MoCEntityWyvern.class, DataSerializers.VARINT);
+
 
     public MoCEntityWyvern(World world) {
         super(world);
-        setSize(1.9F, 1.7F); //TODO
+        setSize(1.9F, 1.7F);
         setAdult(false);
         setTamed(false);
         this.stepHeight = 1.0F;
@@ -65,9 +78,12 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
         } else {
             setEdad(80 + this.rand.nextInt(20));
         }
-        ((PathNavigateGround) this.getNavigator()).setAvoidsWater(true);
+    }
+
+    @Override
+    protected void initEntityAI() {
         this.tasks.addTask(1, new EntityAISwimming(this));
-        this.tasks.addTask(5, new EntityAIAttackOnCollide(this, 1.0D, true));
+        this.tasks.addTask(5, new EntityAIAttackMelee(this, 1.0D, true));
         this.tasks.addTask(4, this.wander = new EntityAIWanderMoC2(this, 1.0D, 80));
         this.tasks.addTask(7, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
         this.targetTasks.addTask(1, new EntityAINearestAttackableTargetMoC(this, EntityPlayer.class, true));
@@ -77,8 +93,8 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(40D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.3D);
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(40D);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.3D);
         this.getAttributeMap().registerAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
         this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(5.0D);
     }
@@ -86,70 +102,65 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
     @Override
     protected void entityInit() {
         super.entityInit();
-        this.dataWatcher.addObject(23, Byte.valueOf((byte) 0)); // isChested - 0 false 1 true
-        this.dataWatcher.addObject(24, Byte.valueOf((byte) 0)); // armor 0 by default, 1 metal, 2 gold, 3 diamond, 4 crystaline
-        this.dataWatcher.addObject(25, Byte.valueOf((byte) 0)); // isFlying 0 false 1 true
-        this.dataWatcher.addObject(26, Byte.valueOf((byte) 0)); // isSitting - 0 false 1 true
-        this.dataWatcher.addObject(27, Byte.valueOf((byte) 0)); // isRideable - 0 false 1 true
-        this.dataWatcher.addObject(28, Byte.valueOf((byte) 0)); // isGhost - 0 false 1 true
+        this.dataManager.register(RIDEABLE, Boolean.valueOf(false)); // rideable: 0 nothing, 1 saddle
+        this.dataManager.register(SITTING, Boolean.valueOf(false)); // rideable: 0 nothing, 1 saddle
+        this.dataManager.register(CHESTED, Boolean.valueOf(false));
+        this.dataManager.register(FLYING, Boolean.valueOf(false));
+        this.dataManager.register(GHOST, Boolean.valueOf(false));
+        this.dataManager.register(ARMOR_TYPE, Integer.valueOf(0));// armor 0 by default, 1 metal, 2 gold, 3 diamond, 4 crystaline
     }
 
     public boolean getIsFlying() {
-        return (this.dataWatcher.getWatchableObjectByte(25) == 1);
+    	return ((Boolean)this.dataManager.get(FLYING)).booleanValue();
     }
 
     public void setIsFlying(boolean flag) {
-        byte input = (byte) (flag ? 1 : 0);
-        this.dataWatcher.updateObject(25, Byte.valueOf(input));
+    	this.dataManager.set(FLYING, Boolean.valueOf(flag));
     }
 
     @Override
-    public byte getArmorType() {
-        return this.dataWatcher.getWatchableObjectByte(24);
+    public int getArmorType() {
+    	return ((Integer)this.dataManager.get(ARMOR_TYPE)).intValue();
     }
 
     @Override
-    public void setArmorType(byte i) {
-        this.dataWatcher.updateObject(24, Byte.valueOf(i));
+    public void setArmorType(int i) {
+    	this.dataManager.set(ARMOR_TYPE, Integer.valueOf(i));
     }
 
     @Override
     public boolean getIsRideable() {
-        return (this.dataWatcher.getWatchableObjectByte(27) == 1);
+    	return ((Boolean)this.dataManager.get(RIDEABLE)).booleanValue();
     }
 
     @Override
     public void setRideable(boolean flag) {
-        byte input = (byte) (flag ? 1 : 0);
-        this.dataWatcher.updateObject(27, Byte.valueOf(input));
+    	this.dataManager.set(RIDEABLE, Boolean.valueOf(flag));
     }
 
     public boolean getIsChested() {
-        return (this.dataWatcher.getWatchableObjectByte(23) == 1);
+    	return ((Boolean)this.dataManager.get(CHESTED)).booleanValue();
     }
 
     public void setIsChested(boolean flag) {
-        byte input = (byte) (flag ? 1 : 0);
-        this.dataWatcher.updateObject(23, Byte.valueOf(input));
+    	this.dataManager.set(CHESTED, Boolean.valueOf(flag));
     }
 
     @Override
     public boolean getIsSitting() {
-        return (this.dataWatcher.getWatchableObjectByte(26) == 1);
+    	return ((Boolean)this.dataManager.get(SITTING)).booleanValue();
     }
 
     public void setSitting(boolean flag) {
-        byte input = (byte) (flag ? 1 : 0);
-        this.dataWatcher.updateObject(26, Byte.valueOf(input));
+    	this.dataManager.set(SITTING, Boolean.valueOf(flag));
     }
 
     public boolean getIsGhost() {
-        return (this.dataWatcher.getWatchableObjectByte(28) == 1);
+    	return ((Boolean)this.dataManager.get(GHOST)).booleanValue();
     }
 
     public void setIsGhost(boolean flag) {
-        byte input = (byte) (flag ? 1 : 0);
-        this.dataWatcher.updateObject(28, Byte.valueOf(input));
+    	this.dataManager.set(GHOST, Boolean.valueOf(flag));
     }
 
     @Override
@@ -180,7 +191,7 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
                 }
             }
         }
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(calculateMaxHealth());
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(calculateMaxHealth());
         this.setHealth(getMaxHealth());
         this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(calculateAttackDmg());
     }
@@ -282,9 +293,10 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
     public void transform(int tType) {
         if (MoCreatures.isServer()) {
             MoCMessageHandler.INSTANCE.sendToAllAround(new MoCMessageAnimation(this.getEntityId(), tType),
-                    new TargetPoint(this.worldObj.provider.getDimensionId(), this.posX, this.posY, this.posZ, 64));
+                    new TargetPoint(this.worldObj.provider.getDimensionType().getId(), this.posX, this.posY, this.posZ, 64));
         }
         this.transformType = tType;
+        this.transformCounter = 1;
     }
 
     @Override
@@ -294,12 +306,12 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
             this.wingFlapCounter = 0;
         }
         if (this.wingFlapCounter == 5 && MoCreatures.isServer()) {
-            MoCTools.playCustomSound(this, "wyvernwingflap", this.worldObj);
+            MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_WYVERN_WINGFLAP);
         }
 
         if (this.transformCounter > 0) {
             if (this.transformCounter == 40) {
-                MoCTools.playCustomSound(this, "transform", this.worldObj);
+                MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_GENERIC_TRANSFORM);
             }
 
             if (++this.transformCounter > 100) {
@@ -338,7 +350,7 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
             if (isOnAir()) {
                 float myFlyingSpeed = MoCTools.getMyMovementSpeed(this);
                 int wingFlapFreq = (int) (25 - (myFlyingSpeed * 10));
-                if (this.riddenByEntity == null || wingFlapFreq < 5) {
+                if (!this.isBeingRidden() || wingFlapFreq < 5) {
                     wingFlapFreq = 5;
                 }
                 if (this.rand.nextInt(wingFlapFreq) == 0) {
@@ -346,7 +358,7 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
                 }
             }
 
-            if (getIsGhost() && getEdad() < 10 && this.rand.nextInt(5) == 0) {
+            if (getIsGhost() && getEdad() > 0 && getEdad() < 10 && this.rand.nextInt(5) == 0) {
                 setEdad(getEdad() + 1);
                 if (getEdad() == 9) {
                     setEdad(140);
@@ -371,7 +383,7 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
         if (this.wingFlapCounter == 0) {
             this.wingFlapCounter = 1;
             MoCMessageHandler.INSTANCE.sendToAllAround(new MoCMessageAnimation(this.getEntityId(), 3),
-                    new TargetPoint(this.worldObj.provider.getDimensionId(), this.posX, this.posY, this.posZ, 64));
+                    new TargetPoint(this.worldObj.provider.getDimensionType().getId(), this.posX, this.posY, this.posZ, 64));
         }
     }
 
@@ -382,7 +394,7 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
 
     @Override
     public boolean isFlyingAlone() {
-        return getIsFlying() && this.riddenByEntity == null;
+        return getIsFlying() && !this.isBeingRidden();
     }
 
     @Override
@@ -398,97 +410,91 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
     }
 
     @Override
-    public boolean interact(EntityPlayer entityplayer) {
-        if (super.interact(entityplayer)) {
-            return false;
+    public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
+        if (super.processInteract(player, hand, stack)) {
+            return true;
         }
-        ItemStack itemstack = entityplayer.inventory.getCurrentItem();
-
-        if ((itemstack != null) && (itemstack.getItem() == MoCreatures.whip) && getIsTamed() && (this.riddenByEntity == null)) {
+        boolean onMainHand = (hand == EnumHand.MAIN_HAND);
+        if ((stack != null) && (stack.getItem() == MoCreatures.whip) && getIsTamed() && (!this.isBeingRidden())) {
             setSitting(!getIsSitting());
             return true;
         }
 
-        if ((itemstack != null) && !getIsRideable() && getEdad() > 90 && this.getIsTamed()
-                && (itemstack.getItem() == Items.saddle || itemstack.getItem() == MoCreatures.horsesaddle)) {
-            if (--itemstack.stackSize == 0) {
-                entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, null);
+        if ((stack != null) && onMainHand && !getIsRideable() && getEdad() > 90 && this.getIsTamed()
+                && (stack.getItem() == Items.SADDLE || stack.getItem() == MoCreatures.horsesaddle)) {
+            if (--stack.stackSize == 0) {
+                player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
             }
             setRideable(true);
             return true;
         }
 
-        if ((itemstack != null) && this.getIsTamed() && getEdad() > 90 && itemstack.getItem() == Items.iron_horse_armor) {
+        if ((stack != null) && onMainHand && this.getIsTamed() && getEdad() > 90 && stack.getItem() == Items.IRON_HORSE_ARMOR) {
             if (getArmorType() == 0) {
-                MoCTools.playCustomSound(this, "armorput", this.worldObj);
+                MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_GENERIC_ARMOR_ON);
             }
             dropArmor();
             setArmorType((byte) 1);
-            if (--itemstack.stackSize == 0) {
-                entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, null);
+            if (--stack.stackSize == 0) {
+                player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
             }
 
             return true;
         }
 
-        if ((itemstack != null) && this.getIsTamed() && getEdad() > 90 && itemstack.getItem() == Items.golden_horse_armor) {
+        if ((stack != null) && onMainHand && this.getIsTamed() && getEdad() > 90 && stack.getItem() == Items.GOLDEN_HORSE_ARMOR) {
             if (getArmorType() == 0) {
-                MoCTools.playCustomSound(this, "armorput", this.worldObj);
+                MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_GENERIC_ARMOR_ON);
             }
             dropArmor();
             setArmorType((byte) 2);
-            if (--itemstack.stackSize == 0) {
-                entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, null);
+            if (--stack.stackSize == 0) {
+                player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
             }
             return true;
         }
 
-        if ((itemstack != null) && this.getIsTamed() && getEdad() > 90 && itemstack.getItem() == Items.diamond_horse_armor) {
+        if ((stack != null) && onMainHand && this.getIsTamed() && getEdad() > 90 && stack.getItem() == Items.DIAMOND_HORSE_ARMOR) {
             if (getArmorType() == 0) {
-                MoCTools.playCustomSound(this, "armorput", this.worldObj);
+                MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_GENERIC_ARMOR_ON);
             }
             dropArmor();
             setArmorType((byte) 3);
-            if (--itemstack.stackSize == 0) {
-                entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, null);
+            if (--stack.stackSize == 0) {
+                player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
             }
             return true;
         }
 
-        if ((itemstack != null) && getIsTamed() && getEdad() > 90 && !getIsChested() && (itemstack.getItem() == Item.getItemFromBlock(Blocks.chest))) {
-            if (--itemstack.stackSize == 0) {
-                entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, null);
+        if ((stack != null) && onMainHand && getIsTamed() && getEdad() > 90 && !getIsChested() && (stack.getItem() == Item.getItemFromBlock(Blocks.CHEST))) {
+            if (--stack.stackSize == 0) {
+                player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
             }
             setIsChested(true);
-            this.worldObj.playSoundAtEntity(this, "mob.chickenplop", 1.0F, ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F) + 1.0F);
+            MoCTools.playCustomSound(this, SoundEvents.ENTITY_CHICKEN_EGG);
             return true;
         }
 
-        if (getIsChested() && entityplayer.isSneaking()) {
+        if (getIsChested() && player.isSneaking()) {
             if (this.localchest == null) {
                 this.localchest = new MoCAnimalChest("WyvernChest", 9);
             }
-            if (this.emptychest == null) {
-                this.emptychest = new MoCAnimalChest("WyvernChest", 0);
-            }
             if (MoCreatures.isServer()) {
-
-                InventoryLargeChest singleChest = new InventoryLargeChest("WyvernChest", this.localchest, this.emptychest);
-                entityplayer.displayGUIChest(singleChest);
+                player.displayGUIChest(this.localchest);
             }
             return true;
         }
 
-        if ((itemstack != null) && this.getIsGhost() && this.getIsTamed() && itemstack.getItem() == MoCreatures.amuletghost) {
+        if ((stack != null) && onMainHand && this.getIsGhost() && this.getIsTamed() && stack.getItem() == MoCreatures.amuletghost) {
 
-            entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, null);
-            if (MoCreatures.isServer()) {
-                MoCPetData petData = MoCreatures.instance.mapData.getPetData(this.getOwnerName());
+            player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
+            if (!this.worldObj.isRemote) {
+                MoCPetData petData = MoCreatures.instance.mapData.getPetData(this.getOwnerId());
                 if (petData != null) {
                     petData.setInAmulet(this.getOwnerPetId(), true);
                 }
                 this.dropMyStuff();
-                MoCTools.dropAmulet(this, 3);
+                MoCTools.dropAmulet(this, 3, player);
                 this.isDead = true;
             }
 
@@ -496,19 +502,19 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
 
         }
 
-        if ((itemstack != null) && !this.getIsGhost() && (itemstack.getItem() == MoCreatures.essencelight) && getIsTamed() && getEdad() > 90
+        if ((stack != null) && onMainHand && !this.getIsGhost() && (stack.getItem() == MoCreatures.essencelight) && getIsTamed() && getEdad() > 90
                 && getType() < 5) {
-            if (--itemstack.stackSize == 0) {
-                entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, new ItemStack(Items.glass_bottle));
+            if (--stack.stackSize == 0) {
+                player.inventory.setInventorySlotContents(player.inventory.currentItem, new ItemStack(Items.GLASS_BOTTLE));
             } else {
-                entityplayer.inventory.addItemStackToInventory(new ItemStack(Items.glass_bottle));
+                player.inventory.addItemStackToInventory(new ItemStack(Items.GLASS_BOTTLE));
             }
 
-            if (MoCreatures.isServer()) {
+            if (!this.worldObj.isRemote) {
                 int i = getType() + 49;
                 MoCEntityEgg entityegg = new MoCEntityEgg(this.worldObj, i);
-                entityegg.setPosition(entityplayer.posX, entityplayer.posY, entityplayer.posZ);
-                entityplayer.worldObj.spawnEntityInWorld(entityegg);
+                entityegg.setPosition(player.posX, player.posY, player.posZ);
+                player.worldObj.spawnEntityInWorld(entityegg);
                 entityegg.motionY += this.worldObj.rand.nextFloat() * 0.05F;
                 entityegg.motionX += (this.worldObj.rand.nextFloat() - this.worldObj.rand.nextFloat()) * 0.3F;
                 entityegg.motionZ += (this.worldObj.rand.nextFloat() - this.worldObj.rand.nextFloat()) * 0.3F;
@@ -516,12 +522,12 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
             return true;
         }
 
-        if ((itemstack != null) && this.transformCounter == 0 && !this.getIsGhost() && getType() == 5
-                && (itemstack.getItem() == MoCreatures.essenceundead) && getIsTamed()) {
-            if (--itemstack.stackSize == 0) {
-                entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, new ItemStack(Items.glass_bottle));
+        if ((stack != null) && onMainHand && this.transformCounter == 0 && !this.getIsGhost() && getType() == 5
+                && (stack.getItem() == MoCreatures.essenceundead) && getIsTamed()) {
+            if (--stack.stackSize == 0) {
+                player.inventory.setInventorySlotContents(player.inventory.currentItem, new ItemStack(Items.GLASS_BOTTLE));
             } else {
-                entityplayer.inventory.addItemStackToInventory(new ItemStack(Items.glass_bottle));
+                player.inventory.addItemStackToInventory(new ItemStack(Items.GLASS_BOTTLE));
             }
 
             if (MoCreatures.isServer()) {
@@ -530,12 +536,12 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
             return true;
         }
 
-        if ((itemstack != null) && this.transformCounter == 0 && !this.getIsGhost() && getType() == 5
-                && (itemstack.getItem() == MoCreatures.essencelight) && getIsTamed()) {
-            if (--itemstack.stackSize == 0) {
-                entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, new ItemStack(Items.glass_bottle));
+        if ((stack != null) && onMainHand && this.transformCounter == 0 && !this.getIsGhost() && getType() == 5
+                && (stack.getItem() == MoCreatures.essencelight) && getIsTamed()) {
+            if (--stack.stackSize == 0) {
+                player.inventory.setInventorySlotContents(player.inventory.currentItem, new ItemStack(Items.GLASS_BOTTLE));
             } else {
-                entityplayer.inventory.addItemStackToInventory(new ItemStack(Items.glass_bottle));
+                player.inventory.addItemStackToInventory(new ItemStack(Items.GLASS_BOTTLE));
             }
 
             if (MoCreatures.isServer()) {
@@ -544,12 +550,12 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
             return true;
         }
 
-        if ((itemstack != null) && this.transformCounter == 0 && !this.getIsGhost() && getType() == 5
-                && (itemstack.getItem() == MoCreatures.essencedarkness) && getIsTamed()) {
-            if (--itemstack.stackSize == 0) {
-                entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, new ItemStack(Items.glass_bottle));
+        if ((stack != null) && onMainHand && this.transformCounter == 0 && !this.getIsGhost() && getType() == 5
+                && (stack.getItem() == MoCreatures.essencedarkness) && getIsTamed()) {
+            if (--stack.stackSize == 0) {
+                player.inventory.setInventorySlotContents(player.inventory.currentItem, new ItemStack(Items.GLASS_BOTTLE));
             } else {
-                entityplayer.inventory.addItemStackToInventory(new ItemStack(Items.glass_bottle));
+                player.inventory.addItemStackToInventory(new ItemStack(Items.GLASS_BOTTLE));
             }
 
             if (MoCreatures.isServer()) {
@@ -558,12 +564,12 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
             return true;
         }
 
-        if (getIsRideable() && getEdad() > 90 && (this.riddenByEntity == null)) {
-            entityplayer.rotationYaw = this.rotationYaw;
-            entityplayer.rotationPitch = this.rotationPitch;
+        if (getIsRideable() && getEdad() > 90 && (!this.isBeingRidden())) {
+            player.rotationYaw = this.rotationYaw;
+            player.rotationPitch = this.rotationPitch;
 
             if (MoCreatures.isServer()) {
-                entityplayer.mountEntity(this);
+                player.startRiding(this);
                 setSitting(false);
             }
 
@@ -581,21 +587,21 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
         if (MoCreatures.isServer()) {
             int i = getArmorType();
             if (i != 0) {
-                MoCTools.playCustomSound(this, "armoroff", this.worldObj);
+                MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_GENERIC_ARMOR_OFF);
             }
 
             if (i == 1) {
-                EntityItem entityitem = new EntityItem(this.worldObj, this.posX, this.posY, this.posZ, new ItemStack(Items.iron_horse_armor, 1));
+                EntityItem entityitem = new EntityItem(this.worldObj, this.posX, this.posY, this.posZ, new ItemStack(Items.IRON_HORSE_ARMOR, 1));
                 entityitem.setPickupDelay(10);
                 this.worldObj.spawnEntityInWorld(entityitem);
             }
             if (i == 2) {
-                EntityItem entityitem = new EntityItem(this.worldObj, this.posX, this.posY, this.posZ, new ItemStack(Items.golden_horse_armor, 1));
+                EntityItem entityitem = new EntityItem(this.worldObj, this.posX, this.posY, this.posZ, new ItemStack(Items.GOLDEN_HORSE_ARMOR, 1));
                 entityitem.setPickupDelay(10);
                 this.worldObj.spawnEntityInWorld(entityitem);
             }
             if (i == 3) {
-                EntityItem entityitem = new EntityItem(this.worldObj, this.posX, this.posY, this.posZ, new ItemStack(Items.diamond_horse_armor, 1));
+                EntityItem entityitem = new EntityItem(this.worldObj, this.posX, this.posY, this.posZ, new ItemStack(Items.DIAMOND_HORSE_ARMOR, 1));
                 entityitem.setPickupDelay(10);
                 this.worldObj.spawnEntityInWorld(entityitem);
             }
@@ -609,20 +615,20 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
     }
 
     @Override
-    protected String getDeathSound() {
-        return "mocreatures:wyverndying";
+    protected SoundEvent getDeathSound() {
+        return MoCSoundEvents.ENTITY_WYVERN_DEATH;
     }
 
     @Override
-    protected String getHurtSound() {
+    protected SoundEvent getHurtSound() {
         openMouth();
-        return "mocreatures:wyvernhurt";
+        return MoCSoundEvents.ENTITY_WYVERN_HURT;
     }
 
     @Override
-    protected String getLivingSound() {
+    protected SoundEvent getAmbientSound() {
         openMouth();
-        return "mocreatures:wyverngrunt";
+        return MoCSoundEvents.ENTITY_WYVERN_AMBIENT;
     }
 
     @Override
@@ -632,7 +638,7 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
 
     @Override
     public boolean isMovementCeased() {
-        return (this.riddenByEntity != null) || getIsSitting();
+        return (this.isBeingRidden()) || getIsSitting();
     }
 
     @Override
@@ -650,11 +656,11 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
     }
 
     @Override
-    public void updateRiderPosition() {
+    public void updatePassenger(Entity passenger) {
         double dist = getSizeFactor() * (0.3D);
         double newPosX = this.posX - (dist * Math.cos((MoCTools.realAngle(this.renderYawOffset - 90F)) / 57.29578F));
         double newPosZ = this.posZ - (dist * Math.sin((MoCTools.realAngle(this.renderYawOffset - 90F)) / 57.29578F));
-        this.riddenByEntity.setPosition(newPosX, this.posY + getMountedYOffset() + this.riddenByEntity.getYOffset(), newPosZ);
+        passenger.setPosition(newPosX, this.posY + getMountedYOffset() + passenger.getYOffset(), newPosZ);
     }
 
     @Override
@@ -670,7 +676,7 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
     protected void applyEnchantments(EntityLivingBase entityLivingBaseIn, Entity entityIn) {
         if (entityIn instanceof EntityPlayer && this.rand.nextInt(3) == 0) {
             MoCreatures.poisonPlayer((EntityPlayer) entityIn);
-            ((EntityLivingBase) entityIn).addPotionEffect(new PotionEffect(Potion.poison.id, 200, 0));
+            ((EntityLivingBase) entityIn).addPotionEffect(new PotionEffect(MobEffects.POISON, 200, 0));
         }
 
         super.applyEnchantments(entityLivingBaseIn, entityIn);
@@ -679,7 +685,7 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
     @Override
     public boolean attackEntityFrom(DamageSource damagesource, float i) {
         Entity entity = damagesource.getEntity();
-        if ((this.riddenByEntity != null) && (entity == this.riddenByEntity)) {
+        if (this.isRidingOrBeingRiddenBy(entity)) {
             return false;
         }
         if (super.attackEntityFrom(damagesource, i)) {
@@ -705,7 +711,7 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
         super.writeEntityToNBT(nbttagcompound);
         nbttagcompound.setBoolean("Saddle", getIsRideable());
         nbttagcompound.setBoolean("Chested", getIsChested());
-        nbttagcompound.setByte("ArmorType", getArmorType());
+        nbttagcompound.setInteger("ArmorType", getArmorType());
         nbttagcompound.setBoolean("isSitting", getIsSitting());
         nbttagcompound.setBoolean("isGhost", getIsGhost());
         if (getIsChested() && this.localchest != null) {
@@ -728,7 +734,7 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
         super.readEntityFromNBT(nbttagcompound);
         setRideable(nbttagcompound.getBoolean("Saddle"));
         setIsChested(nbttagcompound.getBoolean("Chested"));
-        setArmorType(nbttagcompound.getByte("ArmorType"));
+        setArmorType(nbttagcompound.getInteger("ArmorType"));
         setSitting(nbttagcompound.getBoolean("isSitting"));
         setIsGhost(nbttagcompound.getBoolean("isGhost"));
         if (getIsChested()) {
@@ -764,7 +770,7 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
         if (MoCreatures.isServer()) {
             this.mouthCounter = 1;
             MoCMessageHandler.INSTANCE.sendToAllAround(new MoCMessageAnimation(this.getEntityId(), 1),
-                    new TargetPoint(this.worldObj.provider.getDimensionId(), this.posX, this.posY, this.posZ, 64));
+                    new TargetPoint(this.worldObj.provider.getDimensionType().getId(), this.posX, this.posY, this.posZ, 64));
         }
 
     }
@@ -793,7 +799,7 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
     public void makeEntityDive() {
         if (MoCreatures.isServer()) {
             MoCMessageHandler.INSTANCE.sendToAllAround(new MoCMessageAnimation(this.getEntityId(), 2),
-                    new TargetPoint(this.worldObj.provider.getDimensionId(), this.posX, this.posY, this.posZ, 64));
+                    new TargetPoint(this.worldObj.provider.getDimensionType().getId(), this.posX, this.posY, this.posZ, 64));
         }
         super.makeEntityDive();
     }
@@ -811,7 +817,7 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
 
     @Override
     public boolean canBeCollidedWith() {
-        return this.riddenByEntity == null;
+        return !this.isBeingRidden();
     }
 
     @Override
@@ -822,7 +828,7 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
 
             if (getIsChested()) {
                 MoCTools.dropInventory(this, this.localchest);
-                MoCTools.dropCustomItem(this, this.worldObj, new ItemStack(Blocks.chest, 1));
+                MoCTools.dropCustomItem(this, this.worldObj, new ItemStack(Blocks.CHEST, 1));
                 setIsChested(false);
             }
         }
@@ -838,7 +844,7 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
 
     @Override
     public double getCustomSpeed() {
-        if (this.riddenByEntity != null) {
+        if (this.isBeingRidden()) {
             return 1.0D;
         }
         return 0.8D;
@@ -865,7 +871,7 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
 
     @Override
     public boolean isReadyToHunt() {
-        return !this.isMovementCeased() && this.riddenByEntity == null;
+        return !this.isMovementCeased() && !this.isBeingRidden();
     }
 
     @Override
@@ -919,9 +925,9 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
                 MoCEntityWyvern entitywyvern = new MoCEntityWyvern(this.worldObj);
                 entitywyvern.setPosition(this.posX, this.posY, this.posZ);
                 this.worldObj.spawnEntityInWorld(entitywyvern);
-                MoCTools.playCustomSound(this, "appearmagic", this.worldObj);
+                MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_GENERIC_MAGIC_APPEAR);
 
-                entitywyvern.setOwner(this.getOwnerName());
+                entitywyvern.setOwnerId(this.getOwnerId());
                 entitywyvern.setTamed(true);
                 EntityPlayer entityplayer = this.worldObj.getClosestPlayerToEntity(this, 24D);
                 if (entityplayer != null) {

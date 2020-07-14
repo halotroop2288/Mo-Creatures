@@ -1,6 +1,6 @@
 package drzhark.mocreatures.client.model;
 
-import drzhark.mocreatures.entity.passive.MoCEntityNewBigCat;
+import drzhark.mocreatures.entity.passive.MoCEntityBigCat;
 import net.minecraft.client.model.ModelBase;
 import net.minecraft.client.model.ModelRenderer;
 import net.minecraft.entity.Entity;
@@ -544,7 +544,7 @@ public class MoCModelNewBigCat extends ModelBase {
     }
 
     public void updateAnimationModifiers(Entity entity) {
-        MoCEntityNewBigCat bigcat = (MoCEntityNewBigCat) entity;
+        MoCEntityBigCat bigcat = (MoCEntityBigCat) entity;
         this.isFlyer = bigcat.isFlyer();
         this.isSaddled = bigcat.getIsRideable();
         this.flapwings = (bigcat.wingFlapCounter != 0);
@@ -552,7 +552,7 @@ public class MoCModelNewBigCat extends ModelBase {
         this.floating = (this.isFlyer && this.onAir);
         //this.poisoning = bigcat.swingingTail();
         this.openMouthCounter = bigcat.mouthCounter;
-        this.isRidden = (bigcat.riddenByEntity != null);
+        this.isRidden = (bigcat.isBeingRidden());
         this.hasMane = bigcat.hasMane();
         this.isTamed = bigcat.getHasAmulet();
         this.isSitting = bigcat.getIsSitting();
@@ -565,7 +565,7 @@ public class MoCModelNewBigCat extends ModelBase {
     }
 
     public float updateGhostTransparency(Entity entity) {
-        MoCEntityNewBigCat bigcat = (MoCEntityNewBigCat) entity;
+        MoCEntityBigCat bigcat = (MoCEntityBigCat) entity;
         return bigcat.tFloat();
     }
 
@@ -662,11 +662,14 @@ public class MoCModelNewBigCat extends ModelBase {
         //f1 = movement speed!
         //f2 = ??timer!
         //f3 = Head Y movement or rotation yaw
-        //f4 = Head X movement or rotataion Pitch
+        //f4 = Head X movement or rotation Pitch
         //f5 = ?
 
-        float RLegXRot = MathHelper.cos((f * 0.6F) + 3.141593F) * 0.8F * f1;
-        float LLegXRot = MathHelper.cos(f * 0.6F) * 0.8F * f1;
+        float RLegXRot = MathHelper.cos((f * 0.8F) + 3.141593F) * 0.8F * f1;
+        float LLegXRot = MathHelper.cos(f * 0.8F) * 0.8F * f1;
+        float gallopRLegXRot = MathHelper.cos((f * 0.6F) + 3.141593F) * 0.8F * f1;
+        float gallopLLegXRot = MathHelper.cos(f * 0.6F) * 0.8F * f1;
+        
         float stingYOffset = 8F;
         float stingZOffset = 0F;
 
@@ -674,10 +677,11 @@ public class MoCModelNewBigCat extends ModelBase {
         // cos(f * 0.4F) ==> determines the speed of the movement
         // * 0.2F * f1 ==> determines the amplitude of the pendulum movement
 
-        float legDisparity = (-3.141593F * f1 * 0.5F) + 3.141593F;
-        float rLegRotFinal = MathHelper.cos(this.rLegMov) * 0.8F * f1;
-        float lLegRotFinal = MathHelper.cos((this.rLegMov) + legDisparity) * 0.8F * f1;
-        this.rLegMov = this.rLegMov + (f1 * 0.25F);//(MathHelper.cos((f1 * 10F) + rLegMov) * f1);
+        //float legDisparity = (-3.141593F * f1 * 0.5F) + 3.141593F;
+        //float rLegRotFinal = MathHelper.cos(this.rLegMov) * 0.8F * f1;
+        //float lLegRotFinal = MathHelper.cos((this.rLegMov) + legDisparity) * 0.8F * f1;
+        //this.rLegMov = this.rLegMov + (f1 * 0.25F);//(MathHelper.cos((f1 * 10F) + rLegMov) * f1);
+        
         //lLegMov = lLegMov + (f1*0.05F);
         //leg should not return to 0 when stopped, and increment based on movement speed
         //the movement should still follow a cos function i.e. pendulum
@@ -787,17 +791,17 @@ public class MoCModelNewBigCat extends ModelBase {
             } else {
                 if (galloping) {
 
-                    this.RightUpperLeg.rotateAngleX = (15F / this.radianF) + RLegXRot;//RLegXRot;
-                    this.LeftUpperLeg.rotateAngleX = (15F / this.radianF) + RLegXRot;//LLegXRot;
-                    this.RightHindUpperLeg.rotateAngleX = (-25F / this.radianF) + LLegXRot;//LLegXRot;
-                    this.LeftHindUpperLeg.rotateAngleX = (-25F / this.radianF) + LLegXRot;//RLegXRot;
+                    this.RightUpperLeg.rotateAngleX = (15F / this.radianF) + gallopRLegXRot;//RLegXRot;
+                    this.LeftUpperLeg.rotateAngleX = (15F / this.radianF) + gallopRLegXRot;//LLegXRot;
+                    this.RightHindUpperLeg.rotateAngleX = (-25F / this.radianF) + gallopLLegXRot;//LLegXRot;
+                    this.LeftHindUpperLeg.rotateAngleX = (-25F / this.radianF) + gallopLLegXRot;//RLegXRot;
 
                     this.Abdomen.rotateAngleY = 0F;
                 } else {
-                    this.RightUpperLeg.rotateAngleX = (15F / this.radianF) + rLegRotFinal;//RLegXRot;
-                    this.LeftHindUpperLeg.rotateAngleX = (-25F / this.radianF) + rLegRotFinal;//RLegXRot;
-                    this.LeftUpperLeg.rotateAngleX = (15F / this.radianF) + lLegRotFinal;//LLegXRot;
-                    this.RightHindUpperLeg.rotateAngleX = (-25F / this.radianF) + lLegRotFinal;//LLegXRot;
+                    this.RightUpperLeg.rotateAngleX = (15F / this.radianF) + RLegXRot;//rLegRotFinal;//RLegXRot;
+                    this.LeftHindUpperLeg.rotateAngleX = (-25F / this.radianF) + RLegXRot;//rLegRotFinal;//RLegXRot;
+                    this.LeftUpperLeg.rotateAngleX = (15F / this.radianF) + LLegXRot;//lLegRotFinal;//LLegXRot;
+                    this.RightHindUpperLeg.rotateAngleX = (-25F / this.radianF) + LLegXRot;//lLegRotFinal;//LLegXRot;
                     if (!this.hasStinger) {
                         this.Abdomen.rotateAngleY = MathHelper.cos(f * 0.3F) * 0.25F * f1;
                     }

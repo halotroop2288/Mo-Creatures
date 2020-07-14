@@ -13,14 +13,18 @@ public class MoCEntityMaggot extends MoCEntityAmbient {
         super(world);
         setSize(0.2F, 0.2F);
         this.texture = "maggot.png";
-        this.tasks.addTask(1, new EntityAIWanderMoC2(this, 0.8D));
     }
-
+    
+    @Override
+    protected void initEntityAI() {
+    	this.tasks.addTask(1, new EntityAIWanderMoC2(this, 0.8D));
+    }
+    
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(4.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.1D);
+        getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(4.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.1D);
     }
 
     @Override
@@ -29,7 +33,7 @@ public class MoCEntityMaggot extends MoCEntityAmbient {
 
     @Override
     protected Item getDropItem() {
-        return Items.slime_ball;
+        return Items.SLIME_BALL;
     }
 
     @Override

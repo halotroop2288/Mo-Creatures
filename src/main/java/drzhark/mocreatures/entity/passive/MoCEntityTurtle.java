@@ -5,6 +5,7 @@ import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityTameableAnimal;
 import drzhark.mocreatures.entity.ai.EntityAIFollowOwnerPlayer;
 import drzhark.mocreatures.entity.ai.EntityAIWanderMoC2;
+import drzhark.mocreatures.util.MoCSoundEvents;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -13,26 +14,40 @@ import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+
+import javax.annotation.Nullable;
 
 public class MoCEntityTurtle extends MoCEntityTameableAnimal {
 
     private boolean isSwinging;
     private boolean twistright;
     private int flopcounter;
+    private static final DataParameter<Boolean> IS_UPSIDE_DOWN = EntityDataManager.<Boolean>createKey(MoCEntityTurtle.class, DataSerializers.BOOLEAN);
+    private static final DataParameter<Boolean> IS_HIDING = EntityDataManager.<Boolean>createKey(MoCEntityTurtle.class, DataSerializers.BOOLEAN);
 
     public MoCEntityTurtle(World world) {
         super(world);
         setSize(0.6F, 0.4F);
         setAdult(false);
         setEdad(60 + this.rand.nextInt(50));
-        this.tasks.addTask(1, new EntityAIFollowOwnerPlayer(this, 0.8D, 2F, 10F));
+    }
+
+    @Override
+    protected void initEntityAI() {
+    	this.tasks.addTask(1, new EntityAIFollowOwnerPlayer(this, 0.8D, 2F, 10F));
         this.tasks.addTask(5, new EntityAIWanderMoC2(this, 0.8D, 50));
         this.tasks.addTask(6, new EntityAIWatchClosest(this, EntityPlayer.class, 6.0F));
     }
@@ -40,15 +55,15 @@ public class MoCEntityTurtle extends MoCEntityTameableAnimal {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(15.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.15D);
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(15.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.15D);
     }
 
     @Override
     protected void entityInit() {
         super.entityInit();
-        this.dataWatcher.addObject(23, Byte.valueOf((byte) 0)); // isUpsideDown - 0 false 1 true
-        this.dataWatcher.addObject(24, Byte.valueOf((byte) 0)); // isHiding - 0 false 1 true
+        this.dataManager.register(IS_UPSIDE_DOWN, Boolean.valueOf(false));; // rideable: 0 nothing, 1 saddle
+        this.dataManager.register(IS_HIDING, Boolean.valueOf(false));; // rideable: 0 nothing, 1 saddle
     }
 
     @Override
@@ -76,23 +91,21 @@ public class MoCEntityTurtle extends MoCEntityTameableAnimal {
     }
 
     public boolean getIsHiding() {
-        return (this.dataWatcher.getWatchableObjectByte(24) == 1);
+    	return ((Boolean)this.dataManager.get(IS_HIDING)).booleanValue();
     }
 
     public boolean getIsUpsideDown() {
-        return (this.dataWatcher.getWatchableObjectByte(23) == 1);
+    	return ((Boolean)this.dataManager.get(IS_UPSIDE_DOWN)).booleanValue();
     }
-
+    
     public void setIsHiding(boolean flag) {
-        byte input = (byte) (flag ? 1 : 0);
-        this.dataWatcher.updateObject(24, Byte.valueOf(input));
+    	this.dataManager.set(IS_HIDING, Boolean.valueOf(flag));
     }
 
     public void setIsUpsideDown(boolean flag) {
-        byte input = (byte) (flag ? 1 : 0);
         this.flopcounter = 0;
         this.swingProgress = 0.0F;
-        this.dataWatcher.updateObject(23, Byte.valueOf(input));
+        this.dataManager.set(IS_UPSIDE_DOWN, Boolean.valueOf(flag));
     }
 
     @Override
@@ -112,9 +125,9 @@ public class MoCEntityTurtle extends MoCEntityTameableAnimal {
     }
 
     @Override
-    public boolean interact(EntityPlayer entityplayer) {
-        if (super.interact(entityplayer)) {
-            return false;
+    public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
+        if (super.processInteract(player, hand, stack)) {
+            return true;
         }
 
         if (getIsTamed()) {
@@ -123,19 +136,8 @@ public class MoCEntityTurtle extends MoCEntityTameableAnimal {
                 return true;
             }
             if (this.getRidingEntity() == null) {
-                this.rotationYaw = entityplayer.rotationYaw;
-                // TODO change sound
-                this.worldObj.playSoundAtEntity(this, "mob.chickenplop", 1.0F, ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F) + 1.0F);
-                if (MoCreatures.isServer()) {
-                    mountEntity(entityplayer);
-                }
-            } else {
-                if (MoCreatures.isServer()) {
-                    this.mountEntity(null);
-                }
-                this.motionX = entityplayer.motionX * 5D;
-                this.motionY = (entityplayer.motionY / 2D) + 0.2D;
-                this.motionZ = entityplayer.motionZ * 5D;
+                    this.startRiding(player);
+                this.rotationYaw = player.rotationYaw;
             }
             return true;
         }
@@ -146,7 +148,7 @@ public class MoCEntityTurtle extends MoCEntityTameableAnimal {
 
     @Override
     protected void jump() {
-        if (isInsideOfMaterial(Material.water)) {
+        if (isInsideOfMaterial(Material.WATER)) {
             this.motionY = 0.3D;
             if (isSprinting()) {
                 float f = this.rotationYaw * 0.01745329F;
@@ -170,8 +172,7 @@ public class MoCEntityTurtle extends MoCEntityTameableAnimal {
                 EntityLivingBase entityliving = getBoogey(4D);
                 if ((entityliving != null) && canEntityBeSeen(entityliving)) {
                     if (!getIsHiding() && !isInWater()) {
-                        this.worldObj.playSoundAtEntity(this, "mocreatures:turtlehissing", 1.0F,
-                                1.0F + ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F));
+                        MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_TURTLE_ANGRY);
                         setIsHiding(true);
                     }
 
@@ -180,7 +181,7 @@ public class MoCEntityTurtle extends MoCEntityTameableAnimal {
 
                     setIsHiding(false);
                     if (!hasPath() && this.rand.nextInt(50) == 0) {
-                        EntityItem entityitem = getClosestItem(this, 10D, Items.melon, Items.reeds);
+                        EntityItem entityitem = getClosestItem(this, 10D, Items.MELON, Items.REEDS);
                         if (entityitem != null) {
                             float f = entityitem.getDistanceToEntity(this);
                             if (f > 2.0F) {
@@ -188,9 +189,7 @@ public class MoCEntityTurtle extends MoCEntityTameableAnimal {
                             }
                             if ((f < 2.0F) && (entityitem != null) && (this.deathTime == 0)) {
                                 entityitem.setDead();
-                                this.worldObj.playSoundAtEntity(this, "mocreatures:turtleeating", 1.0F,
-                                        1.0F + ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F));
-
+                                MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_TURTLE_EATING);
                                 EntityPlayer entityplayer = this.worldObj.getClosestPlayerToEntity(this, 24D);
                                 if (entityplayer != null) {
                                     MoCTools.tameWithName(entityplayer, this);
@@ -284,7 +283,7 @@ public class MoCEntityTurtle extends MoCEntityTameableAnimal {
 
             } else if (this.swingProgress > 9.0F && flag) {
                 setSwinging(false);
-                this.worldObj.playSoundAtEntity(this, "mob.chickenplop", 1.0F, 1.0F + ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F));
+                MoCTools.playCustomSound(this, SoundEvents.ENTITY_CHICKEN_EGG);
                 setIsUpsideDown(false);
             }
         }
@@ -323,18 +322,18 @@ public class MoCEntityTurtle extends MoCEntityTameableAnimal {
     }
 
     @Override
-    protected String getHurtSound() {
-        return "mocreatures:turtlehurt";
+    protected SoundEvent getHurtSound() {
+        return MoCSoundEvents.ENTITY_TURTLE_HURT;
     }
 
     @Override
-    protected String getLivingSound() {
-        return "mocreatures:turtlegrunt";
+    protected SoundEvent getAmbientSound() {
+        return MoCSoundEvents.ENTITY_TURTLE_AMBIENT;
     }
 
     @Override
-    protected String getDeathSound() {
-        return "mocreatures:turtledying";
+    protected SoundEvent getDeathSound() {
+        return MoCSoundEvents.ENTITY_TURTLE_DEATH;
     }
 
     @Override
@@ -385,7 +384,7 @@ public class MoCEntityTurtle extends MoCEntityTameableAnimal {
 
     @Override
     public boolean isMyHealFood(ItemStack par1ItemStack) {
-        return par1ItemStack != null && (par1ItemStack.getItem() == Items.reeds || par1ItemStack.getItem() == Items.melon);
+        return par1ItemStack != null && (par1ItemStack.getItem() == Items.REEDS || par1ItemStack.getItem() == Items.MELON);
     }
 
     @Override
@@ -429,5 +428,11 @@ public class MoCEntityTurtle extends MoCEntityTameableAnimal {
     @Override
     public int getMaxEdad() {
         return 120;
+    }
+    
+    @Override
+    public boolean canRidePlayer()
+    {
+    	return true;
     }
 }

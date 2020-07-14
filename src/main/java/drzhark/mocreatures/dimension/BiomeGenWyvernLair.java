@@ -6,7 +6,7 @@ import drzhark.mocreatures.entity.passive.MoCEntityBunny;
 import drzhark.mocreatures.entity.passive.MoCEntitySnake;
 import drzhark.mocreatures.entity.passive.MoCEntityWyvern;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.feature.WorldGenAbstractTree;
@@ -21,8 +21,8 @@ public class BiomeGenWyvernLair extends Biome {
     private MoCWorldGenBigTree wyvernGenBigTree;
     private WorldGenShrub worldGenShrub;
 
-    public BiomeGenWyvernLair(int par1) {
-        super(par1);
+    public BiomeGenWyvernLair(Biome.BiomeProperties biomeProperties) {
+        super(biomeProperties);
         this.spawnableCreatureList.clear();
         this.spawnableMonsterList.clear();
         this.spawnableWaterCreatureList.clear();
@@ -32,11 +32,8 @@ public class BiomeGenWyvernLair extends Biome {
         this.spawnableCreatureList.add(new SpawnListEntry(MoCEntityWyvern.class, 10, 1, 4));
         this.topBlock = MoCreatures.mocGrass.getDefaultState();
         this.fillerBlock = MoCreatures.mocDirt.getDefaultState();
-        this.minHeight = 0.3F;
-        this.maxHeight = 1.5F;
-        this.biomeName = "WyvernBiome";
         this.wyvernGenBigTree = new MoCWorldGenBigTree(false, MoCreatures.mocLog.getDefaultState(), MoCreatures.mocLeaf.getDefaultState(), 2, 30, 10);
-        this.worldGenShrub = new WorldGenShrub(Blocks.dirt.getDefaultState(), Blocks.AIR.getDefaultState());
+        this.worldGenShrub = new WorldGenShrub(Blocks.DIRT.getDefaultState(), Blocks.AIR.getDefaultState());
         this.theBiomeDecorator = new BiomeWyvernDecorator();
     }
 

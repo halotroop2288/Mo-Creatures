@@ -1,6 +1,7 @@
 package drzhark.mocreatures.entity.aquatic;
 
 import com.google.common.base.Predicate;
+
 import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityTameableAquatic;
 import drzhark.mocreatures.entity.ai.EntityAIFleeFromEntityMoC;
@@ -23,22 +24,25 @@ public class MoCEntitySmallFish extends MoCEntityTameableAquatic {
         super(world);
         setSize(0.3F, 0.3F);
         setEdad(70 + this.rand.nextInt(30));
-        this.tasks.addTask(1, new EntityAIPanicMoC(this, 1.3D));
+    }
+
+    @Override
+    protected void initEntityAI() {
+    	this.tasks.addTask(1, new EntityAIPanicMoC(this, 1.3D));
         this.tasks.addTask(2, new EntityAIFleeFromEntityMoC(this, new Predicate<Entity>() {
 
             public boolean apply(Entity entity) {
                 return (entity.height > 0.3F || entity.width > 0.3F);
             }
         }, 2.0F, 0.6D, 1.5D));
-        //this.tasks.addTask(4, new EntityAIFollowHerd(this, 0.6D, 4D, 20D, 10));
         this.tasks.addTask(5, new EntityAIWanderMoC2(this, 1.0D, 80));
     }
 
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(4.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.5D);
+        getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(4.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.5D);
     }
 
     @Override
@@ -81,11 +85,11 @@ public class MoCEntitySmallFish extends MoCEntityTameableAquatic {
     protected void dropFewItems(boolean flag, int x) {
         int i = this.rand.nextInt(100);
         if (i < 70) {
-            entityDropItem(new ItemStack(Items.fish, 1, 0), 0.0F);
+            entityDropItem(new ItemStack(Items.FISH, 1, 0), 0.0F);
         } else {
             int j = this.rand.nextInt(2);
             for (int k = 0; k < j; k++) {
-                entityDropItem(new ItemStack(MoCreatures.mocegg, 1, getType() + 79), 0.0F);
+                entityDropItem(new ItemStack(MoCreatures.mocegg, 1, getEggNumber()), 0.0F);
             }
         }
     }
@@ -96,12 +100,6 @@ public class MoCEntitySmallFish extends MoCEntityTameableAquatic {
 
         if ((MoCreatures.isServer())) {
 
-            /*if (!isNotScared() && this.rand.nextInt(5) == 0 && !getIsTamed()) {
-                EntityLivingBase entityliving = getBoogey(8D);
-                if (entityliving != null && entityliving.isInsideOfMaterial(Material.water)) {
-                    MoCTools.runLikeHell(this, entityliving);
-                }
-            }*/
             if (getIsTamed() && this.rand.nextInt(100) == 0 && getHealth() < getMaxHealth()) {
                 this.setHealth(getMaxHealth());
             }
@@ -120,7 +118,7 @@ public class MoCEntitySmallFish extends MoCEntityTameableAquatic {
     @Override
     public float getAdjustedYOffset() {
         if (!this.isInWater()) {
-            return -0.1F;
+            return 0.5F;
         }
         return 0.3F;
     }
@@ -154,9 +152,6 @@ public class MoCEntitySmallFish extends MoCEntityTameableAquatic {
 
     @Override
     public float getAdjustedXOffset() {
-        if (!this.isInWater()) {
-            return -0.6F;
-        }
         return 0F;
     }
 
@@ -194,4 +189,16 @@ public class MoCEntitySmallFish extends MoCEntityTameableAquatic {
     public boolean isNotScared() {
         return getIsTamed();
     }
+    
+    @Override
+    public float getAdjustedZOffset() {
+    	if (!isInWater()) {
+            return 0.1F;
+        }
+        return 0F;
+    }
+    
+    protected int getEggNumber() {
+		return 80;
+	}
 }

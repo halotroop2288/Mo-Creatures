@@ -25,7 +25,11 @@ public class MoCEntityCrab extends MoCEntityTameableAmbient
         super(world);
         setSize(0.3F, 0.3F);
         setEdad(50 + this.rand.nextInt(50));
-        this.tasks.addTask(2, new EntityAIPanicMoC(this, 1.0D));
+    }
+
+    @Override
+    protected void initEntityAI() {
+    	this.tasks.addTask(2, new EntityAIPanicMoC(this, 1.0D));
         this.tasks.addTask(1, new EntityAIFleeFromEntityMoC(this, new Predicate<Entity>() {
 
             public boolean apply(Entity entity) {
@@ -39,8 +43,8 @@ public class MoCEntityCrab extends MoCEntityTameableAmbient
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(6.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.3D);
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(6.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.3D);
     }
 
     @Override

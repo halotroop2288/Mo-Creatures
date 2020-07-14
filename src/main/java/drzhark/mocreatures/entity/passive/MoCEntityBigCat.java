@@ -3,64 +3,83 @@ package drzhark.mocreatures.entity.passive;
 import drzhark.mocreatures.MoCTools;
 import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityTameableAnimal;
-import drzhark.mocreatures.entity.ai.EntityAIFleeFromPlayer;
 import drzhark.mocreatures.entity.ai.EntityAIFollowAdult;
 import drzhark.mocreatures.entity.ai.EntityAIFollowOwnerPlayer;
 import drzhark.mocreatures.entity.ai.EntityAIHunt;
 import drzhark.mocreatures.entity.ai.EntityAINearestAttackableTargetMoC;
 import drzhark.mocreatures.entity.ai.EntityAIWanderMoC2;
+import drzhark.mocreatures.inventory.MoCAnimalChest;
+import drzhark.mocreatures.network.MoCMessageHandler;
+import drzhark.mocreatures.network.message.MoCMessageAnimation;
+import drzhark.mocreatures.util.MoCSoundEvents;
+import net.minecraft.block.Block;
+import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIAttackOnCollide;
+import net.minecraft.entity.ai.EntityAIAttackMelee;
 import net.minecraft.entity.ai.EntityAISwimming;
-import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.passive.EntityAnimal;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.pathfinding.PathNavigateGround;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.BlockPos;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.EnumDifficulty;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
-import net.minecraftforge.common.BiomeDictionary;
-import net.minecraftforge.common.BiomeDictionary.Type;
+import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 
-import java.util.List;
+import javax.annotation.Nullable;
 
 public class MoCEntityBigCat extends MoCEntityTameableAnimal {
+
+    public int mouthCounter;
+    public int tailCounter;
+    public int wingFlapCounter;
+    public MoCAnimalChest localchest;
+    public ItemStack localstack;
+    protected String chestName = "BigCatChest";
+    private int tCounter;
+    private float fTransparency;
+    private static final DataParameter<Boolean> RIDEABLE = EntityDataManager.<Boolean>createKey(MoCEntityBigCat.class, DataSerializers.BOOLEAN);
+    private static final DataParameter<Boolean> HAS_AMULET = EntityDataManager.<Boolean>createKey(MoCEntityBigCat.class, DataSerializers.BOOLEAN);
+    private static final DataParameter<Boolean> SITTING = EntityDataManager.<Boolean>createKey(MoCEntityBigCat.class, DataSerializers.BOOLEAN);
+    private static final DataParameter<Boolean> GHOST = EntityDataManager.<Boolean>createKey(MoCEntityBigCat.class, DataSerializers.BOOLEAN);
+    private static final DataParameter<Boolean> CHESTED = EntityDataManager.<Boolean>createKey(MoCEntityBigCat.class, DataSerializers.BOOLEAN);
 
     public MoCEntityBigCat(World world) {
         super(world);
         setEdad(45);
-        setSize(0.9F, 1.3F);
+        setSize(1.4F, 1.3F);
         if (this.rand.nextInt(4) == 0) {
             setAdult(false);
         } else {
             setAdult(true);
         }
-        setTamed(false);
-        ((PathNavigateGround) this.getNavigator()).setAvoidsWater(true);
+        this.stepHeight = 1.0F;
+    }
+    
+    @Override
+    protected void initEntityAI() {
         this.tasks.addTask(0, new EntityAISwimming(this));
-        this.tasks.addTask(1, new EntityAIAttackOnCollide(this, 1.0D, true));
-        //this.tasks.addTask(3, new EntityAIFleeFromPlayer(this, 0.8D, 4D));
+        this.tasks.addTask(1, new EntityAIAttackMelee(this, 1.0D, true));
         this.tasks.addTask(4, new EntityAIFollowAdult(this, 1.0D));
         this.tasks.addTask(5, new EntityAIFollowOwnerPlayer(this, 1D, 2F, 10F));
         this.tasks.addTask(2, new EntityAIWanderMoC2(this, 0.8D, 30));
-        this.tasks.addTask(7, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
-        //this.targetTasks.addTask(1, new EntityAIOwnerHurtByTarget(this)); //TODO
-        //this.targetTasks.addTask(2, new EntityAIOwnerHurtTarget(this)); //TODO
         this.targetTasks.addTask(3, new EntityAINearestAttackableTargetMoC(this, EntityPlayer.class, true));
         this.targetTasks.addTask(4, new EntityAIHunt(this, EntityAnimal.class, true));
     }
@@ -68,12 +87,11 @@ public class MoCEntityBigCat extends MoCEntityTameableAnimal {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(40D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.25D);
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(40D);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.25D);
         this.getAttributeMap().registerAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
         this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(5.0D);
-        //this.getAttributeMap().registerAttribute(SharedMonsterAttributes.followRange);
-        this.getEntityAttribute(SharedMonsterAttributes.followRange).setBaseValue(8.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(8.0D);
     }
 
     /**
@@ -81,206 +99,34 @@ public class MoCEntityBigCat extends MoCEntityTameableAnimal {
      */
     @Override
     public void selectType() {
-        checkSpawningBiome();
-        if (getType() == 0) {
-            int i = this.rand.nextInt(100);
-            if (i <= 5) {
-                setType(1);
-            } else if (i <= 25) {
-                setType(2);
-            } else if (i <= 50) {
-                setType(3);
-            } else if (i <= 70) {
-                setType(4);
-            } else if (i <= 75) {
-                setType(7);
-            } else {
-                setType(5);
-            }
-        }
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(calculateMaxHealth());
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(calculateMaxHealth());
         this.setHealth(getMaxHealth());
         this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(calculateAttackDmg());
-        this.getEntityAttribute(SharedMonsterAttributes.followRange).setBaseValue(getAttackRange());
-
-    }
-
-    //TODO
-    public float getMoveSpeed() {
-        switch (getType()) {
-            case 1:
-                return 1.4F;
-            case 2:
-                return 1.4F;
-            case 3:
-                return 1.6F;
-            case 4:
-                return 1.9F;
-            case 5:
-                return 1.6F;
-            case 6:
-                return 1.7F;
-            case 7:
-                return 1.7F;
-
-            default:
-                return 1.4F;
-        }
-    }
-
-    public float calculateMaxHealth() {
-        switch (getType()) {
-            case 1:
-                return 25;
-            case 2:
-                return 30;
-            case 3:
-                return 20;
-            case 4:
-                return 20;
-            case 5:
-                return 35;
-            case 6:
-                return 25;
-            case 7:
-                return 40;
-
-            default:
-                return 20;
-        }
-
-    }
-
-    public float getWidthF() {
-        switch (getType()) {
-            case 1:
-                return 1F;
-            case 2:
-                return 1.1F;
-            case 3:
-                return 0.9F;
-            case 4:
-                return 0.8F;
-            case 5:
-                return 1.1F;
-            case 6:
-                return 0.8F;
-            case 7:
-                return 1.2F;
-
-            default:
-                return 1F;
-        }
-    }
-
-    public float getHeightF() {
-        switch (getType()) {
-            case 1:
-                return 1.0F;
-            case 2:
-                return 1.1F;
-            case 3:
-                return 0.9F;
-            case 4:
-                return 0.8F;
-            case 5:
-                return 1.1F;
-            case 6:
-                return 0.8F;
-            case 7:
-                return 1.2F;
-
-            default:
-                return 1F;
-        }
-    }
-
-    public float getLengthF() {
-        switch (getType()) {
-            case 1:
-                return 1.0F;
-            case 2:
-                return 1.0F;
-            case 3:
-                return 0.9F;
-            case 4:
-                return 1.0F;
-            case 5:
-                return 1.1F;
-            case 6:
-                return 0.9F;
-            case 7:
-                return 1.2F;
-
-            default:
-                return 1F;
-        }
-    }
-
-    public double calculateAttackDmg() {
-        switch (getType()) {
-            case 1:
-                return 5D;
-            case 2:
-                return 5D;
-            case 3:
-                return 4D;
-            case 4:
-                return 3D;
-            case 5:
-                return 6D;
-            case 6:
-                return 3D;
-            case 7:
-                return 8D;
-
-            default:
-                return 5D;
-        }
-    }
-
-    public double getAttackRange() {
-        switch (getType()) {
-            case 1:
-                return 8D;
-            case 2:
-                return 4D;
-            case 3:
-                return 6D;
-            case 4:
-                return 6D;
-            case 5:
-                return 8D;
-            case 6:
-                return 4D;
-            case 7:
-                return 10D;
-
-            default:
-                return 6D;
+        this.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE).setBaseValue(getAttackRange());
+        if (getIsAdult()) {
+            setEdad(getMaxEdad());
         }
     }
 
     @Override
-    public ResourceLocation getTexture() {
-        switch (getType()) {
-            case 1:
-                return MoCreatures.proxy.getTexture("lionf.png");
-            case 2:
-                return MoCreatures.proxy.getTexture("lionf.png");
-            case 3:
-                return MoCreatures.proxy.getTexture("panther.png");
-            case 4:
-                return MoCreatures.proxy.getTexture("cheetah.png");
-            case 5:
-                return MoCreatures.proxy.getTexture("tiger.png");
-            case 6:
-                return MoCreatures.proxy.getTexture("leopard.png");
-            case 7:
-                return MoCreatures.proxy.getTexture("tigerw.png");
-            default:
-                return MoCreatures.proxy.getTexture("lionf.png");
-        }
+    public double getCustomSpeed() {
+        return 2D;
+    }
+
+    public float getMoveSpeed() {
+        return 1.6F;
+    }
+
+    public float calculateMaxHealth() {
+        return 20F;
+    }
+
+    public double calculateAttackDmg() {
+        return 5D;
+    }
+
+    public double getAttackRange() {
+        return 6D;
     }
 
     /**
@@ -290,44 +136,60 @@ public class MoCEntityBigCat extends MoCEntityTameableAnimal {
     @Override
     protected void entityInit() {
         super.entityInit();
-        this.dataWatcher.addObject(23, Byte.valueOf((byte) 0)); // hasEaten - 0 false 1 true
-        this.dataWatcher.addObject(24, Byte.valueOf((byte) 0)); // isSitting - 0 false 1 true
-        this.dataWatcher.addObject(25, Byte.valueOf((byte) 0)); // isGhost - 0 false 1 true
+        this.dataManager.register(RIDEABLE, Boolean.valueOf(false)); 
+        this.dataManager.register(SITTING, Boolean.valueOf(false));
+        this.dataManager.register(GHOST, Boolean.valueOf(false)); 
+        this.dataManager.register(HAS_AMULET, Boolean.valueOf(false)); 
+        this.dataManager.register(CHESTED, Boolean.valueOf(false));
     }
 
-    public boolean getHasEaten() {
-        return (this.dataWatcher.getWatchableObjectByte(23) == 1);
+    public boolean getHasAmulet() {
+    	return ((Boolean)this.dataManager.get(HAS_AMULET)).booleanValue();
     }
 
     @Override
     public boolean getIsSitting() {
-        return (this.dataWatcher.getWatchableObjectByte(24) == 1);
+    	return ((Boolean)this.dataManager.get(SITTING)).booleanValue();
     }
 
-    public void setEaten(boolean flag) {
-        byte input = (byte) (flag ? 1 : 0);
-        this.dataWatcher.updateObject(23, Byte.valueOf(input));
+    @Override
+    public boolean getIsRideable() {
+    	return ((Boolean)this.dataManager.get(RIDEABLE)).booleanValue();
     }
 
-    public void setSitting(boolean flag) {
-        byte input = (byte) (flag ? 1 : 0);
-        this.dataWatcher.updateObject(24, Byte.valueOf(input));
+    public boolean getIsChested() {
+    	return ((Boolean)this.dataManager.get(CHESTED)).booleanValue();
     }
 
     public boolean getIsGhost() {
-        return (this.dataWatcher.getWatchableObjectByte(25) == 1);
+    	return ((Boolean)this.dataManager.get(GHOST)).booleanValue();
+    }
+
+    public void setHasAmulet(boolean flag) {
+    	this.dataManager.set(HAS_AMULET, Boolean.valueOf(flag));
+    }
+
+    public void setSitting(boolean flag) {
+    	this.dataManager.set(SITTING, Boolean.valueOf(flag));
+    }
+
+    public void setIsChested(boolean flag) {
+    	this.dataManager.set(CHESTED, Boolean.valueOf(flag));
+    }
+
+    public void setRideable(boolean flag) {
+    	this.dataManager.set(RIDEABLE, Boolean.valueOf(flag));
     }
 
     public void setIsGhost(boolean flag) {
-        byte input = (byte) (flag ? 1 : 0);
-        this.dataWatcher.updateObject(25, Byte.valueOf(input));
+    	this.dataManager.set(GHOST, Boolean.valueOf(flag));
     }
 
     // Method used for receiving damage from another source
     @Override
     public boolean attackEntityFrom(DamageSource damagesource, float i) {
         Entity entity = damagesource.getEntity();
-        if ((this.riddenByEntity != null) && (entity == this.riddenByEntity)) {
+        if ((this.isBeingRidden()) && (entity == this.getRidingEntity())) {
             return false;
         }
 
@@ -343,112 +205,14 @@ public class MoCEntityBigCat extends MoCEntityTameableAnimal {
             return false;
         }
     }
-
-    public int checkNearBigKitties(double d) {
-        List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(d, d, d));
-        for (int j = 0; j < list.size(); j++) {
-            Entity entity = list.get(j);
-            if ((entity != this) && (entity instanceof MoCEntityBigCat)) {
-                MoCEntityBigCat entitybigcat = (MoCEntityBigCat) entity;
-                return entitybigcat.getType();
-            }
-        }
-
-        return 0;
-    }
-
-    //TODO
-    /*@Override
-    protected Entity findPlayerToAttack() {
-        if (this.roper != null && this.roper instanceof EntityPlayer) {
-            return getMastersEnemy((EntityPlayer) this.roper, 12D);
-        }
-
-        this.worldObj.getDifficulty();
-        if (this.worldObj.getDifficulty() != EnumDifficulty.PEACEFUL && MoCreatures.isHuntingEnabled()) {
-            EntityPlayer entityplayer = this.worldObj.getClosestPlayerToEntity(this, getAttackRange());
-            if (!getIsTamed() && (entityplayer != null) && getIsAdult() && getIsHungry()) {
-                if ((getType() == 1) || (getType() == 5) || (getType() == 7)) {
-                    setHungry(false);
-                    return entityplayer;
-                }
-                if (this.rand.nextInt(30) == 0) {
-                    setHungry(false);
-                    return entityplayer;
-                }
-            }
-            if ((this.rand.nextInt(80) == 0) && getIsHungry()) {
-                EntityLivingBase entityliving = getClosestTarget(this, getAttackRange());
-                setHungry(false);
-                return entityliving;
-            }
-        }
-        return null;
-    }*/
-
+    
     @Override
-    public boolean checkSpawningBiome() {
-        int i = MathHelper.floor_double(this.posX);
-        int j = MathHelper.floor_double(getEntityBoundingBox().minY);
-        int k = MathHelper.floor_double(this.posZ);
-        BlockPos pos = new BlockPos(i, j, k);
-
-        Biome currentbiome = MoCTools.Biomekind(this.worldObj, pos);
-
-        try {
-            if (BiomeDictionary.isBiomeOfType(currentbiome, Type.SNOWY)) {
-                setType(6); //snow leopard
-                return true;
-            }
-        } catch (Exception e) {
-        }
-        int l = 0;
-        {
-            l = checkNearBigKitties(12D);
-
-            if (l == 2) {
-                l = 1;
-            } else if (l == 1 && this.rand.nextInt(3) == 0) {
-                l = 2;
-            } else if (l == 7) {
-                l = 5;
-            }
-        }
-        setType(l);
-        return true;
-    }
-
-    // TODO move somewhere else
-    public boolean NearSnowWithDistance(Entity entity, Double double1) {
-        AxisAlignedBB axisalignedbb = entity.getEntityBoundingBox().expand(double1.doubleValue(), double1.doubleValue(), double1.doubleValue());
-        int i = MathHelper.floor_double(axisalignedbb.minX);
-        int j = MathHelper.floor_double(axisalignedbb.maxX + 1.0D);
-        int k = MathHelper.floor_double(axisalignedbb.minY);
-        int l = MathHelper.floor_double(axisalignedbb.maxY + 1.0D);
-        int i1 = MathHelper.floor_double(axisalignedbb.minZ);
-        int j1 = MathHelper.floor_double(axisalignedbb.maxZ + 1.0D);
-        for (int k1 = i; k1 < j; k1++) {
-            for (int l1 = k; l1 < l; l1++) {
-                for (int i2 = i1; i2 < j1; i2++) {
-                    IBlockState blockstate = this.worldObj.getBlockState(new BlockPos(k1, l1, i2));
-                    if ((blockstate.getBlock() != Blocks.AIR) && (blockstate.getBlock().getMaterial() == Material.snow)) {
-                        return true;
-                    }
-                }
-
-            }
-
-        }
-
-        return false;
-    }
-
-    @Override
-    protected String getDeathSound() {
+    protected SoundEvent getDeathSound() {
+        openMouth();
         if (getIsAdult()) {
-            return "mocreatures:liondeath";
+            return MoCSoundEvents.ENTITY_LION_DEATH;
         } else {
-            return "mocreatures:cubdying";
+            return MoCSoundEvents.ENTITY_LION_DEATH_BABY;
         }
     }
 
@@ -458,89 +222,65 @@ public class MoCEntityBigCat extends MoCEntityTameableAnimal {
     }
 
     @Override
-    protected String getHurtSound() {
+    protected SoundEvent getHurtSound() {
+        openMouth();
         if (getIsAdult()) {
-            return "mocreatures:lionhurt";
+            return MoCSoundEvents.ENTITY_LION_HURT;
         } else {
-            return "mocreatures:cubhurt";
+            return MoCSoundEvents.ENTITY_LION_HURT_BABY;
         }
     }
 
     @Override
-    protected String getLivingSound() {
+    protected SoundEvent getAmbientSound() {
+        openMouth();
         if (getIsAdult()) {
-            return "mocreatures:liongrunt";
+            return MoCSoundEvents.ENTITY_LION_AMBIENT;
         } else {
-            return "mocreatures:cubgrunt";
+            return MoCSoundEvents.ENTITY_LION_AMBIENT_BABY;
         }
     }
 
-    /*public EntityCreature getMastersEnemy(EntityPlayer entityplayer, double d) {
-        double d1 = -1D;
-        EntityCreature entitycreature = null;
-        List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(entityplayer, getEntityBoundingBox().expand(d, 4D, d));
-        for (int i = 0; i < list.size(); i++) {
-            Entity entity = (Entity) list.get(i);
-            if (!(entity instanceof EntityCreature) || (entity == this)) {
-                continue;
-            }
-            EntityCreature entitycreature1 = (EntityCreature) entity;
-            if ((entitycreature1 != null) && (entitycreature1.getAttackTarget() == entityplayer)) {
-                return entitycreature1;
-            }
-        }
-
-        return entitycreature;
-    }*/
-
-    @Override
-    public boolean interact(EntityPlayer entityplayer) {
-
-        if (super.interact(entityplayer)) {
-            return false;
-        }
-        ItemStack itemstack = entityplayer.inventory.getCurrentItem();
-        if ((itemstack != null) && !getIsTamed() && getHasEaten() && (itemstack.getItem() == MoCreatures.medallion)) {
-            if (MoCreatures.isServer()) {
-                MoCTools.tameWithName(entityplayer, this);
-            }
-            if (getIsTamed() && --itemstack.stackSize == 0) {
-                entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, null);
-                return true;
-            }
-
-            return false;
-        }
-        if ((itemstack != null) && getIsTamed() && (itemstack.getItem() == MoCreatures.whip)) {
-            setSitting(!getIsSitting());
-            return true;
-        }
-        if ((itemstack != null) && getIsTamed() && (itemstack.getItem() == Items.porkchop || itemstack.getItem() == Items.fish)) {
-            this.setHealth(getMaxHealth());
-            this.worldObj.playSoundAtEntity(this, "mocreatures:eating", 1.0F, 1.0F + ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F));
-            setIsHunting(false);
-        }
-        return false;
-
-    }
-
-    /**
-     * Checks if bigcat is sitting.
-     */
-    @Override
-    public boolean isMovementCeased() {
-        return getIsSitting();
-    }
-
-    //drops medallion on death
     @Override
     public void onDeath(DamageSource damagesource) {
         if (MoCreatures.isServer()) {
-            if (getIsTamed()) {
-                MoCTools.dropCustomItem(this, this.worldObj, new ItemStack(MoCreatures.medallion, 1));
+            if (getHasAmulet()) {
+                    MoCTools.dropCustomItem(this, this.worldObj, new ItemStack(MoCreatures.medallion, 1));
+                    setHasAmulet(false);
+            }
+
+            if (getIsTamed() && !getIsGhost() && this.rand.nextInt(4) == 0) {
+                this.spawnGhost();
             }
         }
         super.onDeath(damagesource);
+    }
+
+    public void spawnGhost() {
+        try {
+            EntityLiving templiving = MoCTools.spawnListByNameClass(this.getClazzString(), this.worldObj);
+            if (templiving != null && templiving instanceof MoCEntityBigCat) {
+                MoCEntityBigCat ghost = (MoCEntityBigCat) templiving;
+                ghost.setPosition(this.posX, this.posY, this.posZ);
+                this.worldObj.spawnEntityInWorld(ghost);
+                MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_GENERIC_MAGIC_APPEAR);
+                ghost.setOwnerId(this.getOwnerId());
+                ghost.setTamed(true);
+                EntityPlayer entityplayer = this.worldObj.getClosestPlayerToEntity(this, 24D);
+                if (entityplayer != null) {
+                    MoCTools.tameWithName(entityplayer, ghost);
+                }
+
+                ghost.setAdult(false);
+                ghost.setEdad(1);
+                ghost.setType(this.getType());
+                ghost.selectType();
+                ghost.setIsGhost(true);
+
+            }
+        } catch (Exception e) {
+        }
+
     }
 
     @Override
@@ -548,13 +288,73 @@ public class MoCEntityBigCat extends MoCEntityTameableAnimal {
 
         super.onLivingUpdate();
 
+        if (MoCreatures.isServer()) {
+            if (this.getAttackTarget() == null) {
+                setSprinting(false);
+            } else {
+                setSprinting(true);
+            }
+        }
+        
+        if (!MoCreatures.isServer()) //animation counters
+        {
+            if (this.mouthCounter > 0 && ++this.mouthCounter > 30) {
+                this.mouthCounter = 0;
+            }
+
+            if (this.rand.nextInt(250) == 0) {
+                moveTail();
+            }
+
+            if (this.tailCounter > 0 && ++this.tailCounter > 10 && this.rand.nextInt(15) == 0) {
+                this.tailCounter = 0;
+            }
+        } else //server stuff
+        {
+            if (getIsGhost() && getEdad() > 0 && getEdad() < 10 && this.rand.nextInt(5) == 0) {
+                setEdad(getEdad() + 1);
+                if (getEdad() == 9) {
+                    setEdad(getMaxEdad());
+                    setAdult(true);
+                }
+            }
+
+            if (!getIsGhost() && getEdad() <10)
+            {
+            	this.setDead();
+            }
+            /*if (getHasEaten() && rand.nextInt(300) == 0)
+            {
+                setEaten(false);
+            }*/
+        }
+
+        if (MoCreatures.isServer() && isFlyer() && isOnAir()) {
+            float myFlyingSpeed = MoCTools.getMyMovementSpeed(this);
+            int wingFlapFreq = (int) (25 - (myFlyingSpeed * 10));
+            if (!this.isBeingRidden() || wingFlapFreq < 5) {
+                wingFlapFreq = 5;
+            }
+            if (this.rand.nextInt(wingFlapFreq) == 0) {
+                wingFlap();
+            }
+        }
+
+        if (isFlyer()) {
+            if (this.wingFlapCounter > 0 && ++this.wingFlapCounter > 20) {
+                this.wingFlapCounter = 0;
+            }
+            if (this.wingFlapCounter == 5 && MoCreatures.isServer()) {
+                MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_GENERIC_WINGFLAP);
+            }
+        }
+
         if ((this.rand.nextInt(300) == 0) && (this.getHealth() <= getMaxHealth()) && (this.deathTime == 0) && !this.worldObj.isRemote) {
             this.setHealth(getHealth() + 1);
         }
 
-        //TODO move to New AI
-        if ((this.deathTime == 0) && getIsHunting() && !getIsSitting()) {
-            EntityItem entityitem = getClosestItem(this, 12D, Items.porkchop, Items.fish);
+        if ((this.deathTime == 0) && !isMovementCeased()) {
+            EntityItem entityitem = getClosestItem(this, 12D, Items.PORKCHOP, Items.FISH);
             if (entityitem != null) {
                 float f = entityitem.getDistanceToEntity(this);
                 if (f > 2.0F) {
@@ -563,14 +363,27 @@ public class MoCEntityBigCat extends MoCEntityTameableAnimal {
                 if ((f < 2.0F) && (entityitem != null) && (this.deathTime == 0)) {
                     entityitem.setDead();
                     this.setHealth(getMaxHealth());
-                    if (!getIsAdult() && (getEdad() < 80)) {
-                        setEaten(true);
-                    }
-                    this.worldObj
-                            .playSoundAtEntity(this, "mocreatures:eating", 1.0F, 1.0F + ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F));
-                    setIsHunting(false);
+                    setHasEaten(true);
+                    MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_GENERIC_EATING);
                 }
             }
+        }
+    }
+
+    @Override
+    public boolean readytoBreed() {
+        return !this.getIsGhost() && super.readytoBreed();
+    }
+
+    public void wingFlap() {
+        if (this.worldObj.isRemote) {
+            return;
+        }
+
+        if (this.wingFlapCounter == 0) {
+            this.wingFlapCounter = 1;
+            MoCMessageHandler.INSTANCE.sendToAllAround(new MoCMessageAnimation(this.getEntityId(), 3),
+                    new TargetPoint(this.worldObj.provider.getDimensionType().getId(), this.posX, this.posY, this.posZ, 64));
         }
     }
 
@@ -580,41 +393,277 @@ public class MoCEntityBigCat extends MoCEntityTameableAnimal {
     }
 
     @Override
-    public void readEntityFromNBT(NBTTagCompound nbttagcompound) {
-        super.readEntityFromNBT(nbttagcompound);
-        setSitting(nbttagcompound.getBoolean("Sitting"));
+    public boolean isReadyToHunt() {
+        return getIsAdult() && !this.isMovementCeased();
+    }
+
+    @Override
+    public void updatePassenger(Entity passenger) {
+        double dist = getSizeFactor() * (0.1D);
+        double newPosX = this.posX + (dist * Math.sin(this.renderYawOffset / 57.29578F));
+        double newPosZ = this.posZ - (dist * Math.cos(this.renderYawOffset / 57.29578F));
+        passenger.setPosition(newPosX, this.posY + getMountedYOffset() + passenger.getYOffset(), newPosZ);
     }
 
     @Override
     public void writeEntityToNBT(NBTTagCompound nbttagcompound) {
         super.writeEntityToNBT(nbttagcompound);
+        nbttagcompound.setBoolean("Saddle", getIsRideable());
         nbttagcompound.setBoolean("Sitting", getIsSitting());
+        nbttagcompound.setBoolean("Chested", getIsChested());
+        nbttagcompound.setBoolean("Ghost", getIsGhost());
+        nbttagcompound.setBoolean("Amulet", getHasAmulet());
+        if (getIsChested() && this.localchest != null) {
+            NBTTagList nbttaglist = new NBTTagList();
+            for (int i = 0; i < this.localchest.getSizeInventory(); i++) {
+                // grab the current item stack
+                this.localstack = this.localchest.getStackInSlot(i);
+                if (this.localstack != null) {
+                    NBTTagCompound nbttagcompound1 = new NBTTagCompound();
+                    nbttagcompound1.setByte("Slot", (byte) i);
+                    this.localstack.writeToNBT(nbttagcompound1);
+                    nbttaglist.appendTag(nbttagcompound1);
+                }
+            }
+            nbttagcompound.setTag("Items", nbttaglist);
+        }
+
+    }
+
+    @Override
+    public void readEntityFromNBT(NBTTagCompound nbttagcompound) {
+        super.readEntityFromNBT(nbttagcompound);
+        setRideable(nbttagcompound.getBoolean("Saddle"));
+        setSitting(nbttagcompound.getBoolean("Sitting"));
+        setIsChested(nbttagcompound.getBoolean("Chested"));
+        setIsGhost(nbttagcompound.getBoolean("Ghost"));
+        setHasAmulet(nbttagcompound.getBoolean("Amulet"));
+        if (getIsChested()) {
+            NBTTagList nbttaglist = nbttagcompound.getTagList("Items", 10);
+            this.localchest = new MoCAnimalChest("BigCatChest", 18);
+            for (int i = 0; i < nbttaglist.tagCount(); i++) {
+                NBTTagCompound nbttagcompound1 = nbttaglist.getCompoundTagAt(i);
+                int j = nbttagcompound1.getByte("Slot") & 0xff;
+                if ((j >= 0) && j < this.localchest.getSizeInventory()) {
+                    this.localchest.setInventorySlotContents(j, ItemStack.loadItemStackFromNBT(nbttagcompound1));
+                }
+            }
+        }
+
+    }
+
+    @Override
+    public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
+        if (super.processInteract(player, hand, stack)) {
+            return true;
+        }
+        boolean onMainHand = (hand == EnumHand.MAIN_HAND);
+        if ((stack != null) && onMainHand && !getIsTamed() && getHasEaten() && !getIsAdult() && (stack.getItem() == MoCreatures.medallion)) {
+            if (MoCreatures.isServer()) {
+                setHasAmulet(true);
+                MoCTools.tameWithName(player, this);
+            }
+            if (--stack.stackSize == 0) {
+                player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
+                return true;
+            }
+            return true;
+        }
+
+        if ((stack != null) && onMainHand && getIsTamed() && !getHasAmulet() && (stack.getItem() == MoCreatures.medallion)) {
+            if (MoCreatures.isServer()) {
+                setHasAmulet(true);
+            }
+            if (--stack.stackSize == 0) {
+                player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
+                return true;
+        }
+            return true;
+        }
+        
+        if ((stack != null) && getIsTamed() && (stack.getItem() == MoCreatures.whip)) {
+            setSitting(!getIsSitting());
+            return true;
+        }
+        if ((stack != null) && getIsTamed() && onMainHand && (MoCTools.isItemEdibleforCarnivores(stack.getItem()))) {
+        	if (--stack.stackSize == 0) {
+                player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
+            }
+        	this.setHealth(getMaxHealth());
+            MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_GENERIC_EATING);
+            setIsHunting(false);
+            setHasEaten(true);
+            return true;
+        }
+        if ((stack != null) && onMainHand && getIsTamed() && !getIsRideable() && (getEdad() > 80)
+                && (stack.getItem() == Items.SADDLE || stack.getItem() == MoCreatures.horsesaddle)) {
+            if (--stack.stackSize == 0) {
+                player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
+            }
+            setRideable(true);
+            return true;
+        }
+
+        if ((stack != null) && onMainHand && getIsTamed() && getIsAdult() && !getIsChested() && (stack.getItem() == Item.getItemFromBlock(Blocks.CHEST))) {
+            if (--stack.stackSize == 0) {
+                player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
+            }
+            setIsChested(true);
+            MoCTools.playCustomSound(this, SoundEvents.ENTITY_CHICKEN_EGG);
+            return true;
+        }
+
+        if (getIsChested() && player.isSneaking()) {
+            if (this.localchest == null) {
+                this.localchest = new MoCAnimalChest(this.chestName, 18);
+            }
+            if (MoCreatures.isServer()) {
+                player.displayGUIChest(this.localchest);
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public float getSizeFactor() {
+        return getEdad() * 0.01F;
+    }
+
+    @Override
+    public void fall(float f, float f1) {
+        if (isFlyer()) {
+            return;
+        }
+        float i = (float) (Math.ceil(f - 3F) / 2F);
+        if (MoCreatures.isServer() && (i > 0)) {
+            i /= 2;
+            if (i > 1F) {
+                attackEntityFrom(DamageSource.fall, i);
+            }
+            if ((this.isBeingRidden()) && (i > 1F)) {
+            	for (Entity entity : this.getRecursivePassengers())
+                {
+                    entity.attackEntityFrom(DamageSource.fall, (float)i);
+                }
+            }
+            IBlockState iblockstate = this.worldObj.getBlockState(new BlockPos(this.posX, this.posY - 0.2D - (double)this.prevRotationYaw, this.posZ));
+            Block block = iblockstate.getBlock();
+
+            if (iblockstate.getMaterial() != Material.AIR && !this.isSilent())
+            {
+                SoundType soundtype = block.getSoundType(iblockstate, worldObj, new BlockPos(this.posX, this.posY - 0.2D - (double)this.prevRotationYaw, this.posZ), this);
+                this.worldObj.playSound((EntityPlayer)null, this.posX, this.posY, this.posZ, soundtype.getStepSound(), this.getSoundCategory(), soundtype.getVolume() * 0.5F, soundtype.getPitch() * 0.75F);
+            }
+        }
+    }
+
+    private void openMouth() {
+        this.mouthCounter = 1;
+    }
+
+    public boolean hasMane() {
+        return false;
+    }
+
+    @Override
+    public int getTalkInterval() {
+        return 400;
+    }
+
+    private void moveTail() {
+        this.tailCounter = 1;
+    }
+
+    public boolean hasSaberTeeth() {
+        return false;
+    }
+
+    @Override
+    public void performAnimation(int animationType) {
+        if (animationType == 0) //tail animation
+        {
+            //setPoisoning(true);
+        } else if (animationType == 3) //wing flap
+        {
+            this.wingFlapCounter = 1;
+        }
+    }
+
+    @Override
+    public void makeEntityJump() {
+        if (this.isFlyer()) {
+            wingFlap();
+        }
+        super.makeEntityJump();
     }
 
     @Override
     public void dropMyStuff() {
-    }
+        if (MoCreatures.isServer()) {
+            dropArmor();
+            MoCTools.dropSaddle(this, this.worldObj);
 
-    @Override
-    public boolean isReadyToHunt() {
-            return getIsAdult() && !this.isMovementCeased();
-    }
-
-    @Override
-    public boolean canAttackTarget(EntityLivingBase entity) {
-        if (entity instanceof MoCEntityBigCat) {
-            if (!this.getIsAdult()) {
-                return false;
+            if (getIsChested()) {
+                MoCTools.dropInventory(this, this.localchest);
+                MoCTools.dropCustomItem(this, this.worldObj, new ItemStack(Blocks.CHEST, 1));
+                setIsChested(false);
             }
-
-            MoCEntityBigCat entitybigcat = (MoCEntityBigCat) entity;
-            if ((this.getIsTamed() && entitybigcat.getIsTamed()) || (entitybigcat.getType() == 7)
-                    || ((this.getType() != 2) && (this.getType() == entitybigcat.getType()))
-                    || ((this.getType() == 2) && (entitybigcat.getType() == 1))) {
-                return false;
-            }
-            return true;
         }
-        return entity.height <= 1.5D && entity.width <= 1.5D;
+    }
+
+    public boolean getHasStinger() {
+        return false;
+    }
+
+    @Override
+    public double getMountedYOffset() {
+        double Yfactor = ((0.0833D * this.getEdad()) - 2.5D) / 10D;
+        return this.height * Yfactor;
+    }
+
+    public float tFloat() {
+
+        if (++this.tCounter > 30) {
+            this.tCounter = 0;
+            this.fTransparency = (this.rand.nextFloat() * (0.4F - 0.2F) + 0.15F);
+        }
+
+        if (this.getEdad() < 10) {
+            return 0F;
+        }
+        return this.fTransparency;
+    }
+
+    public String getClazzString() {
+        return "";
+    }
+
+    @Override
+    public int nameYOffset() {
+        return (int) (((0.445D * this.getEdad()) + 15D) * -1);
+    }
+    
+    @Override
+    public boolean rideableEntity() {
+        return true;
+    }
+    
+    @Override
+    public float getAIMoveSpeed() {
+        if (isSprinting()) {
+            return 0.37F;
+        }
+        return 0.18F;
     }
 }
+
+//would be nice
+//lying down
+//manticore sounds, drops
+//cheetahs
+//hand swing when attacking
+//more hybrids
+//jaguars
+//lynx / bobcats

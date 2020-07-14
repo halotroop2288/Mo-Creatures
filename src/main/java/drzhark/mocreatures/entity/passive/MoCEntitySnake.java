@@ -10,27 +10,33 @@ import drzhark.mocreatures.entity.ai.EntityAIPanicMoC;
 import drzhark.mocreatures.entity.ai.EntityAIWanderMoC2;
 import drzhark.mocreatures.network.MoCMessageHandler;
 import drzhark.mocreatures.network.message.MoCMessageAnimation;
+import drzhark.mocreatures.util.MoCSoundEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIAttackOnCollide;
+import net.minecraft.entity.ai.EntityAIAttackMelee;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.passive.EntityAnimal;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.MobEffects;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
-import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
+
+import javax.annotation.Nullable;
 
 /**
  * Biome - specific Forest Desert plains Swamp Jungle Tundra Taiga Extreme Hills
@@ -63,9 +69,13 @@ public class MoCEntitySnake extends MoCEntityTameableAnimal {
         this.bodyswing = 2F;
         this.movInt = this.rand.nextInt(10);
         setEdad(50 + this.rand.nextInt(50));
-        this.tasks.addTask(2, new EntityAIPanicMoC(this, 0.8D));
+    }
+
+    @Override
+    protected void initEntityAI() {
+    	this.tasks.addTask(2, new EntityAIPanicMoC(this, 0.8D));
         this.tasks.addTask(3, new EntityAIFleeFromPlayer(this, 0.8D, 4D));
-        this.tasks.addTask(4, new EntityAIAttackOnCollide(this, 1.0D, true));
+        this.tasks.addTask(4, new EntityAIAttackMelee(this, 1.0D, true));
         this.tasks.addTask(5, new EntityAIWanderMoC2(this, 0.8D, 30));
         this.tasks.addTask(9, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
         this.targetTasks.addTask(1, new EntityAIHunt(this, EntityAnimal.class, true));
@@ -76,9 +86,9 @@ public class MoCEntitySnake extends MoCEntityTameableAnimal {
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
         this.getAttributeMap().registerAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(10.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(10.0D);
         this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(2.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.25D);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.25D);
     }
 
     @Override
@@ -155,39 +165,18 @@ public class MoCEntitySnake extends MoCEntityTameableAnimal {
     }
 
     @Override
-    public boolean interact(EntityPlayer entityplayer) {
-        if (super.interact(entityplayer)) {
-            return false;
+    public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
+        if (super.processInteract(player, hand, stack)) {
+            return true;
         }
         if (!getIsTamed()) {
             return false;
         }
 
-        //ItemStack itemstack = entityplayer.inventory.getCurrentItem();
-        //TODO
-        //this doesn't work yet, make the player feed the mouse to this snake
-        /*
-         * if (entityplayer.riddenByEntity != null &&
-         * entityplayer.riddenByEntity instanceof MoCEntityMouse) {
-         * //System.out.println("player has a mouse"); }
-         */
-
-        this.rotationYaw = entityplayer.rotationYaw;
         if (this.getRidingEntity() == null) {
-            if (MoCreatures.isServer()) {
-                mountEntity(entityplayer);
-            }
-        } else {
-            this.worldObj.playSoundAtEntity(this, "mob.chickenplop", 1.0F, ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F) + 1.0F);
-            if (MoCreatures.isServer()) {
-                this.mountEntity(null);
-            }
-        }
-        this.motionX = entityplayer.motionX * 5D;
-        this.motionY = (entityplayer.motionY / 2D) + 0.5D;
-        this.motionZ = entityplayer.motionZ * 5D;
-
-        return true;
+            this.startRiding(player);
+            this.rotationYaw = player.rotationYaw;
+        }return true;
     }
 
     @Override
@@ -295,8 +284,7 @@ public class MoCEntitySnake extends MoCEntityTameableAnimal {
                 setfRattle(getfRattle() + 0.2F);
                 if (getfRattle() == 1.0F) {
                     // TODO synchronize
-                    this.worldObj.playSoundAtEntity(this, "mocreatures:snakerattle", 1.0F,
-                            1.0F + ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F));
+                    MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_SNAKE_RATTLE);
                 }
                 if (getfRattle() > 8.0F) {
                     setfRattle(0.0F);
@@ -343,8 +331,7 @@ public class MoCEntitySnake extends MoCEntityTameableAnimal {
                 setfMouth(0.3F);
 
                 if (this.bodyswing < 0F) {
-                    this.worldObj.playSoundAtEntity(this, "mocreatures:snakesnap", 1.0F,
-                            1.0F + ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F));
+                    MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_SNAKE_SNAP);
                     this.bodyswing = 2.5F;
                     setfMouth(0.0F);
                     setBiting(false);
@@ -374,8 +361,7 @@ public class MoCEntitySnake extends MoCEntityTameableAnimal {
             // hiss
             if (this.hissCounter % 25 == 0) {
                 setfMouth(0.3F);
-                this.worldObj
-                        .playSoundAtEntity(this, "mocreatures:snakeupset", 1.0F, 1.0F + ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F));
+                MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_SNAKE_ANGRY);
             }
             if (this.hissCounter % 35 == 0) {
                 setfMouth(0.0F);
@@ -444,7 +430,7 @@ public class MoCEntitySnake extends MoCEntityTameableAnimal {
                     setNearPlayer(false);
                 }
 
-                /*if (entityplayer1.riddenByEntity != null
+                /*if (entityplayer1.isBeingRidden()
                         && (entityplayer1.riddenByEntity instanceof MoCEntityMouse || entityplayer1.riddenByEntity instanceof MoCEntityBird)) {
                     PathEntity pathentity = this.navigator.getPathToEntityLiving(entityplayer1);
                     this.navigator.setPath(pathentity, 16F);
@@ -485,7 +471,7 @@ public class MoCEntitySnake extends MoCEntityTameableAnimal {
     public void setBiting(boolean flag) {
         if (flag && MoCreatures.isServer()) {
             MoCMessageHandler.INSTANCE.sendToAllAround(new MoCMessageAnimation(this.getEntityId(), 0),
-                    new TargetPoint(this.worldObj.provider.getDimensionId(), this.posX, this.posY, this.posZ, 64));
+                    new TargetPoint(this.worldObj.provider.getDimensionType().getId(), this.posX, this.posY, this.posZ, 64));
         }
         this.isBiting = flag;
     }
@@ -507,8 +493,7 @@ public class MoCEntitySnake extends MoCEntityTameableAnimal {
 
         if (super.attackEntityFrom(damagesource, i)) {
             Entity entity = damagesource.getEntity();
-
-            if ((this.riddenByEntity == entity) || (this.getRidingEntity() == entity)) {
+            if (this.isRidingOrBeingRiddenBy(entity)) {
                 return true;
             }
             if ((entity != this) && entity instanceof EntityLivingBase && (super.shouldAttackPlayers())) {
@@ -539,8 +524,8 @@ public class MoCEntitySnake extends MoCEntityTameableAnimal {
 
     @Override
     protected void playStepSound(BlockPos pos, Block par4) {
-        if (isInsideOfMaterial(Material.water)) {
-            this.worldObj.playSoundAtEntity(this, "mocreatures:snakeswim", 1.0F, 1.0F);
+        if (isInsideOfMaterial(Material.WATER)) {
+            MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_SNAKE_SWIM);
         }
         // TODO - add sound for slither
         /*
@@ -550,18 +535,18 @@ public class MoCEntitySnake extends MoCEntityTameableAnimal {
     }
 
     @Override
-    protected String getDeathSound() {
-        return "mocreatures:snakedying";
+    protected SoundEvent getDeathSound() {
+        return MoCSoundEvents.ENTITY_SNAKE_DEATH;
     }
 
     @Override
-    protected String getHurtSound() {
-        return "mocreatures:snakehurt";
+    protected SoundEvent getHurtSound() {
+        return MoCSoundEvents.ENTITY_SNAKE_HURT;
     }
 
     @Override
-    protected String getLivingSound() {
-        return "mocreatures:snakehiss";
+    protected SoundEvent getAmbientSound() {
+        return MoCSoundEvents.ENTITY_SNAKE_AMBIENT;
     }
 
     @Override
@@ -656,7 +641,7 @@ public class MoCEntitySnake extends MoCEntityTameableAnimal {
             if (entityIn instanceof EntityPlayer) {
                 MoCreatures.poisonPlayer((EntityPlayer) entityIn);
             }
-            ((EntityLivingBase) entityIn).addPotionEffect(new PotionEffect(Potion.poison.id, 150, 2));
+            ((EntityLivingBase) entityIn).addPotionEffect(new PotionEffect(MobEffects.POISON, 150, 2));
         }
         super.applyEnchantments(entityLivingBaseIn, entityIn);
     }
@@ -680,25 +665,15 @@ public class MoCEntitySnake extends MoCEntityTameableAnimal {
         return true;
     }
 
-    /*@Override
-    public float getAIMoveSpeed()
+    @Override
+    public boolean canRidePlayer()
     {
-        if (isInWater())
-        {
-            return 0.08F;
-        }
-        return 0.12F;
-    }*/
-
-    /* @Override
-     protected double minDivingDepth()
-     {
-         return ((double)getEdad() + 8D)/340D;
-     }
+    	return true;
+    }
 
      @Override
      protected double maxDivingDepth()
      {
          return 1D * (this.getEdad()/100D);
-     }*/
+     }
 }

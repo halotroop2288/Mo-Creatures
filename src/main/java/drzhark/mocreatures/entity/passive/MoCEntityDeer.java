@@ -7,6 +7,7 @@ import drzhark.mocreatures.entity.MoCEntityTameableAnimal;
 import drzhark.mocreatures.entity.ai.EntityAIFleeFromEntityMoC;
 import drzhark.mocreatures.entity.ai.EntityAIFollowAdult;
 import drzhark.mocreatures.entity.ai.EntityAIWanderMoC2;
+import drzhark.mocreatures.util.MoCSoundEvents;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIPanic;
@@ -15,6 +16,7 @@ import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
 
 public class MoCEntityDeer extends MoCEntityTameableAnimal {
@@ -27,15 +29,17 @@ public class MoCEntityDeer extends MoCEntityTameableAnimal {
         setSize(0.9F, 1.3F);
         setAdult(true);
         setTamed(false);
-        this.tasks.addTask(0, new EntityAISwimming(this));
+    }
+    
+    @Override
+    protected void initEntityAI() {
+    	this.tasks.addTask(0, new EntityAISwimming(this));
         this.tasks.addTask(1, new EntityAIFleeFromEntityMoC(this, new Predicate<Entity>() {
-
             public boolean apply(Entity entity) {
                 return !(entity instanceof MoCEntityDeer) && (entity.height > 0.8F || entity.width > 0.8F);
             }
         }, 6.0F, this.getMyAISpeed(), this.getMyAISpeed() * 1.2D));
         this.tasks.addTask(2, new EntityAIPanic(this, this.getMyAISpeed() * 1.2D));
-        //this.tasks.addTask(3, new EntityAIFollowHerd(this, getMyAISpeed(), 6D, 20D, 5));
         this.tasks.addTask(4, new EntityAIFollowAdult(this, getMyAISpeed()));
         this.tasks.addTask(5, new EntityAIWanderMoC2(this, getMyAISpeed()));
         this.tasks.addTask(6, new EntityAIWatchClosest(this, EntityPlayer.class, 6.0F));
@@ -44,8 +48,8 @@ public class MoCEntityDeer extends MoCEntityTameableAnimal {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(10.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.35D);
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(10.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.35D);
     }
 
     @Override
@@ -90,26 +94,26 @@ public class MoCEntityDeer extends MoCEntityTameableAnimal {
     }
 
     @Override
-    protected String getDeathSound() {
-        return "mocreatures:deerdying";
-    }
-
-    @Override
     protected Item getDropItem() {
         return MoCreatures.fur;
     }
 
     @Override
-    protected String getHurtSound() {
-        return "mocreatures:deerhurt";
+    protected SoundEvent getDeathSound() {
+        return MoCSoundEvents.ENTITY_DEER_DEATH;
     }
 
     @Override
-    protected String getLivingSound() {
+    protected SoundEvent getHurtSound() {
+        return MoCSoundEvents.ENTITY_DEER_HURT;
+    }
+
+    @Override
+    protected SoundEvent getAmbientSound() {
         if (!getIsAdult()) {
-            return "mocreatures:deerbgrunt";
+            return MoCSoundEvents.ENTITY_DEER_AMBIENT_BABY;
         } else {
-            return "mocreatures:deerfgrunt";
+            return MoCSoundEvents.ENTITY_DEER_AMBIENT;
         }
     }
 

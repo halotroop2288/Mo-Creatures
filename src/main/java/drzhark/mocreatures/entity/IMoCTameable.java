@@ -1,6 +1,11 @@
 package drzhark.mocreatures.entity;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
+
+import java.util.UUID;
+
+import javax.annotation.Nullable;
 
 public interface IMoCTameable {
 
@@ -10,7 +15,7 @@ public interface IMoCTameable {
 
     void playTameEffect(boolean par1);
 
-    String getOwnerName();
+    UUID getOwnerId();
 
     String getPetName();
 
@@ -34,7 +39,7 @@ public interface IMoCTameable {
 
     void setType(int creatureType);
 
-    void setOwner(String username);
+    void setOwnerId(@Nullable UUID uuid);
 
     void setEdad(int edad);
 
@@ -49,4 +54,18 @@ public interface IMoCTameable {
     void spawnHeart();
 
     boolean readytoBreed();
+    
+    String getOffspringClazz(IMoCTameable mate);
+
+    int getOffspringTypeInt(IMoCTameable mate); 
+
+    boolean compatibleMate(Entity mate);
+    
+    void setHasEaten(boolean flag);
+    
+    boolean getHasEaten();
+    
+    void setGestationTime(int time);
+    
+    int getGestationTime();
 }

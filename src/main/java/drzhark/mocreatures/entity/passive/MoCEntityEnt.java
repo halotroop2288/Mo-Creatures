@@ -4,12 +4,13 @@ import drzhark.mocreatures.MoCTools;
 import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityAnimal;
 import drzhark.mocreatures.entity.ai.EntityAIWanderMoC2;
+import drzhark.mocreatures.util.MoCSoundEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIAttackOnCollide;
+import net.minecraft.entity.ai.EntityAIAttackMelee;
 import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.passive.EntityAnimal;
@@ -19,11 +20,12 @@ import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemAxe;
 import net.minecraft.item.ItemStack;
-import net.minecraft.pathfinding.PathEntity;
-import net.minecraft.util.BlockPos;
+import net.minecraft.pathfinding.Path;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.FakePlayerFactory;
@@ -37,8 +39,12 @@ public class MoCEntityEnt extends MoCEntityAnimal {
         super(world);
         setSize(1.4F, 7F);
         this.stepHeight = 2F;
-        this.tasks.addTask(1, new EntityAISwimming(this));
-        this.tasks.addTask(5, new EntityAIAttackOnCollide(this, 1.0D, true));
+    }
+    
+    @Override
+    protected void initEntityAI() {
+    	this.tasks.addTask(1, new EntityAISwimming(this));
+        this.tasks.addTask(5, new EntityAIAttackMelee(this, 1.0D, true));
         this.tasks.addTask(6, new EntityAIWanderMoC2(this, 1.0D));
         this.tasks.addTask(7, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
     }
@@ -46,10 +52,10 @@ public class MoCEntityEnt extends MoCEntityAnimal {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(40.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(40.0D);
         this.getAttributeMap().registerAttribute(SharedMonsterAttributes.ATTACK_DAMAGE);
         this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(3.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.2D);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.2D);
     }
 
     @Override
@@ -103,30 +109,30 @@ public class MoCEntityEnt extends MoCEntityAnimal {
             typ = 2;
         }
         if (i == 0) {
-            entityDropItem(new ItemStack(Blocks.log, qty, typ), 0.0F);
+            entityDropItem(new ItemStack(Blocks.LOG, qty, typ), 0.0F);
             return;
         }
         if (i == 1) {
-            entityDropItem(new ItemStack(Items.stick, qty, 0), 0.0F);
+            entityDropItem(new ItemStack(Items.STICK, qty, 0), 0.0F);
             return;
 
         }
-        entityDropItem(new ItemStack(Blocks.sapling, qty, typ), 0.0F);
+        entityDropItem(new ItemStack(Blocks.SAPLING, qty, typ), 0.0F);
     }
 
     @Override
-    protected String getDeathSound() {
-        return "mocreatures:entdeath";
+    protected SoundEvent getDeathSound() {
+        return MoCSoundEvents.ENTITY_ENT_DEATH;
     }
 
     @Override
-    protected String getHurtSound() {
-        return "mocreatures:enthurt";
+    protected SoundEvent getHurtSound() {
+        return MoCSoundEvents.ENTITY_ENT_HURT;
     }
 
     @Override
-    protected String getLivingSound() {
-        return "mocreatures:entgrunt";
+    protected SoundEvent getAmbientSound() {
+        return MoCSoundEvents.ENTITY_ENT_AMBIENT;
     }
 
     @Override
@@ -156,7 +162,7 @@ public class MoCEntityEnt extends MoCEntityAnimal {
             if (entity instanceof EntityAnimal && entity.width < 0.6F && entity.height < 0.6F) {
                 EntityAnimal entityanimal = (EntityAnimal) entity;
                 if (entityanimal.getAttackTarget() == null && !MoCTools.isTamed(entityanimal)) {
-                    PathEntity pathentity = entityanimal.getNavigator().getPathToEntityLiving(this);
+                    Path pathentity = entityanimal.getNavigator().getPathToEntityLiving(this);
                     entityanimal.setAttackTarget(this);
                     entityanimal.getNavigator().setPath(pathentity, 1D);
                     j++;
@@ -174,8 +180,8 @@ public class MoCEntityEnt extends MoCEntityAnimal {
         Block blockUnderFeet = this.worldObj.getBlockState(pos.down()).getBlock();
         Block blockOnFeet = this.worldObj.getBlockState(pos).getBlock();
 
-        if (blockUnderFeet == Blocks.dirt) {
-            Block block = Blocks.grass;
+        if (blockUnderFeet == Blocks.DIRT) {
+            Block block = Blocks.GRASS;
             BlockEvent.BreakEvent event = null;
             if (!this.worldObj.isRemote) {
                 event =
@@ -189,13 +195,13 @@ public class MoCEntityEnt extends MoCEntityAnimal {
             return false;
         }
 
-        if (blockUnderFeet == Blocks.grass && blockOnFeet == Blocks.AIR) {
+        if (blockUnderFeet == Blocks.GRASS && blockOnFeet == Blocks.AIR) {
             IBlockState iblockstate = getBlockStateToBePlanted();
             int plantChance = 3;
-            if (iblockstate.getBlock() == Blocks.sapling) {
+            if (iblockstate.getBlock() == Blocks.SAPLING) {
                 plantChance = 10;
             }
-            boolean cantPlant = false;
+            //boolean cantPlant = false;
             // check perms first
             for (int x = -1; x < 2; x++) {
                 for (int z = -1; z < 2; z++) {
@@ -203,15 +209,16 @@ public class MoCEntityEnt extends MoCEntityAnimal {
                     int yCoord = MathHelper.floor_double(this.posY);
                     int zCoord = MathHelper.floor_double(this.posZ + z);
                     BlockPos pos1 = new BlockPos(xCoord, yCoord, zCoord);
-                    BlockEvent.BreakEvent event = null;
-                    if (!this.worldObj.isRemote) {
-                        event =
-                                new BlockEvent.BreakEvent(this.worldObj, pos1, iblockstate, FakePlayerFactory.get((WorldServer) this.worldObj,
-                                        MoCreatures.MOCFAKEPLAYER));
-                    }
-                    cantPlant = (event != null && event.isCanceled());
+                    //BlockEvent.BreakEvent event = null;
+                    //if (!this.worldObj.isRemote) {
+                    //    event =
+                    //            new BlockEvent.BreakEvent(this.worldObj, pos1, iblockstate, FakePlayerFactory.get((WorldServer) this.worldObj,
+                    //                    MoCreatures.MOCFAKEPLAYER));
+                    //}
+                    //cantPlant = (event != null && event.isCanceled());
                     Block blockToPlant = this.worldObj.getBlockState(pos1).getBlock();
-                    if (!cantPlant && this.rand.nextInt(plantChance) == 0 && blockToPlant == Blocks.AIR) {
+                    //if (!cantPlant && this.rand.nextInt(plantChance) == 0 && blockToPlant == Blocks.AIR) {
+                    if (this.rand.nextInt(plantChance) == 0 && blockToPlant == Blocks.AIR) {
                         this.worldObj.setBlockState(pos1, iblockstate, 3);
                     }
                 }
@@ -299,7 +306,7 @@ public class MoCEntityEnt extends MoCEntityAnimal {
 
     @Override
     protected void applyEnchantments(EntityLivingBase entityLivingBaseIn, Entity entityIn) {
-        this.worldObj.playSoundAtEntity(this, "mocreatures:goatsmack", 1.0F, 1.0F + ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F));
+        MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_GOAT_SMACK);
         MoCTools.bigsmack(this, entityIn, 1F);
         super.applyEnchantments(entityLivingBaseIn, entityIn);
     }

@@ -5,8 +5,8 @@ import drzhark.mocreatures.entity.MoCEntityInsect;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
 public class MoCEntityButterfly extends MoCEntityInsect {
@@ -85,8 +85,8 @@ public class MoCEntityButterfly extends MoCEntityInsect {
     @Override
     public boolean isMyFavoriteFood(ItemStack par1ItemStack) {
         return par1ItemStack != null
-                && (par1ItemStack.getItem() == Item.getItemFromBlock(Blocks.red_flower) || par1ItemStack.getItem() == Item
-                        .getItemFromBlock(Blocks.yellow_flower));
+                && (par1ItemStack.getItem() == Item.getItemFromBlock(Blocks.RED_FLOWER) || par1ItemStack.getItem() == Item
+                        .getItemFromBlock(Blocks.YELLOW_FLOWER));
     }
 
     @Override

@@ -21,7 +21,7 @@ public class MoCEntityHellRat extends MoCEntityRat {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(20.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(20.0D);
     }
 
     @Override
@@ -49,8 +49,8 @@ public class MoCEntityHellRat extends MoCEntityRat {
     protected Item getDropItem() {
         boolean flag = (this.rand.nextInt(100) < MoCreatures.proxy.rareItemDropChance);
         if (flag) {
-            return Item.getItemFromBlock(Blocks.fire);
+            return Item.getItemFromBlock(Blocks.FIRE);
         }
-        return Items.redstone;
+        return Items.REDSTONE;
     }
 }

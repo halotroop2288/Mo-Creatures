@@ -4,17 +4,23 @@ import drzhark.mocreatures.MoCTools;
 import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityTameableAnimal;
 import drzhark.mocreatures.entity.ai.EntityAIWanderMoC2;
+import drzhark.mocreatures.util.MoCSoundEvents;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIPanic;
 import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.ai.EntityAITempt;
+import net.minecraft.entity.ai.EntityAIWander;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
 import net.minecraft.world.World;
+
+import javax.annotation.Nullable;
 
 public class MoCEntityTurkey extends MoCEntityTameableAnimal {
 
@@ -22,9 +28,13 @@ public class MoCEntityTurkey extends MoCEntityTameableAnimal {
         super(world);
         setSize(0.8F, 1.0F);
         this.texture = "turkey.png";
-        this.tasks.addTask(0, new EntityAISwimming(this));
+    }
+
+    @Override
+    protected void initEntityAI() {
+    	this.tasks.addTask(0, new EntityAISwimming(this));
         this.tasks.addTask(1, new EntityAIPanic(this, 1.4D));
-        this.tasks.addTask(3, new EntityAITempt(this, 1.0D, Items.melon_seeds, false));
+        this.tasks.addTask(3, new EntityAITempt(this, 1.0D, Items.MELON_SEEDS, false));
         this.tasks.addTask(5, new EntityAIWanderMoC2(this, 1.0D));
         this.tasks.addTask(6, new EntityAIWatchClosest(this, EntityPlayer.class, 6.0F));
     }
@@ -32,8 +42,8 @@ public class MoCEntityTurkey extends MoCEntityTameableAnimal {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(6.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.25D);
+        getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(6.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.25D);
     }
 
     @Override
@@ -53,18 +63,18 @@ public class MoCEntityTurkey extends MoCEntityTameableAnimal {
     }
 
     @Override
-    protected String getDeathSound() {
-        return "mocreatures:turkeyhurt";
+    protected SoundEvent getDeathSound() {
+        return MoCSoundEvents.ENTITY_TURKEY_DEATH;
     }
 
     @Override
-    protected String getHurtSound() {
-        return "mocreatures:turkeyhurt";
+    protected SoundEvent getHurtSound() {
+        return MoCSoundEvents.ENTITY_TURKEY_HURT;
     }
 
     @Override
-    protected String getLivingSound() {
-        return "mocreatures:turkey";
+    protected SoundEvent getAmbientSound() {
+        return MoCSoundEvents.ENTITY_TURKEY_AMBIENT;
     }
 
     @Override
@@ -73,19 +83,17 @@ public class MoCEntityTurkey extends MoCEntityTameableAnimal {
         if (flag) {
             return MoCreatures.rawTurkey;
         }
-        return Items.feather;
+        return Items.FEATHER;
     }
 
     @Override
-    public boolean interact(EntityPlayer entityplayer) {
-        if (super.interact(entityplayer)) {
-            return false;
+    public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
+        if (super.processInteract(player, hand, stack)) {
+            return true;
         }
-
-        ItemStack itemstack = entityplayer.inventory.getCurrentItem();
-
-        if (MoCreatures.isServer() && !getIsTamed() && (itemstack != null) && (itemstack.getItem() == Items.melon_seeds)) {
-            MoCTools.tameWithName(entityplayer, this);
+        boolean onMainHand = (hand == EnumHand.MAIN_HAND);
+        if (MoCreatures.isServer() && onMainHand && !getIsTamed() && (stack != null) && (stack.getItem() == Items.MELON_SEEDS)) {
+            MoCTools.tameWithName(player, this);
         }
 
         return true;
@@ -101,7 +109,7 @@ public class MoCEntityTurkey extends MoCEntityTameableAnimal {
 
     @Override
     public boolean isMyHealFood(ItemStack par1ItemStack) {
-        return par1ItemStack != null && par1ItemStack.getItem() == Items.pumpkin_seeds;
+        return par1ItemStack != null && par1ItemStack.getItem() == Items.PUMPKIN_SEEDS;
     }
 
     @Override

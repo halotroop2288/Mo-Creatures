@@ -5,27 +5,39 @@ import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityMob;
 import drzhark.mocreatures.entity.ai.EntityAINearestAttackableTargetMoC;
 import drzhark.mocreatures.entity.item.MoCEntityThrowableRock;
+import drzhark.mocreatures.util.MoCSoundEvents;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIAttackOnCollide;
+import net.minecraft.entity.ai.EntityAIAttackMelee;
 import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.BlockPos;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class MoCEntityMiniGolem extends MoCEntityMob {
 
     public int tcounter;
     public MoCEntityThrowableRock tempRock;
+    private static final DataParameter<Boolean> ANGRY = EntityDataManager.<Boolean>createKey(MoCEntityMiniGolem.class, DataSerializers.BOOLEAN);
+    private static final DataParameter<Boolean> HAS_ROCK = EntityDataManager.<Boolean>createKey(MoCEntityMiniGolem.class, DataSerializers.BOOLEAN);
+    
 
     public MoCEntityMiniGolem(World world) {
         super(world);
         this.texture = "minigolem.png";
         setSize(1.0F, 1.0F);
-        this.tasks.addTask(0, new EntityAISwimming(this));
-        this.tasks.addTask(2, new EntityAIAttackOnCollide(this, 1.0D, true));
+    }
+
+    @Override
+    protected void initEntityAI() {
+    	this.tasks.addTask(0, new EntityAISwimming(this));
+        this.tasks.addTask(2, new EntityAIAttackMelee(this, 1.0D, true));
         this.tasks.addTask(8, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
         this.targetTasks.addTask(1, new EntityAINearestAttackableTargetMoC(this, EntityPlayer.class, true));
     }
@@ -33,34 +45,32 @@ public class MoCEntityMiniGolem extends MoCEntityMob {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(15.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.25D);
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(15.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.25D);
         this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(2.0D);
     }
 
     @Override
     protected void entityInit() {
         super.entityInit();
-        this.dataWatcher.addObject(24, Byte.valueOf((byte) 0)); // angry 0 = false, 1 = true
-        this.dataWatcher.addObject(23, Byte.valueOf((byte) 0)); // hasRock 0 = false, 1 = true        
+        this.dataManager.register(ANGRY, Boolean.valueOf(false));
+        this.dataManager.register(HAS_ROCK, Boolean.valueOf(false)); 
     }
 
     public boolean getIsAngry() {
-        return (this.dataWatcher.getWatchableObjectByte(24) == 1);
+    	return ((Boolean)this.dataManager.get(ANGRY)).booleanValue();
     }
 
     public void setIsAngry(boolean flag) {
-        byte input = (byte) (flag ? 1 : 0);
-        this.dataWatcher.updateObject(24, Byte.valueOf(input));
+    	this.dataManager.set(ANGRY, Boolean.valueOf(flag));
     }
 
     public boolean getHasRock() {
-        return (this.dataWatcher.getWatchableObjectByte(23) == 1);
+    	return ((Boolean)this.dataManager.get(HAS_ROCK)).booleanValue();
     }
 
     public void setHasRock(boolean flag) {
-        byte input = (byte) (flag ? 1 : 0);
-        this.dataWatcher.updateObject(23, Byte.valueOf(input));
+    	this.dataManager.set(HAS_ROCK, Boolean.valueOf(flag));
     }
 
     @Override
@@ -148,22 +158,22 @@ public class MoCEntityMiniGolem extends MoCEntityMob {
      */
     @Override
     protected void playStepSound(BlockPos pos, Block block) {
-        this.playSound("mocreatures:minigolemwalk", 1.0F, 1.0F);
+        MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_GOLEM_WALK);
     }
 
     @Override
-    protected String getDeathSound() {
-        return "mocreatures:golemgrunt";
+    protected SoundEvent getDeathSound() {
+        return MoCSoundEvents.ENTITY_GOLEM_DYING;
     }
 
     @Override
-    protected String getHurtSound() {
-        return "mocreatures:golemgrunt";
+    protected SoundEvent getHurtSound() {
+        return MoCSoundEvents.ENTITY_GOLEM_HURT;
     }
 
     @Override
-    protected String getLivingSound() {
-        return null;
+    protected SoundEvent getAmbientSound() {
+        return MoCSoundEvents.ENTITY_GOLEM_AMBIENT;
     }
 
     @Override

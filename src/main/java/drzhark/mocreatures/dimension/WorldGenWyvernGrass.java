@@ -3,7 +3,7 @@ package drzhark.mocreatures.dimension;
 import drzhark.mocreatures.block.MoCBlockTallGrass;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenerator;
 
@@ -22,11 +22,12 @@ public class WorldGenWyvernGrass extends WorldGenerator {
 
     @Override
     public boolean generate(World worldIn, Random rand, BlockPos position) {
-        Block block;
+        IBlockState blockstate;
 
         do {
-            block = worldIn.getBlockState(position).getBlock();
-            if (!block.isAir(worldIn, position) && !block.isLeaves(worldIn, position))
+            blockstate = worldIn.getBlockState(position);
+            Block block = blockstate.getBlock();
+            if (!block.isAir(blockstate, worldIn, position) && !block.isLeaves(blockstate, worldIn, position))
                 break;
             position = position.down();
         } while (position.getY() > 0);

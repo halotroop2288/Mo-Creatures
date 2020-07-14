@@ -1,6 +1,7 @@
 package drzhark.mocreatures;
 
 import com.mojang.authlib.GameProfile;
+
 import drzhark.mocreatures.block.MoCBlockDirt;
 import drzhark.mocreatures.block.MoCBlockGrass;
 import drzhark.mocreatures.block.MoCBlockLeaf;
@@ -28,22 +29,34 @@ import drzhark.mocreatures.entity.ambient.MoCEntityFly;
 import drzhark.mocreatures.entity.ambient.MoCEntityMaggot;
 import drzhark.mocreatures.entity.ambient.MoCEntityRoach;
 import drzhark.mocreatures.entity.ambient.MoCEntitySnail;
+import drzhark.mocreatures.entity.aquatic.MoCEntityAnchovy;
+import drzhark.mocreatures.entity.aquatic.MoCEntityAngelFish;
+import drzhark.mocreatures.entity.aquatic.MoCEntityAngler;
+import drzhark.mocreatures.entity.aquatic.MoCEntityBass;
+import drzhark.mocreatures.entity.aquatic.MoCEntityClownFish;
+import drzhark.mocreatures.entity.aquatic.MoCEntityCod;
 import drzhark.mocreatures.entity.aquatic.MoCEntityDolphin;
 import drzhark.mocreatures.entity.aquatic.MoCEntityFishy;
+import drzhark.mocreatures.entity.aquatic.MoCEntityGoldFish;
+import drzhark.mocreatures.entity.aquatic.MoCEntityHippoTang;
 import drzhark.mocreatures.entity.aquatic.MoCEntityJellyFish;
+import drzhark.mocreatures.entity.aquatic.MoCEntityManderin;
 import drzhark.mocreatures.entity.aquatic.MoCEntityMantaRay;
 import drzhark.mocreatures.entity.aquatic.MoCEntityMediumFish;
 import drzhark.mocreatures.entity.aquatic.MoCEntityPiranha;
+import drzhark.mocreatures.entity.aquatic.MoCEntitySalmon;
 import drzhark.mocreatures.entity.aquatic.MoCEntityShark;
 import drzhark.mocreatures.entity.aquatic.MoCEntitySmallFish;
 import drzhark.mocreatures.entity.aquatic.MoCEntityStingRay;
 import drzhark.mocreatures.entity.item.MoCEntityEgg;
 import drzhark.mocreatures.entity.item.MoCEntityKittyBed;
 import drzhark.mocreatures.entity.item.MoCEntityLitterBox;
-import drzhark.mocreatures.entity.item.MoCEntityPlatform;
 import drzhark.mocreatures.entity.item.MoCEntityThrowableRock;
+import drzhark.mocreatures.entity.monster.MoCEntityCaveOgre;
+import drzhark.mocreatures.entity.monster.MoCEntityFireOgre;
 import drzhark.mocreatures.entity.monster.MoCEntityFlameWraith;
 import drzhark.mocreatures.entity.monster.MoCEntityGolem;
+import drzhark.mocreatures.entity.monster.MoCEntityGreenOgre;
 import drzhark.mocreatures.entity.monster.MoCEntityHellRat;
 import drzhark.mocreatures.entity.monster.MoCEntityHorseMob;
 import drzhark.mocreatures.entity.monster.MoCEntityManticore;
@@ -57,6 +70,7 @@ import drzhark.mocreatures.entity.monster.MoCEntityWerewolf;
 import drzhark.mocreatures.entity.monster.MoCEntityWraith;
 import drzhark.mocreatures.entity.passive.MoCEntityBear;
 import drzhark.mocreatures.entity.passive.MoCEntityBird;
+import drzhark.mocreatures.entity.passive.MoCEntityBlackBear;
 import drzhark.mocreatures.entity.passive.MoCEntityBoar;
 import drzhark.mocreatures.entity.passive.MoCEntityBunny;
 import drzhark.mocreatures.entity.passive.MoCEntityCrocodile;
@@ -66,17 +80,26 @@ import drzhark.mocreatures.entity.passive.MoCEntityElephant;
 import drzhark.mocreatures.entity.passive.MoCEntityEnt;
 import drzhark.mocreatures.entity.passive.MoCEntityFox;
 import drzhark.mocreatures.entity.passive.MoCEntityGoat;
+import drzhark.mocreatures.entity.passive.MoCEntityGrizzlyBear;
 import drzhark.mocreatures.entity.passive.MoCEntityHorse;
 import drzhark.mocreatures.entity.passive.MoCEntityKitty;
 import drzhark.mocreatures.entity.passive.MoCEntityKomodo;
+import drzhark.mocreatures.entity.passive.MoCEntityLeoger;
 import drzhark.mocreatures.entity.passive.MoCEntityLeopard;
+import drzhark.mocreatures.entity.passive.MoCEntityLiard;
+import drzhark.mocreatures.entity.passive.MoCEntityLiger;
 import drzhark.mocreatures.entity.passive.MoCEntityLion;
+import drzhark.mocreatures.entity.passive.MoCEntityLither;
 import drzhark.mocreatures.entity.passive.MoCEntityManticorePet;
 import drzhark.mocreatures.entity.passive.MoCEntityMole;
 import drzhark.mocreatures.entity.passive.MoCEntityMouse;
 import drzhark.mocreatures.entity.passive.MoCEntityOstrich;
+import drzhark.mocreatures.entity.passive.MoCEntityPandaBear;
+import drzhark.mocreatures.entity.passive.MoCEntityPanthard;
 import drzhark.mocreatures.entity.passive.MoCEntityPanther;
+import drzhark.mocreatures.entity.passive.MoCEntityPanthger;
 import drzhark.mocreatures.entity.passive.MoCEntityPetScorpion;
+import drzhark.mocreatures.entity.passive.MoCEntityPolarBear;
 import drzhark.mocreatures.entity.passive.MoCEntityRaccoon;
 import drzhark.mocreatures.entity.passive.MoCEntitySnake;
 import drzhark.mocreatures.entity.passive.MoCEntityTiger;
@@ -103,25 +126,28 @@ import drzhark.mocreatures.item.MoCItemTurtleSoup;
 import drzhark.mocreatures.item.MoCItemWeapon;
 import drzhark.mocreatures.item.MoCItemWhip;
 import drzhark.mocreatures.network.MoCMessageHandler;
-import drzhark.mocreatures.utils.MoCLog;
+import drzhark.mocreatures.util.MoCLog;
+import drzhark.mocreatures.util.MoCSoundEvents;
 import net.minecraft.block.Block;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
-import net.minecraft.entity.EntityList.EntityEggInfo;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.init.MobEffects;
+import net.minecraft.init.SoundEvents;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
 import net.minecraft.item.Item.ToolMaterial;
 import net.minecraft.item.ItemArmor.ArmorMaterial;
 import net.minecraft.item.ItemStack;
-import net.minecraft.potion.Potion;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.potion.PotionEffect;
+import net.minecraft.world.DimensionType;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.Biome.BiomeProperties;
 import net.minecraft.world.biome.Biome.SpawnListEntry;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
@@ -141,13 +167,11 @@ import net.minecraftforge.fml.common.event.FMLServerStartedEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.registry.EntityRegistry;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import net.minecraftforge.fml.common.registry.LanguageRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -160,10 +184,11 @@ public class MoCreatures {
 
     @SidedProxy(clientSide = "drzhark.mocreatures.client.MoCClientProxy", serverSide = "drzhark.mocreatures.MoCProxy")
     public static MoCProxy proxy;
-    public static final CreativeTabs tabMoC = new MoCCreativeTabs(CreativeTabs.creativeTabArray.length, "MoCreaturesTab");
+    public static final CreativeTabs tabMoC = new MoCCreativeTabs(CreativeTabs.CREATIVE_TAB_ARRAY.length, "MoCreaturesTab");
     public MoCPetMapData mapData;
     public static boolean isCustomSpawnerLoaded = false;
     public static GameProfile MOCFAKEPLAYER = new GameProfile(UUID.fromString("6E379B45-1111-2222-3333-2FE1A88BCD66"), "[MoCreatures]");
+    public static DimensionType WYVERN_LAIR;
 
     /**
      * ITEMS
@@ -187,14 +212,14 @@ public class MoCreatures {
     public static Item staffTeleport;
     public static Item builderHammer;
 
-    static ArmorMaterial scorpARMOR = EnumHelper.addArmorMaterial("crocARMOR", "crocARMOR", 15, new int[] {2, 6, 5, 2}, 12);
-    static ArmorMaterial furARMOR = EnumHelper.addArmorMaterial("furARMOR", "furARMOR", 15, new int[] {2, 6, 5, 2}, 12);
-    static ArmorMaterial hideARMOR = EnumHelper.addArmorMaterial("hideARMOR", "hideARMOR", 15, new int[] {2, 6, 5, 2}, 12);
-    static ArmorMaterial scorpdARMOR = EnumHelper.addArmorMaterial("scorpdARMOR", "scorpdARMOR", 15, new int[] {2, 6, 5, 2}, 12);
-    static ArmorMaterial scorpfARMOR = EnumHelper.addArmorMaterial("scorpfARMOR", "scorpdARMOR", 18, new int[] {2, 7, 6, 2}, 12);
-    static ArmorMaterial scorpnARMOR = EnumHelper.addArmorMaterial("scorpnARMOR", "scorpdARMOR", 20, new int[] {3, 7, 6, 3}, 15);
-    static ArmorMaterial scorpcARMOR = EnumHelper.addArmorMaterial("scorpcARMOR", "scorpdARMOR", 15, new int[] {2, 6, 5, 2}, 12);
-    static ArmorMaterial silverARMOR = EnumHelper.addArmorMaterial("silverARMOR", "scorpdARMOR", 15, new int[] {2, 6, 5, 2}, 15);
+    static ArmorMaterial scorpARMOR = EnumHelper.addArmorMaterial("crocARMOR", "crocARMOR", 15, new int[] {2, 6, 5, 2}, 12, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 0);
+    static ArmorMaterial furARMOR = EnumHelper.addArmorMaterial("furARMOR", "furARMOR", 15, new int[] {2, 6, 5, 2}, 12, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 0);
+    static ArmorMaterial hideARMOR = EnumHelper.addArmorMaterial("hideARMOR", "hideARMOR", 15, new int[] {2, 6, 5, 2}, 12, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 0);
+    static ArmorMaterial scorpdARMOR = EnumHelper.addArmorMaterial("scorpdARMOR", "scorpdARMOR", 15, new int[] {2, 6, 5, 2}, 12, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 0);
+    static ArmorMaterial scorpfARMOR = EnumHelper.addArmorMaterial("scorpfARMOR", "scorpdARMOR", 18, new int[] {2, 7, 6, 2}, 12, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 0);
+    static ArmorMaterial scorpnARMOR = EnumHelper.addArmorMaterial("scorpnARMOR", "scorpdARMOR", 20, new int[] {3, 7, 6, 3}, 15, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 0);
+    static ArmorMaterial scorpcARMOR = EnumHelper.addArmorMaterial("scorpcARMOR", "scorpdARMOR", 15, new int[] {2, 6, 5, 2}, 12, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 0);
+    static ArmorMaterial silverARMOR = EnumHelper.addArmorMaterial("silverARMOR", "scorpdARMOR", 15, new int[] {2, 6, 5, 2}, 15, SoundEvents.ITEM_ARMOR_EQUIP_GENERIC, 0);
     static ToolMaterial SILVER = EnumHelper.addToolMaterial("SILVER", 0, 250, 6.0F, 4, 15);
 
     public static Item horsesaddle;
@@ -205,14 +230,11 @@ public class MoCreatures {
     public static Item mocegg;
     public static Item bigcatclaw;
     public static Item whip;
-    //public static Item horsearmorgold;
-    //public static Item horsearmordiamond;
     public static Item staffunicorn;
     public static Item medallion;
     public static Item[] kittybed = new Item[16];
     public static Item litterbox;
     public static Item woolball;
-    //public static Item rope;
     public static Item petfood;
     public static Item staffdiamond;
     public static Item hideCroc;
@@ -220,19 +242,6 @@ public class MoCreatures {
     public static Item helmetCroc;
     public static Item legsCroc;
     public static Item bootsCroc;
-    /*public static Item fishbowl_e;
-    public static Item fishbowl_w;
-    public static Item fishbowl_1;
-    public static Item fishbowl_2;
-    public static Item fishbowl_3;
-    public static Item fishbowl_4;
-    public static Item fishbowl_5;
-    public static Item fishbowl_6;
-    public static Item fishbowl_7;
-    public static Item fishbowl_8;
-    public static Item fishbowl_9;
-    public static Item fishbowl_10;
-    */
     public static Item fur;
     public static Item omelet;
     public static Item turtleraw;
@@ -245,7 +254,6 @@ public class MoCreatures {
     public static Item sharksword;
     public static Item silversword;
 
-    //public static Item key;
     public static Item essencedarkness;
     public static Item essencefire;
     public static Item essenceundead;
@@ -363,17 +371,18 @@ public class MoCreatures {
         this.AddRecipes();
         proxy.registerRenderers();
         proxy.registerRenderInformation();
-        DimensionManager.registerProviderType(WyvernLairDimensionID, WorldProviderWyvernEnd.class, true);
+        WYVERN_LAIR = DimensionType.register("Wyvern Lair", "_wyvern_lair", WyvernLairDimensionID, WorldProviderWyvernEnd.class, false);
+        DimensionManager.registerDimension(WyvernLairDimensionID, WYVERN_LAIR);
     }
 
     @EventHandler
     public void postInit(FMLPostInitializationEvent event) {
         isCustomSpawnerLoaded = Loader.isModLoaded("CustomSpawner");
         //ForgeChunkManager.setForcedChunkLoadingCallback(instance, new MoCloadCallback());
-        DimensionManager.registerDimension(WyvernLairDimensionID, WyvernLairDimensionID);
         // ***MUST REGISTER BIOMES AT THIS POINT TO MAKE SURE OUR ENTITIES GET ALL BIOMES FROM DICTIONARY****
-        MoCreatures.WyvernLairBiome = new BiomeGenWyvernLair(MoCreatures.proxy.WyvernBiomeID);
+        MoCreatures.WyvernLairBiome = new BiomeGenWyvernLair(new BiomeProperties("WyvernLair").setBaseHeight(0.3F).setHeightVariation(1.5F));
         BiomeDictionary.registerBiomeType(WyvernLairBiome, Type.FOREST, Type.END);
+        Biome.registerBiome(MoCreatures.proxy.WyvernBiomeID, "WyvernBiome", WyvernLairBiome);
         BiomeDictionary.registerAllBiomes();
         registerEntities();
     }
@@ -385,7 +394,7 @@ public class MoCreatures {
         event.registerServerCommand(new CommandMoCTP());
         event.registerServerCommand(new CommandMoCPets());
         if (isServer()) {
-            if (MinecraftServer.getServer().isDedicatedServer()) {
+            if (FMLCommonHandler.instance().getMinecraftServerInstance().isDedicatedServer()) {
                 event.registerServerCommand(new CommandMoCSpawn());
             }
         }
@@ -405,75 +414,110 @@ public class MoCreatures {
      */
 
     public void registerEntities() {
+    	/**
+    	 * Passive
+    	 */
+    	registerEntity(MoCEntityBird.class, "Bird", 14020607, 14020607);// 0x03600, 0x003500);
+    	registerEntity(MoCEntityBlackBear.class, "BlackBear", 10, 1);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityBoar.class, "Boar", 14772545, 9141102);//, 0x2600, 0x052500);
         registerEntity(MoCEntityBunny.class, "Bunny", 12623485, 9141102);//, 0x05600, 0x006500);
-        registerEntity(MoCEntitySnake.class, "Snake", 14020607, 13749760);//, 0x05800, 0x006800);
-        registerEntity(MoCEntityTurtle.class, "Turtle", 14772545, 9320590);//, 0x04800, 0x004500);
-        registerEntity(MoCEntityBird.class, "Bird", 14020607, 14020607);// 0x03600, 0x003500);
+        registerEntity(MoCEntityCrocodile.class, "Crocodile", 16711680, 65407);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityDuck.class, "Duck", 14021607, 15656192);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityDeer.class, "Deer", 14021607, 33023);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityElephant.class, "Elephant", 14772545, 23423);
+        registerEntity(MoCEntityEnt.class, "Ent", 12623485, 16711680);
+        registerEntity(MoCEntityFox.class, "Fox", 14772545, 5253242);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityGoat.class, "Goat", 7434694, 6053069);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityGrizzlyBear.class, "GrizzlyBear", 14772545, 1);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityKitty.class, "Kitty", 12623485, 5253242);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityKomodo.class, "KomodoDragon", 16711680, 23423);
+        registerEntity(MoCEntityLeoger.class, "Leoger", 14772545, 14772545);
+        registerEntity(MoCEntityLeopard.class, "Leopard", 13749760, 10);
+        registerEntity(MoCEntityLiard.class, "Liard", 15313474, 13749760);
+        registerEntity(MoCEntityLion.class, "Lion", 15313474, 13749760);
+        registerEntity(MoCEntityLiger.class, "Liger", 15313474, 12623485);
+        registerEntity(MoCEntityLither.class, "Lither", 15313474, 14772545);
+        registerEntity(MoCEntityManticorePet.class, "ManticorePet");
+        registerEntity(MoCEntityMole.class, "Mole", 14020607, 16711680);
         registerEntity(MoCEntityMouse.class, "Mouse", 14772545, 0);//, 0x02600, 0x002500);
+        registerEntity(MoCEntityOstrich.class, "Ostrich", 14020607, 9639167);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityPandaBear.class, "PandaBear", 10, 9141102);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityPanthard.class, "Panthard", 10, 13749760);
+        registerEntity(MoCEntityPanther.class, "Panther", 10, 205);
+        registerEntity(MoCEntityPanthger.class, "Panthger", 10, 14772545);
+        registerEntity(MoCEntityPetScorpion.class, "PetScorpion");
+        registerEntity(MoCEntityPolarBear.class, "PolarBear", 14020607, 9141102);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityRaccoon.class, "Raccoon", 14772545, 13749760);
+        registerEntity(MoCEntitySnake.class, "Snake", 14020607, 13749760);//, 0x05800, 0x006800);
+        registerEntity(MoCEntityTiger.class, "Tiger", 14772545, 0);
+        registerEntity(MoCEntityTurtle.class, "Turtle", 14772545, 9320590);//, 0x04800, 0x004500);
         registerEntity(MoCEntityTurkey.class, "Turkey", 14020607, 16711680);//, 0x2600, 0x052500);
         registerEntity(MoCEntityHorse.class, "WildHorse", 12623485, 15656192);//, 0x2600, 0x052500);
-        registerEntity(MoCEntityHorseMob.class, "HorseMob", 16711680, 9320590);//, 0x2600, 0x052500);
-        registerEntity(MoCEntityOgre.class, "Ogre", 16711680, 65407);//, 0x2600, 0x052500);
-        registerEntity(MoCEntityBoar.class, "Boar", 14772545, 9141102);//, 0x2600, 0x052500);
-        registerEntity(MoCEntityBear.class, "Bear", 14772545, 1);//, 0x2600, 0x052500);
-        registerEntity(MoCEntityDuck.class, "Duck", 14772545, 15656192);//, 0x2600, 0x052500);
-        //registerEntity(MoCEntityBigCat.class, "BigCat");//, 0x2600, 0x052500);
-        registerEntity(MoCEntityDeer.class, "Deer", 14772545, 33023);//, 0x2600, 0x052500);
-        registerEntity(MoCEntityWWolf.class, "WWolf", 16711680, 13749760);//, 0x2600, 0x052500);
-        registerEntity(MoCEntityWraith.class, "Wraith", 16711680, 0);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityWyvern.class, "Wyvern", 14772545, 65407);
+        
+        /**
+         * Mobs
+         */
+        registerEntity(MoCEntityCaveOgre.class, "CaveOgre", 16711680, 33023);//, 0x2600, 0x052500);
         registerEntity(MoCEntityFlameWraith.class, "FlameWraith", 16711680, 12623485);//, 0x2600, 0x052500);
-        registerEntity(MoCEntityFox.class, "Fox", 14772545, 5253242);//, 0x2600, 0x052500);
-        registerEntity(MoCEntityWerewolf.class, "Werewolf", 16711680, 7434694);//, 0x2600, 0x052500);
-        registerEntity(MoCEntityShark.class, "Shark", 33023, 9013643);//, 0x2600, 0x052500);
-        registerEntity(MoCEntityDolphin.class, "Dolphin", 33023, 15631086);//, 0x2600, 0x052500);
-        registerEntity(MoCEntityFishy.class, "Fishy", 33023, 65407);//, 0x2600, 0x052500);
-        registerEntity(MoCEntityKitty.class, "Kitty", 12623485, 5253242);//, 0x2600, 0x052500);
-        registerEntity(MoCEntityKittyBed.class, "KittyBed");
-        registerEntity(MoCEntityLitterBox.class, "LitterBox");
-        registerEntity(MoCEntityRat.class, "Rat", 12623485, 9141102);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityFireOgre.class, "FireOgre", 16711680, 9320595);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityGreenOgre.class, "GreenOgre", 16711680, 65407);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityGolem.class, "BigGolem", 16711680, 16622);
+        registerEntity(MoCEntityHorseMob.class, "HorseMob", 16711680, 9320590);//, 0x2600, 0x052500);
         registerEntity(MoCEntityHellRat.class, "HellRat", 16711680, 14772545);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityManticore.class, "Manticore", 16711680, 0);
+        registerEntity(MoCEntityMiniGolem.class, "MiniGolem", 16711680, 13749760);
+        registerEntity(MoCEntityRat.class, "Rat", 16711680, 9141102);//, 0x2600, 0x052500);
+        registerEntity(MoCEntitySilverSkeleton.class, "SilverSkeleton", 16711680, 33023);
         registerEntity(MoCEntityScorpion.class, "Scorpion", 16711680, 6053069);//, 0x2600, 0x052500);
-        registerEntity(MoCEntityCrocodile.class, "Crocodile", 16711680, 65407);//, 0x2600, 0x052500);
-        //registerEntity(MoCEntityRay.class, "Ray", 33023, 9141102);//14772545, 9141102);
-        registerEntity(MoCEntityMantaRay.class, "MantaRay", 33023, 9141102);//14772545, 9141102);
-        registerEntity(MoCEntityStingRay.class, "StingRay", 33023, 6053069);//14772545, 9141102);
+        registerEntity(MoCEntityWerewolf.class, "Werewolf", 16711680, 7434694);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityWraith.class, "Wraith", 16711680, 0);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityWWolf.class, "WWolf", 16711680, 13749760);//, 0x2600, 0x052500);
+        
+        /**
+         * Aquatic
+         */
+        registerEntity(MoCEntityAnchovy.class, "Anchovy", 5665535, 205);
+        registerEntity(MoCEntityAngelFish.class, "AngelFish", 5665535, 7434694);
+        registerEntity(MoCEntityAngler.class, "Angler", 5665535, 10);
+        registerEntity(MoCEntityBass.class, "Bass", 33023, 2372490);
+        registerEntity(MoCEntityClownFish.class, "ClownFish", 5665535, 14772545);
+        registerEntity(MoCEntityCod.class, "Cod", 33023, 16622);
+        registerEntity(MoCEntityDolphin.class, "Dolphin", 33023, 15631086);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityFishy.class, "Fishy", 5665535, 65407);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityGoldFish.class, "GoldFish", 5665535, 15656192);
+        registerEntity(MoCEntityHippoTang.class, "HippoTang", 5665535, 2037680);
         registerEntity(MoCEntityJellyFish.class, "JellyFish", 33023, 14772545);//, 0x2600, 0x052500);
-        registerEntity(MoCEntityGoat.class, "Goat", 7434694, 6053069);//, 0x2600, 0x052500);
-        registerEntity(MoCEntityEgg.class, "Egg");//, 0x2600, 0x052500);
-        registerEntity(MoCEntityOstrich.class, "Ostrich", 14020607, 9639167);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityManderin.class, "Manderin", 5665535, 12623485);
+        registerEntity(MoCEntityPiranha.class, "Piranha", 33023, 16711680);
+        registerEntity(MoCEntitySalmon.class, "Salmon", 33023, 12623485);
+        registerEntity(MoCEntityMantaRay.class, "MantaRay", 33023, 9141102);//14772545, 9141102);
+        registerEntity(MoCEntityShark.class, "Shark", 33023, 9013643);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityStingRay.class, "StingRay", 33023, 6053069);//14772545, 9141102);
+        
+        /**
+         * Ambients
+         */
+        registerEntity(MoCEntityAnt.class, "Ant", 65407, 12623485);
         registerEntity(MoCEntityBee.class, "Bee", 65407, 15656192);//, 0x2600, 0x052500);
-        registerEntity(MoCEntityFly.class, "Fly", 65407, 1);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityButterfly.class, "ButterFly", 65407, 7434694);//, 0x22600, 0x012500);
+        registerEntity(MoCEntityCrab.class, "Crab", 65407, 13749760);
+        registerEntity(MoCEntityCricket.class, "Cricket", 65407, 16622);//, 0x2600, 0x052500);
         registerEntity(MoCEntityDragonfly.class, "DragonFly", 65407, 14020607);//, 0x2600, 0x052500);
         registerEntity(MoCEntityFirefly.class, "Firefly", 65407, 9320590);//, 0x2600, 0x052500);
-        registerEntity(MoCEntityCricket.class, "Cricket", 65407, 16622);//, 0x2600, 0x052500);
-        registerEntity(MoCEntitySnail.class, "Snail", 65407, 14772545);//, 0x2600, 0x052500);
-        registerEntity(MoCEntityButterfly.class, "ButterFly", 65407, 7434694);//, 0x22600, 0x012500);
-        registerEntity(MoCEntityThrowableRock.class, "TRock");
-        registerEntity(MoCEntityGolem.class, "BigGolem", 16711680, 16622);
-        registerEntity(MoCEntityPetScorpion.class, "PetScorpion");
-        registerEntity(MoCEntityPlatform.class, "MoCPlatform");
-        registerEntity(MoCEntityElephant.class, "Elephant", 14772545, 23423);
-        registerEntity(MoCEntityKomodo.class, "KomodoDragon", 16711680, 23423);
-        registerEntity(MoCEntityWyvern.class, "Wyvern", 14772545, 65407);
-        registerEntity(MoCEntityRoach.class, "Roach", 65407, 13749760);
+        registerEntity(MoCEntityFly.class, "Fly", 65407, 1);//, 0x2600, 0x052500);
         registerEntity(MoCEntityMaggot.class, "Maggot", 65407, 9141102);
-        registerEntity(MoCEntityCrab.class, "Crab", 65407, 13749760);
-        registerEntity(MoCEntityRaccoon.class, "Raccoon", 14772545, 13749760);
-        registerEntity(MoCEntityMiniGolem.class, "MiniGolem", 16711680, 13749760);
-        registerEntity(MoCEntitySilverSkeleton.class, "SilverSkeleton", 16711680, 33023);
-        registerEntity(MoCEntityAnt.class, "Ant", 65407, 12623485);
-        registerEntity(MoCEntityMediumFish.class, "MediumFish", 33023, 16622);
-        registerEntity(MoCEntitySmallFish.class, "SmallFish", 33023, 65407);
-        registerEntity(MoCEntityPiranha.class, "Piranha", 33023, 16711680);
-        registerEntity(MoCEntityEnt.class, "Ent", 12623485, 16711680);
-        registerEntity(MoCEntityMole.class, "Mole", 14020607, 16711680);
-        registerEntity(MoCEntityManticore.class, "Manticore", 16711680, 0);
-        registerEntity(MoCEntityLion.class, "Lion", 15313474, 13749760);
-        registerEntity(MoCEntityTiger.class, "Tiger", 14772545, 0);
-        registerEntity(MoCEntityLeopard.class, "Leopard", 13749760, 10);
-        registerEntity(MoCEntityPanther.class, "Panther", 10, 205);
-        registerEntity(MoCEntityManticorePet.class, "ManticorePet");
-
+        registerEntity(MoCEntitySnail.class, "Snail", 65407, 14772545);//, 0x2600, 0x052500);
+        registerEntity(MoCEntityRoach.class, "Roach", 65407, 13749760);
+        
+        /**
+         * Others
+         */
+        registerEntity(MoCEntityEgg.class, "Egg");//, 0x2600, 0x052500);
+        registerEntity(MoCEntityKittyBed.class, "KittyBed");
+        registerEntity(MoCEntityLitterBox.class, "LitterBox");
+        registerEntity(MoCEntityThrowableRock.class, "TRock");
+        
         /**
          * fucsia 16711680 orange curuba 14772545 gris claro 9141102 gris medio
          * 9013643 rosado 15631086 rosado claro 12623485 azul oscuro 2037680
@@ -510,8 +554,14 @@ public class MoCreatures {
                 new ArrayList<Type>(Arrays.asList(Type.FOREST, Type.JUNGLE, Type.PLAINS, Type.SWAMP))));
 
         // creatures
-        mocEntityMap.put("Bear", new MoCEntityData("Bear", 4, EnumCreatureType.CREATURE, new SpawnListEntry(MoCEntityBear.class, 6, 1, 2),
-                new ArrayList<Type>(Arrays.asList(Type.FOREST, Type.HILLS, Type.MESA, Type.MOUNTAIN, Type.PLAINS, Type.SNOWY))));
+        mocEntityMap.put("BlackBear", new MoCEntityData("BlackBear", 4, EnumCreatureType.CREATURE, new SpawnListEntry(MoCEntityBlackBear.class, 6, 1, 3),
+                new ArrayList<Type>(Arrays.asList(Type.FOREST, Type.HILLS, Type.MESA, Type.MOUNTAIN, Type.PLAINS))));
+        mocEntityMap.put("GrizzlyBear", new MoCEntityData("GrizzlyBear", 4, EnumCreatureType.CREATURE, new SpawnListEntry(MoCEntityGrizzlyBear.class, 6, 1, 2),
+                new ArrayList<Type>(Arrays.asList(Type.FOREST, Type.HILLS, Type.MESA, Type.MOUNTAIN, Type.PLAINS))));
+        mocEntityMap.put("PolarBear", new MoCEntityData("PolarBear", 4, EnumCreatureType.CREATURE, new SpawnListEntry(MoCEntityPolarBear.class, 6, 1, 2),
+                new ArrayList<Type>(Arrays.asList(Type.SNOWY))));
+        mocEntityMap.put("PandaBear", new MoCEntityData("PandaBear", 4, EnumCreatureType.CREATURE, new SpawnListEntry(MoCEntityPandaBear.class, 6, 1, 3),
+                new ArrayList<Type>(Arrays.asList(Type.FOREST, Type.HILLS, Type.MESA, Type.PLAINS))));
         mocEntityMap.put("Bird", new MoCEntityData("Bird", 4, EnumCreatureType.CREATURE, new SpawnListEntry(MoCEntityBird.class, 15, 2, 3),
                 new ArrayList<Type>(Arrays.asList(Type.FOREST, Type.HILLS, Type.JUNGLE, Type.MESA, Type.MOUNTAIN, Type.PLAINS))));
         mocEntityMap.put("Boar", new MoCEntityData("Boar", 3, EnumCreatureType.CREATURE, new SpawnListEntry(MoCEntityBoar.class, 8, 2, 2),
@@ -546,7 +596,7 @@ public class MoCreatures {
         mocEntityMap.put("Mouse", new MoCEntityData("Mouse", 2, EnumCreatureType.CREATURE, new SpawnListEntry(MoCEntityMouse.class, 7, 1, 2),
                 new ArrayList<Type>(Arrays.asList(Type.FOREST, Type.HILLS, Type.JUNGLE, Type.MESA, Type.MOUNTAIN, Type.PLAINS))));
         mocEntityMap.put("Ostrich", new MoCEntityData("Ostrich", 3, EnumCreatureType.CREATURE, new SpawnListEntry(MoCEntityOstrich.class, 4, 1, 1),
-                new ArrayList<Type>(Arrays.asList(Type.DESERT, Type.PLAINS))));
+                new ArrayList<Type>(Arrays.asList(Type.SANDY, Type.PLAINS))));
         mocEntityMap.put("Panther", new MoCEntityData("Panther", 4, EnumCreatureType.CREATURE, new SpawnListEntry(MoCEntityPanther.class, 6, 1, 2),
                 new ArrayList<Type>(Arrays.asList(Type.FOREST, Type.HILLS, Type.JUNGLE, Type.MOUNTAIN))));
         mocEntityMap.put("Raccoon", new MoCEntityData("Raccoon", 2, EnumCreatureType.CREATURE, new SpawnListEntry(MoCEntityRaccoon.class, 8, 1, 2),
@@ -566,14 +616,18 @@ public class MoCreatures {
         mocEntityMap.put("Wyvern", new MoCEntityData("Wyvern", 3, EnumCreatureType.CREATURE, new SpawnListEntry(MoCEntityWyvern.class, 8, 1, 3),
                 new ArrayList<Type>()));
         // water creatures
+        mocEntityMap.put("Bass", new MoCEntityData("Bass", 4, EnumCreatureType.WATER_CREATURE, new SpawnListEntry(
+                MoCEntityBass.class, 10, 1, 4), new ArrayList<Type>(Arrays.asList(Type.BEACH, Type.SWAMP, Type.WATER, Type.OCEAN, Type.RIVER))));
+        mocEntityMap.put("Cod", new MoCEntityData("Cod", 4, EnumCreatureType.WATER_CREATURE, new SpawnListEntry(
+                MoCEntityCod.class, 10, 1, 4), new ArrayList<Type>(Arrays.asList(Type.BEACH, Type.SWAMP, Type.WATER, Type.OCEAN, Type.RIVER))));
         mocEntityMap.put("Dolphin", new MoCEntityData("Dolphin", 3, EnumCreatureType.WATER_CREATURE, new SpawnListEntry(MoCEntityDolphin.class, 6, 2,
                 4), new ArrayList<Type>(Arrays.asList(Type.BEACH, Type.WATER, Type.OCEAN, Type.RIVER))));
         mocEntityMap.put("Fishy", new MoCEntityData("Fishy", 6, EnumCreatureType.WATER_CREATURE, new SpawnListEntry(MoCEntityFishy.class, 12, 1, 6),
                 new ArrayList<Type>(Arrays.asList(Type.BEACH, Type.SWAMP, Type.WATER, Type.OCEAN, Type.RIVER))));
         mocEntityMap.put("JellyFish", new MoCEntityData("JellyFish", 4, EnumCreatureType.WATER_CREATURE, new SpawnListEntry(MoCEntityJellyFish.class,
                 8, 1, 4), new ArrayList<Type>(Arrays.asList(Type.WATER, Type.OCEAN, Type.RIVER))));
-        mocEntityMap.put("MediumFish", new MoCEntityData("MediumFish", 4, EnumCreatureType.WATER_CREATURE, new SpawnListEntry(
-                MoCEntityMediumFish.class, 10, 1, 4), new ArrayList<Type>(Arrays.asList(Type.BEACH, Type.SWAMP, Type.WATER, Type.OCEAN, Type.RIVER))));
+        mocEntityMap.put("Salmon", new MoCEntityData("Salmon", 4, EnumCreatureType.WATER_CREATURE, new SpawnListEntry(
+                MoCEntitySalmon.class, 10, 1, 4), new ArrayList<Type>(Arrays.asList(Type.BEACH, Type.SWAMP, Type.WATER, Type.OCEAN, Type.RIVER))));
         mocEntityMap.put("Piranha", new MoCEntityData("Piranha", 4, EnumCreatureType.WATER_CREATURE, new SpawnListEntry(MoCEntityPiranha.class, 4, 1,
                 3), new ArrayList<Type>(Arrays.asList(Type.BEACH, Type.SWAMP, Type.WATER, Type.OCEAN, Type.RIVER))));
         mocEntityMap.put("MantaRay", new MoCEntityData("MantaRay", 3, EnumCreatureType.WATER_CREATURE, new SpawnListEntry(MoCEntityMantaRay.class,
@@ -582,8 +636,21 @@ public class MoCreatures {
                 10, 1, 2), new ArrayList<Type>(Arrays.asList(Type.SWAMP, Type.WATER, Type.RIVER))));
         mocEntityMap.put("Shark", new MoCEntityData("Shark", 3, EnumCreatureType.WATER_CREATURE, new SpawnListEntry(MoCEntityShark.class, 6, 1, 2),
                 new ArrayList<Type>(Arrays.asList(Type.WATER, Type.OCEAN, Type.RIVER))));
-        mocEntityMap.put("SmallFish", new MoCEntityData("SmallFish", 6, EnumCreatureType.WATER_CREATURE, new SpawnListEntry(MoCEntitySmallFish.class,
+        mocEntityMap.put("Anchovy", new MoCEntityData("Anchovy", 6, EnumCreatureType.WATER_CREATURE, new SpawnListEntry(MoCEntityAnchovy.class,
                 12, 1, 6), new ArrayList<Type>(Arrays.asList(Type.BEACH, Type.SWAMP, Type.WATER, Type.OCEAN, Type.RIVER))));
+        mocEntityMap.put("AngelFish", new MoCEntityData("AngelFish", 6, EnumCreatureType.WATER_CREATURE, new SpawnListEntry(MoCEntityAngelFish.class,
+                12, 1, 6), new ArrayList<Type>(Arrays.asList(Type.BEACH, Type.SWAMP, Type.WATER, Type.OCEAN, Type.RIVER))));
+        mocEntityMap.put("Angler", new MoCEntityData("Angler", 6, EnumCreatureType.WATER_CREATURE, new SpawnListEntry(MoCEntityAngler.class,
+                12, 1, 6), new ArrayList<Type>(Arrays.asList(Type.BEACH, Type.SWAMP, Type.WATER, Type.OCEAN))));
+        mocEntityMap.put("ClownFish", new MoCEntityData("ClownFish", 6, EnumCreatureType.WATER_CREATURE, new SpawnListEntry(MoCEntityClownFish.class,
+                12, 1, 6), new ArrayList<Type>(Arrays.asList(Type.BEACH, Type.SWAMP, Type.WATER, Type.OCEAN))));
+        mocEntityMap.put("GoldFish", new MoCEntityData("GoldFish", 6, EnumCreatureType.WATER_CREATURE, new SpawnListEntry(MoCEntityGoldFish.class,
+                12, 1, 6), new ArrayList<Type>(Arrays.asList(Type.BEACH, Type.SWAMP, Type.WATER, Type.RIVER))));
+        mocEntityMap.put("HippoTang", new MoCEntityData("HippoTang", 6, EnumCreatureType.WATER_CREATURE, new SpawnListEntry(MoCEntityHippoTang.class,
+                12, 1, 6), new ArrayList<Type>(Arrays.asList(Type.BEACH, Type.SWAMP, Type.WATER, Type.OCEAN))));
+        mocEntityMap.put("Manderin", new MoCEntityData("Manderin", 6, EnumCreatureType.WATER_CREATURE, new SpawnListEntry(MoCEntityManderin.class,
+                12, 1, 6), new ArrayList<Type>(Arrays.asList(Type.BEACH, Type.SWAMP, Type.WATER, Type.OCEAN))));
+        
         // monsters
         mocEntityMap.put(
                 "BigGolem",
@@ -608,9 +675,19 @@ public class MoCreatures {
                         Arrays.asList(Type.SANDY, Type.FOREST, Type.SNOWY, Type.JUNGLE, Type.HILLS, Type.MESA, Type.MOUNTAIN, Type.PLAINS, Type.SWAMP,
                                 Type.WASTELAND))));
         mocEntityMap.put(
-                "Ogre",
-                new MoCEntityData("Ogre", 3, EnumCreatureType.MONSTER, new SpawnListEntry(MoCEntityOgre.class, 8, 1, 2), new ArrayList<Type>(Arrays.asList(
-                        Type.SANDY, Type.FOREST, Type.SNOWY, Type.JUNGLE, Type.HILLS, Type.MESA, Type.MOUNTAIN, Type.NETHER, Type.PLAINS, Type.SWAMP,
+                "GreenOgre",
+                new MoCEntityData("GreenOgre", 3, EnumCreatureType.MONSTER, new SpawnListEntry(MoCEntityGreenOgre.class, 8, 1, 2), new ArrayList<Type>(Arrays.asList(
+                        Type.SANDY, Type.FOREST, Type.JUNGLE, Type.HILLS, Type.MESA, Type.MOUNTAIN, Type.PLAINS, Type.SWAMP,
+                        Type.WASTELAND, Type.DEAD, Type.SPOOKY))));
+        mocEntityMap.put(
+                "FireOgre",
+                new MoCEntityData("FireOgre", 3, EnumCreatureType.MONSTER, new SpawnListEntry(MoCEntityFireOgre.class, 6, 1, 2), new ArrayList<Type>(Arrays.asList(
+                        Type.SANDY, Type.FOREST, Type.JUNGLE, Type.HILLS, Type.MESA, Type.MOUNTAIN, Type.NETHER, Type.PLAINS, Type.SWAMP,
+                        Type.WASTELAND, Type.DEAD, Type.SPOOKY))));
+        mocEntityMap.put(
+                "CaveOgre",
+                new MoCEntityData("CaveOgre", 3, EnumCreatureType.MONSTER, new SpawnListEntry(MoCEntityCaveOgre.class, 5, 1, 2), new ArrayList<Type>(Arrays.asList(
+                        Type.SANDY, Type.FOREST, Type.SNOWY, Type.JUNGLE, Type.HILLS, Type.MESA, Type.MOUNTAIN, Type.PLAINS, Type.SWAMP,
                         Type.WASTELAND, Type.DEAD, Type.SPOOKY))));
         mocEntityMap.put(
                 "Rat",
@@ -644,7 +721,7 @@ public class MoCreatures {
         mocEntityMap.put(
                 "Manticore",
                 new MoCEntityData("Manticore", 3, EnumCreatureType.MONSTER, new SpawnListEntry(MoCEntityManticore.class, 8, 1, 3), new ArrayList<Type>(
-                        Arrays.asList(Type.DESERT, Type.FOREST, Type.SNOWY, Type.JUNGLE, Type.HILLS, Type.MOUNTAIN, Type.PLAINS, Type.SWAMP,
+                        Arrays.asList(Type.SANDY, Type.FOREST, Type.SNOWY, Type.JUNGLE, Type.HILLS, Type.MOUNTAIN, Type.PLAINS, Type.SWAMP,
                                 Type.WASTELAND, Type.NETHER, Type.DEAD, Type.SPOOKY))));
 
         for (MoCEntityData entityData : mocEntityMap.values()) {
@@ -681,9 +758,7 @@ public class MoCreatures {
         if (proxy.debug) {
             MoCLog.logger.info("registerEntity " + entityClass + " with Mod ID " + MoCEntityID);
         }
-        EntityRegistry.registerModEntity(entityClass, entityName, MoCEntityID, instance, 128, 1, true);
-        EntityList.idToClassMapping.put(Integer.valueOf(MoCEntityID), entityClass);
-        EntityList.entityEggs.put(Integer.valueOf(MoCEntityID), new EntityEggInfo(MoCEntityID, eggColor, eggDotsColor));
+        EntityRegistry.registerModEntity(entityClass, entityName, MoCEntityID, instance, 128, 1, true, eggColor, eggDotsColor);
         MoCEntityID += 1;
     }
 
@@ -695,7 +770,7 @@ public class MoCreatures {
     protected void InitItems() {
         WyvernLairDimensionID = proxy.WyvernDimension;//17
 
-        recordshuffle = new MoCItemRecord("recordshuffle");
+        recordshuffle = new MoCItemRecord("recordshuffle", MoCSoundEvents.ITEM_RECORD_SHUFFLING);
         horsesaddle = new MoCItemHorseSaddle("horsesaddle");
 
         sharkteeth = new MoCItem("sharkteeth");
@@ -709,6 +784,7 @@ public class MoCreatures {
 
         for (int i = 0; i < 16; i++) {
             String s = EnumDyeColor.byMetadata(i).getUnlocalizedName();
+            if (s.equalsIgnoreCase("lightBlue")) s = "light_blue";
             kittybed[i] = new MoCItemKittyBed("kittybed_" + s, i);
         }
         litterbox = new MoCItemLitterBox("kittylitter");
@@ -718,10 +794,10 @@ public class MoCreatures {
         builderHammer = new ItemBuilderHammer("builderhammer");
 
         hideCroc = new MoCItem("reptilehide");
-        plateCroc = new MoCItemArmor("reptileplate", scorpARMOR, 4, 1);
-        helmetCroc = new MoCItemArmor("reptilehelmet", scorpARMOR, 4, 0);
-        legsCroc = new MoCItemArmor("reptilelegs", scorpARMOR, 4, 2);
-        bootsCroc = new MoCItemArmor("reptileboots", scorpARMOR, 4, 3);
+        plateCroc = new MoCItemArmor("reptileplate", scorpARMOR, 4, EntityEquipmentSlot.CHEST);
+        helmetCroc = new MoCItemArmor("reptilehelmet", scorpARMOR, 4, EntityEquipmentSlot.HEAD);
+        legsCroc = new MoCItemArmor("reptilelegs", scorpARMOR, 4, EntityEquipmentSlot.LEGS);
+        bootsCroc = new MoCItemArmor("reptileboots", scorpARMOR, 4, EntityEquipmentSlot.FEET);
         fur = new MoCItem("fur");
         omelet = new MoCItemFood("omelet", 4, 0.6F, false);
         turtleraw = new MoCItemFood("turtleraw", 2, 0.3F, false);
@@ -752,28 +828,28 @@ public class MoCreatures {
         petamulet = new MoCItemPetAmulet("petamulet", 1);
         petamuletfull = new MoCItemPetAmulet("petamuletfull", 1);
 
-        chestFur = new MoCItemArmor("furchest", furARMOR, 4, 1);
-        helmetFur = new MoCItemArmor("furhelmet", furARMOR, 4, 0);
-        legsFur = new MoCItemArmor("furlegs", furARMOR, 4, 2);
-        bootsFur = new MoCItemArmor("furboots", furARMOR, 4, 3);
+        chestFur = new MoCItemArmor("furchest", furARMOR, 4, EntityEquipmentSlot.CHEST);
+        helmetFur = new MoCItemArmor("furhelmet", furARMOR, 4, EntityEquipmentSlot.HEAD);
+        legsFur = new MoCItemArmor("furlegs", furARMOR, 4, EntityEquipmentSlot.LEGS);
+        bootsFur = new MoCItemArmor("furboots", furARMOR, 4, EntityEquipmentSlot.FEET);
 
         heartdarkness = new MoCItem("heartdarkness");
         heartfire = new MoCItem("heartfire");
         heartundead = new MoCItem("heartundead");
-        ostrichraw = new MoCItemFood("ostrichraw", 2, 0.3F, false).setPotionEffect(Potion.hunger.id, 30, 0, 0.8F);
+        ostrichraw = new MoCItemFood("ostrichraw", 2, 0.3F, false).setPotionEffect(new PotionEffect(MobEffects.HUNGER, 30, 0), 0.8F);
         ostrichcooked = new MoCItemFood("ostrichcooked", 6, 0.6F, false);
         unicornhorn = new MoCItem("unicornhorn");
 
         horsearmorcrystal = new MoCItem("horsearmorcrystal");
 
-        rawTurkey = new MoCItemFood("turkeyraw", 3, 0.3F, false).setPotionEffect(Potion.hunger.id, 30, 0, 0.8F);
+        rawTurkey = new MoCItemFood("turkeyraw", 3, 0.3F, false).setPotionEffect(new PotionEffect(MobEffects.HUNGER, 30, 0), 0.8F);
         cookedTurkey = new MoCItemFood("turkeycooked", 8, 0.6F, false);
         animalHide = new MoCItem("hide");
-        chestHide = new MoCItemArmor("hidechest", hideARMOR, 4, 1);
-        helmetHide = new MoCItemArmor("hidehelmet", hideARMOR, 4, 0);
-        legsHide = new MoCItemArmor("hidelegs", hideARMOR, 4, 2);
-        bootsHide = new MoCItemArmor("hideboots", hideARMOR, 4, 3);
-        ratRaw = new MoCItemFood("ratraw", 2, 0.3F, false).setPotionEffect(Potion.hunger.id, 30, 0, 0.8F);
+        chestHide = new MoCItemArmor("hidechest", hideARMOR, 4, EntityEquipmentSlot.CHEST);
+        helmetHide = new MoCItemArmor("hidehelmet", hideARMOR, 4, EntityEquipmentSlot.HEAD);
+        legsHide = new MoCItemArmor("hidelegs", hideARMOR, 4, EntityEquipmentSlot.LEGS);
+        bootsHide = new MoCItemArmor("hideboots", hideARMOR, 4, EntityEquipmentSlot.FEET);
+        ratRaw = new MoCItemFood("ratraw", 2, 0.3F, false).setPotionEffect(new PotionEffect(MobEffects.HUNGER, 30, 0), 0.8F);
         ratCooked = new MoCItemFood("ratcooked", 4, 0.6F, false);
         ratBurger = new MoCItemFood("ratburger", 8, 0.6F, false);
 
@@ -787,25 +863,25 @@ public class MoCreatures {
         scorpSwordNether = new MoCItemSword("scorpswordnether", ToolMaterial.IRON, 3, false);
         scorpSwordDirt = new MoCItemSword("scorpsworddirt", ToolMaterial.IRON, 1, false);
 
-        scorpPlateDirt = new MoCItemArmor("scorpplatedirt", scorpARMOR, 4, 1);
-        scorpHelmetDirt = new MoCItemArmor("scorphelmetdirt", scorpARMOR, 4, 0);
-        scorpLegsDirt = new MoCItemArmor("scorplegsdirt", scorpARMOR, 4, 2);
-        scorpBootsDirt = new MoCItemArmor("scorpbootsdirt", scorpARMOR, 4, 3);
+        scorpPlateDirt = new MoCItemArmor("scorpplatedirt", scorpARMOR, 4, EntityEquipmentSlot.CHEST);
+        scorpHelmetDirt = new MoCItemArmor("scorphelmetdirt", scorpARMOR, 4, EntityEquipmentSlot.HEAD);
+        scorpLegsDirt = new MoCItemArmor("scorplegsdirt", scorpARMOR, 4, EntityEquipmentSlot.LEGS);
+        scorpBootsDirt = new MoCItemArmor("scorpbootsdirt", scorpARMOR, 4, EntityEquipmentSlot.FEET);
 
-        scorpPlateFrost = new MoCItemArmor("scorpplatefrost", scorpARMOR, 4, 1);
-        scorpHelmetFrost = new MoCItemArmor("scorphelmetfrost", scorpARMOR, 4, 0);
-        scorpLegsFrost = new MoCItemArmor("scorplegsfrost", scorpARMOR, 4, 2);
-        scorpBootsFrost = new MoCItemArmor("scorpbootsfrost", scorpARMOR, 4, 3);
+        scorpPlateFrost = new MoCItemArmor("scorpplatefrost", scorpARMOR, 4, EntityEquipmentSlot.CHEST);
+        scorpHelmetFrost = new MoCItemArmor("scorphelmetfrost", scorpARMOR, 4, EntityEquipmentSlot.HEAD);
+        scorpLegsFrost = new MoCItemArmor("scorplegsfrost", scorpARMOR, 4, EntityEquipmentSlot.LEGS);
+        scorpBootsFrost = new MoCItemArmor("scorpbootsfrost", scorpARMOR, 4, EntityEquipmentSlot.FEET);
 
-        scorpPlateCave = new MoCItemArmor("scorpplatecave", scorpARMOR, 4, 1);
-        scorpHelmetCave = new MoCItemArmor("scorphelmetcave", scorpARMOR, 4, 0);
-        scorpLegsCave = new MoCItemArmor("scorplegscave", scorpARMOR, 4, 2);
-        scorpBootsCave = new MoCItemArmor("scorpbootscave", scorpARMOR, 4, 3);
+        scorpPlateCave = new MoCItemArmor("scorpplatecave", scorpARMOR, 4, EntityEquipmentSlot.CHEST);
+        scorpHelmetCave = new MoCItemArmor("scorphelmetcave", scorpARMOR, 4, EntityEquipmentSlot.HEAD);
+        scorpLegsCave = new MoCItemArmor("scorplegscave", scorpARMOR, 4, EntityEquipmentSlot.LEGS);
+        scorpBootsCave = new MoCItemArmor("scorpbootscave", scorpARMOR, 4, EntityEquipmentSlot.FEET);
 
-        scorpPlateNether = new MoCItemArmor("scorpplatenether", scorpARMOR, 4, 1);
-        scorpHelmetNether = new MoCItemArmor("scorphelmetnether", scorpARMOR, 4, 0);
-        scorpLegsNether = new MoCItemArmor("scorplegsnether", scorpARMOR, 4, 2);
-        scorpBootsNether = new MoCItemArmor("scorpbootsnether", scorpARMOR, 4, 3);
+        scorpPlateNether = new MoCItemArmor("scorpplatenether", scorpARMOR, 4, EntityEquipmentSlot.CHEST);
+        scorpHelmetNether = new MoCItemArmor("scorphelmetnether", scorpARMOR, 4, EntityEquipmentSlot.HEAD);
+        scorpLegsNether = new MoCItemArmor("scorplegsnether", scorpARMOR, 4, EntityEquipmentSlot.LEGS);
+        scorpBootsNether = new MoCItemArmor("scorpbootsnether", scorpARMOR, 4, EntityEquipmentSlot.FEET);
 
         scorpStingCave = new MoCItemWeapon("scorpstingcave", ToolMaterial.GOLD, 4, true);
         scorpStingFrost = new MoCItemWeapon("scorpstingfrost", ToolMaterial.GOLD, 2, true);
@@ -817,14 +893,14 @@ public class MoCreatures {
 
         tusksWood = new MoCItemWeapon("tuskswood", ToolMaterial.WOOD);
         tusksIron = new MoCItemWeapon("tusksiron", ToolMaterial.IRON);
-        tusksDiamond = new MoCItemWeapon("tusksdiamond", ToolMaterial.EMERALD);
+        tusksDiamond = new MoCItemWeapon("tusksdiamond", ToolMaterial.DIAMOND);
         elephantHarness = new MoCItem("elephantharness");
         elephantChest = new MoCItem("elephantchest");
         elephantGarment = new MoCItem("elephantgarment");
         elephantHowdah = new MoCItem("elephanthowdah");
         mammothPlatform = new MoCItem("mammothplatform");
 
-        crabraw = new MoCItemFood("crabraw", 2, 0.3F, false).setPotionEffect(Potion.hunger.id, 30, 0, 0.8F);
+        crabraw = new MoCItemFood("crabraw", 2, 0.3F, false).setPotionEffect(new PotionEffect(MobEffects.HUNGER, 30, 0), 0.8F);
         crabcooked = new MoCItemFood("crabcooked", 6, 0.6F, false);
         silversword = new MoCItemSword("silversword", MoCreatures.SILVER);
 
@@ -836,14 +912,14 @@ public class MoCreatures {
         scrollOfOwner = new MoCItem("scrollofowner");
 
         //new blocks
-        mocStone = new MoCBlockRock("MoCStone").setHardness(1.5F).setResistance(10.0F).setStepSound(Block.soundTypeStone);
-        mocGrass = new MoCBlockGrass("MoCGrass").setHardness(0.5F).setStepSound(Block.soundTypeGrass);
-        mocDirt = new MoCBlockDirt("MoCDirt").setHardness(0.6F).setStepSound(Block.soundTypeGravel);
+        mocStone = new MoCBlockRock("MoCStone").setHardness(1.5F).setResistance(10.0F);
+        mocGrass = new MoCBlockGrass("MoCGrass").setHardness(0.5F);
+        mocDirt = new MoCBlockDirt("MoCDirt").setHardness(0.6F);
         //non terrain generator blocks
-        mocLeaf = new MoCBlockLeaf("MoCLeaves").setHardness(0.2F).setLightOpacity(1).setStepSound(Block.soundTypeGrass);
-        mocLog = new MoCBlockLog("MoCLog").setHardness(2.0F).setStepSound(Block.soundTypeWood);
-        mocTallGrass = new MoCBlockTallGrass("MoCTallGrass", true).setHardness(0.0F).setStepSound(Block.soundTypeGrass);
-        mocPlank = new MoCBlockPlanks("MoCWoodPlank").setHardness(2.0F).setResistance(5.0F).setStepSound(Block.soundTypeWood);
+        mocLeaf = new MoCBlockLeaf("MoCLeaves").setHardness(0.2F).setLightOpacity(1);
+        mocLog = new MoCBlockLog("MoCLog").setHardness(2.0F);
+        mocTallGrass = new MoCBlockTallGrass("MoCTallGrass", true).setHardness(0.0F);
+        mocPlank = new MoCBlockPlanks("MoCWoodPlank").setHardness(2.0F).setResistance(5.0F);
 
         //wyvern lair block harvest settings
         mocDirt.setHarvestLevel("shovel", 0, mocDirt.getDefaultState());
@@ -865,71 +941,71 @@ public class MoCreatures {
 
         GameRegistry.addSmelting(MoCreatures.mocegg, new ItemStack(MoCreatures.omelet, 1), 0F);
 
-        GameRegistry.addSmelting(Items.egg, new ItemStack(MoCreatures.omelet, 1), 0F);
+        GameRegistry.addSmelting(Items.EGG, new ItemStack(MoCreatures.omelet, 1), 0F);
 
-        GameRegistry.addShapelessRecipe(new ItemStack(scrollFreedom, 1), new Object[] {Items.paper, Items.feather, Items.redstone});
+        GameRegistry.addShapelessRecipe(new ItemStack(scrollFreedom, 1), new Object[] {Items.PAPER, Items.FEATHER, Items.REDSTONE});
 
-        GameRegistry.addShapelessRecipe(new ItemStack(scrollFreedom, 1), new Object[] {scrollOfSale, Items.redstone});
+        GameRegistry.addShapelessRecipe(new ItemStack(scrollFreedom, 1), new Object[] {scrollOfSale, Items.REDSTONE});
 
-        GameRegistry.addShapelessRecipe(new ItemStack(scrollOfSale, 1), new Object[] {Items.paper, Items.feather});
+        GameRegistry.addShapelessRecipe(new ItemStack(scrollOfSale, 1), new Object[] {Items.PAPER, Items.FEATHER});
 
-        GameRegistry.addShapelessRecipe(new ItemStack(Items.leather, 1), new Object[] {animalHide});
+        GameRegistry.addShapelessRecipe(new ItemStack(Items.LEATHER, 1), new Object[] {animalHide});
 
-        GameRegistry.addShapelessRecipe(new ItemStack(Blocks.wool, 1), new Object[] {fur});
+        GameRegistry.addShapelessRecipe(new ItemStack(Blocks.WOOL, 1), new Object[] {fur});
 
-        GameRegistry.addShapelessRecipe(new ItemStack(scorpSwordNether, 1), new Object[] {Items.diamond_sword, scorpStingNether, scorpStingNether,
+        GameRegistry.addShapelessRecipe(new ItemStack(scorpSwordNether, 1), new Object[] {Items.DIAMOND_SWORD, scorpStingNether, scorpStingNether,
                 scorpStingNether});
 
-        GameRegistry.addShapelessRecipe(new ItemStack(scorpSwordFrost, 1), new Object[] {Items.diamond_sword, scorpStingFrost, scorpStingFrost,
+        GameRegistry.addShapelessRecipe(new ItemStack(scorpSwordFrost, 1), new Object[] {Items.DIAMOND_SWORD, scorpStingFrost, scorpStingFrost,
                 scorpStingFrost});
 
-        GameRegistry.addShapelessRecipe(new ItemStack(scorpSwordCave, 1), new Object[] {Items.diamond_sword, scorpStingCave, scorpStingCave,
+        GameRegistry.addShapelessRecipe(new ItemStack(scorpSwordCave, 1), new Object[] {Items.DIAMOND_SWORD, scorpStingCave, scorpStingCave,
                 scorpStingCave});
 
-        GameRegistry.addShapelessRecipe(new ItemStack(scorpSwordDirt, 1), new Object[] {Items.diamond_sword, scorpStingDirt, scorpStingDirt,
+        GameRegistry.addShapelessRecipe(new ItemStack(scorpSwordDirt, 1), new Object[] {Items.DIAMOND_SWORD, scorpStingDirt, scorpStingDirt,
                 scorpStingDirt});
 
-        GameRegistry.addShapelessRecipe(new ItemStack(turtlesoup, 1), new Object[] {new ItemStack(turtleraw, 1), new ItemStack(Items.bowl, 1)});
+        GameRegistry.addShapelessRecipe(new ItemStack(turtlesoup, 1), new Object[] {new ItemStack(turtleraw, 1), new ItemStack(Items.BOWL, 1)});
 
         GameRegistry.addShapelessRecipe(new ItemStack(essencelight, 1), new Object[] {essenceundead, essencefire, essencedarkness});
 
         GameRegistry.addRecipe(new ItemStack(fishnet, 1),
-                new Object[] {" # ", "S#S", "#S#", Character.valueOf('#'), Items.string, Character.valueOf('S'), sharkteeth});
+                new Object[] {" # ", "S#S", "#S#", Character.valueOf('#'), Items.STRING, Character.valueOf('S'), sharkteeth});
 
         GameRegistry.addRecipe(new ItemStack(tusksWood, 1),
-                new Object[] {"X  ", "XR ", "XXX", Character.valueOf('X'), Blocks.planks, Character.valueOf('R'), Items.lead});
+                new Object[] {"X  ", "XR ", "XXX", Character.valueOf('X'), Blocks.PLANKS, Character.valueOf('R'), Items.LEAD});
 
         GameRegistry.addRecipe(new ItemStack(tusksIron, 1),
-                new Object[] {"X  ", "XR ", "XXX", Character.valueOf('X'), Items.iron_ingot, Character.valueOf('R'), Items.lead});
+                new Object[] {"X  ", "XR ", "XXX", Character.valueOf('X'), Items.IRON_INGOT, Character.valueOf('R'), Items.LEAD});
 
         GameRegistry.addRecipe(new ItemStack(tusksDiamond, 1),
-                new Object[] {"X  ", "XR ", "XXX", Character.valueOf('X'), Items.diamond, Character.valueOf('R'), Items.lead});
+                new Object[] {"X  ", "XR ", "XXX", Character.valueOf('X'), Items.DIAMOND, Character.valueOf('R'), Items.LEAD});
 
         GameRegistry.addRecipe(new ItemStack(mammothPlatform, 1),
-                new Object[] {"WRW", "PPP", "WRW", Character.valueOf('W'), Blocks.log, Character.valueOf('R'), Items.lead, Character.valueOf('P'),
-                        Blocks.planks});
+                new Object[] {"WRW", "PPP", "WRW", Character.valueOf('W'), Blocks.LOG, Character.valueOf('R'), Items.LEAD, Character.valueOf('P'),
+                        Blocks.PLANKS});
 
         GameRegistry.addRecipe(new ItemStack(elephantChest, 1),
-                new Object[] {" W ", "CHC", " W ", Character.valueOf('H'), animalHide, Character.valueOf('W'), new ItemStack(Blocks.wool, 1, 0),
-                        Character.valueOf('C'), Blocks.chest});
+                new Object[] {" W ", "CHC", " W ", Character.valueOf('H'), animalHide, Character.valueOf('W'), new ItemStack(Blocks.WOOL, 1, 0),
+                        Character.valueOf('C'), Blocks.CHEST});
 
         GameRegistry.addRecipe(new ItemStack(elephantHarness, 1),
-                new Object[] {"HWH", "IWI", "HWH", Character.valueOf('H'), animalHide, Character.valueOf('W'), new ItemStack(Blocks.wool, 1, 0),
-                        Character.valueOf('I'), Items.iron_ingot});
+                new Object[] {"HWH", "IWI", "HWH", Character.valueOf('H'), animalHide, Character.valueOf('W'), new ItemStack(Blocks.WOOL, 1, 0),
+                        Character.valueOf('I'), Items.IRON_INGOT});
 
         GameRegistry.addRecipe(new ItemStack(elephantHowdah, 1),
-                new Object[] {"SRS", "RYR", "SRS", Character.valueOf('S'), Items.stick, Character.valueOf('R'), new ItemStack(Blocks.wool, 1, 14),
-                        Character.valueOf('Y'), new ItemStack(Blocks.wool, 1, 4)});
+                new Object[] {"SRS", "RYR", "SRS", Character.valueOf('S'), Items.STICK, Character.valueOf('R'), new ItemStack(Blocks.WOOL, 1, 14),
+                        Character.valueOf('Y'), new ItemStack(Blocks.WOOL, 1, 4)});
 
         GameRegistry.addRecipe(new ItemStack(elephantGarment, 1), new Object[] {"pyg", "RMR", "BYB", Character.valueOf('R'),
-                new ItemStack(Blocks.wool, 1, 14), Character.valueOf('Y'), new ItemStack(Blocks.wool, 1, 4), Character.valueOf('B'),
-                new ItemStack(Blocks.wool, 1, 11), Character.valueOf('M'), medallion, Character.valueOf('p'), new ItemStack(Items.dye, 1, 9),
-                Character.valueOf('y'), new ItemStack(Items.dye, 1, 11), Character.valueOf('g'), new ItemStack(Items.dye, 1, 10)});
+                new ItemStack(Blocks.WOOL, 1, 14), Character.valueOf('Y'), new ItemStack(Blocks.WOOL, 1, 4), Character.valueOf('B'),
+                new ItemStack(Blocks.WOOL, 1, 11), Character.valueOf('M'), medallion, Character.valueOf('p'), new ItemStack(Items.DYE, 1, 9),
+                Character.valueOf('y'), new ItemStack(Items.DYE, 1, 11), Character.valueOf('g'), new ItemStack(Items.DYE, 1, 10)});
 
         //Items.dye.itemID
         GameRegistry.addRecipe(new ItemStack(ratBurger, 1),
-                new Object[] {"SB ", "GRG", " B ", Character.valueOf('R'), ratCooked, Character.valueOf('B'), Items.bread, Character.valueOf('S'),
-                        Items.pumpkin_seeds, Character.valueOf('G'), Items.wheat_seeds});
+                new Object[] {"SB ", "GRG", " B ", Character.valueOf('R'), ratCooked, Character.valueOf('B'), Items.BREAD, Character.valueOf('S'),
+                        Items.PUMPKIN_SEEDS, Character.valueOf('G'), Items.WHEAT_SEEDS});
 
         GameRegistry.addRecipe(new ItemStack(scorpPlateFrost, 1), new Object[] {"X X", "XXX", "XXX", Character.valueOf('X'), chitinFrost});
 
@@ -971,31 +1047,31 @@ public class MoCreatures {
 
         GameRegistry.addRecipe(new ItemStack(bootsHide, 1), new Object[] {"X X", "X X", Character.valueOf('X'), animalHide});
 
-        GameRegistry.addRecipe(new ItemStack(horsearmorcrystal, 1), new Object[] {"  D", "CDC", "DCD", Character.valueOf('D'), Items.diamond,
-                Character.valueOf('C'), Blocks.glass});
+        GameRegistry.addRecipe(new ItemStack(horsearmorcrystal, 1), new Object[] {"  D", "CDC", "DCD", Character.valueOf('D'), Items.DIAMOND,
+                Character.valueOf('C'), Blocks.GLASS});
 
-        //GameRegistry.addRecipe(new ItemStack(horsearmormetal, 1), new Object[] { "  X", "XYX", "XXX", Character.valueOf('X'), Item.ingotIron, Character.valueOf('Y'), new ItemStack(Blocks.wool, 1, 15) });
+        //GameRegistry.addRecipe(new ItemStack(horsearmormetal, 1), new Object[] { "  X", "XYX", "XXX", Character.valueOf('X'), Item.ingotIron, Character.valueOf('Y'), new ItemStack(Blocks.WOOL, 1, 15) });
 
-        //GameRegistry.addRecipe(new ItemStack(horsearmorgold, 1), new Object[] { "  X", "XYX", "XXX", Character.valueOf('X'), Item.ingotGold, Character.valueOf('Y'), new ItemStack(Blocks.wool, 1, 14) });
+        //GameRegistry.addRecipe(new ItemStack(horsearmorgold, 1), new Object[] { "  X", "XYX", "XXX", Character.valueOf('X'), Item.ingotGold, Character.valueOf('Y'), new ItemStack(Blocks.WOOL, 1, 14) });
 
-        //GameRegistry.addRecipe(new ItemStack(horsearmordiamond, 1), new Object[] { "  X", "XYX", "XXX", Character.valueOf('X'), Item.diamond, Character.valueOf('Y'), new ItemStack(Blocks.wool, 1, 11) });
+        //GameRegistry.addRecipe(new ItemStack(horsearmordiamond, 1), new Object[] { "  X", "XYX", "XXX", Character.valueOf('X'), Item.diamond, Character.valueOf('Y'), new ItemStack(Blocks.WOOL, 1, 11) });
 
         GameRegistry.addRecipe(new ItemStack(essencelight, 1),
                 new Object[] {"X", "Y", "Z", Character.valueOf('X'), essenceundead, Character.valueOf('Y'), essencefire, Character.valueOf('Z'),
                         essencedarkness});
 
-        GameRegistry.addRecipe(new ItemStack(essenceundead, 1), new Object[] {" X ", " Y ", " Z ", Character.valueOf('X'), Items.rotten_flesh,
-                Character.valueOf('Y'), heartundead, Character.valueOf('Z'), Items.glass_bottle});
+        GameRegistry.addRecipe(new ItemStack(essenceundead, 1), new Object[] {" X ", " Y ", " Z ", Character.valueOf('X'), Items.ROTTEN_FLESH,
+                Character.valueOf('Y'), heartundead, Character.valueOf('Z'), Items.GLASS_BOTTLE});
 
-        GameRegistry.addRecipe(new ItemStack(essencefire, 1), new Object[] {" X ", " Y ", " Z ", Character.valueOf('X'), Items.blaze_powder,
-                Character.valueOf('Y'), heartfire, Character.valueOf('Z'), Items.glass_bottle});
+        GameRegistry.addRecipe(new ItemStack(essencefire, 1), new Object[] {" X ", " Y ", " Z ", Character.valueOf('X'), Items.BLAZE_POWDER,
+                Character.valueOf('Y'), heartfire, Character.valueOf('Z'), Items.GLASS_BOTTLE});
 
         GameRegistry.addRecipe(new ItemStack(essencefire, 1),
-                new Object[] {" X ", " Y ", " Z ", Character.valueOf('X'), Blocks.fire, Character.valueOf('Y'), heartfire, Character.valueOf('Z'),
-                        Items.glass_bottle});
+                new Object[] {" X ", " Y ", " Z ", Character.valueOf('X'), Blocks.FIRE, Character.valueOf('Y'), heartfire, Character.valueOf('Z'),
+                        Items.GLASS_BOTTLE});
 
-        GameRegistry.addRecipe(new ItemStack(essencedarkness, 1), new Object[] {" X ", " Y ", " Z ", Character.valueOf('X'), Items.ender_pearl,
-                Character.valueOf('Y'), heartdarkness, Character.valueOf('Z'), Items.glass_bottle});
+        GameRegistry.addRecipe(new ItemStack(essencedarkness, 1), new Object[] {" X ", " Y ", " Z ", Character.valueOf('X'), Items.ENDER_PEARL,
+                Character.valueOf('Y'), heartdarkness, Character.valueOf('Z'), Items.GLASS_BOTTLE});
 
         GameRegistry.addRecipe(new ItemStack(chestFur, 1), new Object[] {"X X", "XXX", "XXX", Character.valueOf('X'), fur});
 
@@ -1009,78 +1085,78 @@ public class MoCreatures {
         //        Items.iron_ingot,});
 
         GameRegistry.addRecipe(new ItemStack(petamulet, 1),
-                new Object[] {"X X", " Z ", "X X", Character.valueOf('X'), Items.gold_nugget, Character.valueOf('Z'), Items.diamond});
+                new Object[] {"X X", " Z ", "X X", Character.valueOf('X'), Items.GOLD_NUGGET, Character.valueOf('Z'), Items.DIAMOND});
 
         GameRegistry.addRecipe(
                 new ItemStack(amuletbone, 1),
-                new Object[] {"#X#", "XZX", "#X#", Character.valueOf('#'), Items.bone, Character.valueOf('X'), Items.gold_nugget,
-                        Character.valueOf('Z'), Items.ender_pearl});
+                new Object[] {"#X#", "XZX", "#X#", Character.valueOf('#'), Items.BONE, Character.valueOf('X'), Items.GOLD_NUGGET,
+                        Character.valueOf('Z'), Items.ENDER_PEARL});
 
         GameRegistry.addRecipe(
                 new ItemStack(amuletghost, 1),
-                new Object[] {"#X#", "XZX", "#X#", Character.valueOf('#'), Items.bone, Character.valueOf('X'), Items.gold_nugget,
-                        Character.valueOf('Z'), Items.ghast_tear});
+                new Object[] {"#X#", "XZX", "#X#", Character.valueOf('#'), Items.BONE, Character.valueOf('X'), Items.GOLD_NUGGET,
+                        Character.valueOf('Z'), Items.GHAST_TEAR});
 
         GameRegistry.addRecipe(
                 new ItemStack(amuletfairy, 1),
-                new Object[] {"#X#", "XZX", "#X#", Character.valueOf('#'), Blocks.fire, Character.valueOf('X'), Items.gold_nugget,
+                new Object[] {"#X#", "XZX", "#X#", Character.valueOf('#'), Blocks.FIRE, Character.valueOf('X'), Items.GOLD_NUGGET,
                         Character.valueOf('Z'), unicornhorn});
 
         GameRegistry.addRecipe(
                 new ItemStack(amuletfairy, 1),
-                new Object[] {"#X#", "XZX", "#X#", Character.valueOf('#'), Blocks.fire, Character.valueOf('X'), Items.gold_nugget,
+                new Object[] {"#X#", "XZX", "#X#", Character.valueOf('#'), Blocks.FIRE, Character.valueOf('X'), Items.GOLD_NUGGET,
                         Character.valueOf('Z'), essencelight});
 
         GameRegistry.addRecipe(
                 new ItemStack(amuletpegasus, 1),
-                new Object[] {"#X#", "XZX", "#X#", Character.valueOf('#'), Blocks.fire, Character.valueOf('X'), Items.gold_nugget,
-                        Character.valueOf('Z'), Items.diamond});
+                new Object[] {"#X#", "XZX", "#X#", Character.valueOf('#'), Blocks.FIRE, Character.valueOf('X'), Items.GOLD_NUGGET,
+                        Character.valueOf('Z'), Items.DIAMOND});
 
         GameRegistry.addRecipe(new ItemStack(sharksword, 1),
-                new Object[] {"#X#", "#X#", " X ", Character.valueOf('#'), sharkteeth, Character.valueOf('X'), Items.stick,});
+                new Object[] {"#X#", "#X#", " X ", Character.valueOf('#'), sharkteeth, Character.valueOf('X'), Items.STICK,});
 
         //GameRegistry.addRecipe(new ItemStack(fishbowl_e, 1), new Object[] {"# #", "# #", "###", Character.valueOf('#'), Blocks.glass,});
 
         //GameRegistry.addRecipe(new ItemStack(rope, 1), new Object[] { "# #", " # ", "# #", Character.valueOf('#'), Item.silk, });
 
-        GameRegistry.addShapelessRecipe(new ItemStack(petfood, 4), new Object[] {new ItemStack(Items.fish, 1), new ItemStack(Items.porkchop, 1)});
+        GameRegistry.addShapelessRecipe(new ItemStack(petfood, 4), new Object[] {new ItemStack(Items.FISH, 1), new ItemStack(Items.PORKCHOP, 1)});
 
-        GameRegistry.addRecipe(new ItemStack(woolball, 1), new Object[] {" # ", "# #", " # ", Character.valueOf('#'), Items.string,});
+        GameRegistry.addRecipe(new ItemStack(woolball, 1), new Object[] {" # ", "# #", " # ", Character.valueOf('#'), Items.STRING,});
 
         GameRegistry.addRecipe(new ItemStack(litterbox, 1),
-                new Object[] {"###", "#X#", "###", Character.valueOf('#'), Blocks.planks, Character.valueOf('X'), Blocks.sand,});
+                new Object[] {"###", "#X#", "###", Character.valueOf('#'), Blocks.PLANKS, Character.valueOf('X'), Blocks.SAND,});
 
         GameRegistry.addRecipe(
                 new ItemStack(medallion, 1),
-                new Object[] {"# #", "XZX", " X ", Character.valueOf('#'), Items.leather, Character.valueOf('Z'), Items.diamond,
-                        Character.valueOf('X'), Items.gold_ingot,});
+                new Object[] {"# #", "XZX", " X ", Character.valueOf('#'), Items.LEATHER, Character.valueOf('Z'), Items.DIAMOND,
+                        Character.valueOf('X'), Items.GOLD_INGOT,});
 
-        GameRegistry.addRecipe(new ItemStack(medallion, 1), new Object[] {"# #", " X ", Character.valueOf('#'), Items.leather,
-                Character.valueOf('X'), Items.gold_ingot,});
+        GameRegistry.addRecipe(new ItemStack(medallion, 1), new Object[] {"# #", " X ", Character.valueOf('#'), Items.LEATHER,
+                Character.valueOf('X'), Items.GOLD_INGOT,});
 
         GameRegistry.addRecipe(new ItemStack(whip, 1), new Object[] {"#X#", "X X", "# Z", Character.valueOf('#'), bigcatclaw, Character.valueOf('X'),
-                Items.leather, Character.valueOf('Z'), Items.iron_ingot});
+                Items.LEATHER, Character.valueOf('Z'), Items.IRON_INGOT});
 
         GameRegistry.addRecipe(new ItemStack(horsesaddle, 1),
-                new Object[] {"XXX", "X#X", "# #", Character.valueOf('#'), Items.iron_ingot, Character.valueOf('X'), Items.leather});
+                new Object[] {"XXX", "X#X", "# #", Character.valueOf('#'), Items.IRON_INGOT, Character.valueOf('X'), Items.LEATHER});
 
-        GameRegistry.addRecipe(new ItemStack(haystack, 1), new Object[] {"XXX", "XXX", Character.valueOf('X'), Items.wheat});
+        GameRegistry.addRecipe(new ItemStack(haystack, 1), new Object[] {"XXX", "XXX", Character.valueOf('X'), Items.WHEAT});
 
-        GameRegistry.addRecipe(new ItemStack(Items.wheat, 6), new Object[] {"X", Character.valueOf('X'), haystack});
+        GameRegistry.addRecipe(new ItemStack(Items.WHEAT, 6), new Object[] {"X", Character.valueOf('X'), haystack});
 
-        GameRegistry.addRecipe(new ItemStack(sugarlump, 1), new Object[] {"XX", "##", Character.valueOf('X'), Items.sugar, Character.valueOf('#'),
-                Items.sugar});
+        GameRegistry.addRecipe(new ItemStack(sugarlump, 1), new Object[] {"XX", "##", Character.valueOf('X'), Items.SUGAR, Character.valueOf('#'),
+                Items.SUGAR});
 
-        GameRegistry.addRecipe(new ItemStack(horsesaddle, 1), new Object[] {"X", "#", Character.valueOf('X'), Items.saddle, Character.valueOf('#'),
-                Items.iron_ingot});
+        GameRegistry.addRecipe(new ItemStack(horsesaddle, 1), new Object[] {"X", "#", Character.valueOf('X'), Items.SADDLE, Character.valueOf('#'),
+                Items.IRON_INGOT});
 
-        GameRegistry.addRecipe(new ItemStack(Items.chainmail_chestplate, 1), new Object[] {"X X", "XXX", "XXX", Character.valueOf('X'), sharkteeth});
+        GameRegistry.addRecipe(new ItemStack(Items.CHAINMAIL_CHESTPLATE, 1), new Object[] {"X X", "XXX", "XXX", Character.valueOf('X'), sharkteeth});
 
-        GameRegistry.addRecipe(new ItemStack(Items.chainmail_helmet, 1), new Object[] {"XXX", "X X", Character.valueOf('X'), sharkteeth});
+        GameRegistry.addRecipe(new ItemStack(Items.CHAINMAIL_HELMET, 1), new Object[] {"XXX", "X X", Character.valueOf('X'), sharkteeth});
 
-        GameRegistry.addRecipe(new ItemStack(Items.chainmail_leggings, 1), new Object[] {"XXX", "X X", "X X", Character.valueOf('X'), sharkteeth});
+        GameRegistry.addRecipe(new ItemStack(Items.CHAINMAIL_LEGGINGS, 1), new Object[] {"XXX", "X X", "X X", Character.valueOf('X'), sharkteeth});
 
-        GameRegistry.addRecipe(new ItemStack(Items.chainmail_boots, 1), new Object[] {"X X", "X X", Character.valueOf('X'), sharkteeth});
+        GameRegistry.addRecipe(new ItemStack(Items.CHAINMAIL_BOOTS, 1), new Object[] {"X X", "X X", Character.valueOf('X'), sharkteeth});
 
         GameRegistry.addRecipe(new ItemStack(plateCroc, 1), new Object[] {"X X", "XXX", "XXX", Character.valueOf('X'), hideCroc});
 
@@ -1091,15 +1167,15 @@ public class MoCreatures {
         GameRegistry.addRecipe(new ItemStack(bootsCroc, 1), new Object[] {"X X", "X X", Character.valueOf('X'), hideCroc});
 
         for (int i = 0; i < 16; i++) {
-            GameRegistry.addShapelessRecipe(new ItemStack(kittybed[i], 1), new Object[] {new ItemStack(Items.dye, 1, i),
+            GameRegistry.addShapelessRecipe(new ItemStack(kittybed[i], 1), new Object[] {new ItemStack(Items.DYE, 1, i),
                     new ItemStack(kittybed[0], 1)});
 
             GameRegistry.addRecipe(new ItemStack(kittybed[i], 1),
-                    new Object[] {"###", "#X#", "Z  ", Character.valueOf('#'), Blocks.planks, Character.valueOf('X'),
-                            new ItemStack(Blocks.wool, 1, i), Character.valueOf('Z'), Items.iron_ingot,});
+                    new Object[] {"###", "#X#", "Z  ", Character.valueOf('#'), Blocks.PLANKS, Character.valueOf('X'),
+                            new ItemStack(Blocks.WOOL, 1, i), Character.valueOf('Z'), Items.IRON_INGOT,});
             String s = EnumDyeColor.byMetadata(i).getUnlocalizedName();
             s = s.substring(0, 1).toUpperCase() + s.substring(1);
-            LanguageRegistry.addName(new ItemStack(kittybed[i], 1), (s + " Kitty Bed"));
+            //LanguageRegistry.addName(new ItemStack(kittybed[i], 1), (s + " Kitty Bed"));
         }
 
         for (int i = 0; i < multiBlockNames.size(); i++) {
@@ -1108,15 +1184,15 @@ public class MoCreatures {
 
         GameRegistry.addRecipe(
                 new ItemStack(staffPortal, 1),
-                new Object[] {"  E", " U ", "R  ", Character.valueOf('E'), Items.ender_eye, Character.valueOf('U'), unicornhorn,
-                        Character.valueOf('R'), Items.blaze_rod});
+                new Object[] {"  E", " U ", "R  ", Character.valueOf('E'), Items.ENDER_EYE, Character.valueOf('U'), unicornhorn,
+                        Character.valueOf('R'), Items.BLAZE_ROD});
 
         GameRegistry.addRecipe(
                 new ItemStack(staffPortal, 1),
-                new Object[] {"  E", " U ", "R  ", Character.valueOf('E'), Items.ender_eye, Character.valueOf('U'), essencelight,
-                        Character.valueOf('R'), Items.blaze_rod});
+                new Object[] {"  E", " U ", "R  ", Character.valueOf('E'), Items.ENDER_EYE, Character.valueOf('U'), essencelight,
+                        Character.valueOf('R'), Items.BLAZE_ROD});
 
-        GameRegistry.addShapelessRecipe(new ItemStack(Items.dye, 1, 15), new Object[] {sharkteeth});
+        GameRegistry.addShapelessRecipe(new ItemStack(Items.DYE, 1, 15), new Object[] {sharkteeth});
 
     }
 
@@ -1160,6 +1236,7 @@ public class MoCreatures {
     }
 
     public static boolean isServer() {
-        return (FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER);
+    	//return (FMLCommonHandler.instance().getSide().isServer());//
+    	return (FMLCommonHandler.instance().getEffectiveSide() == Side.SERVER);
     }
 }

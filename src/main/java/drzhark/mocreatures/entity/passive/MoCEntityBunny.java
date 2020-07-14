@@ -8,17 +8,24 @@ import drzhark.mocreatures.entity.ai.EntityAIFollowAdult;
 import drzhark.mocreatures.entity.ai.EntityAIFollowOwnerPlayer;
 import drzhark.mocreatures.entity.ai.EntityAIPanicMoC;
 import drzhark.mocreatures.entity.ai.EntityAIWanderMoC2;
+import drzhark.mocreatures.util.MoCSoundEvents;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.BlockPos;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
@@ -26,12 +33,15 @@ import net.minecraftforge.common.BiomeDictionary.Type;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 public class MoCEntityBunny extends MoCEntityTameableAnimal {
 
     private int bunnyReproduceTickerA;
     private int bunnyReproduceTickerB;
     private int jumpTimer;
-
+    private static final DataParameter<Boolean> HAS_EATEN = EntityDataManager.<Boolean>createKey(MoCEntityBunny.class, DataSerializers.BOOLEAN);
+    
     public MoCEntityBunny(World world) {
         super(world);
         setAdult(true);
@@ -41,11 +51,13 @@ public class MoCEntityBunny extends MoCEntityTameableAnimal {
             setAdult(false);
         }
         setSize(0.5F, 0.5F);
-
         this.bunnyReproduceTickerA = this.rand.nextInt(64);
         this.bunnyReproduceTickerB = 0;
+    }
 
-        this.tasks.addTask(0, new EntityAISwimming(this));
+    @Override
+    protected void initEntityAI() {
+    	this.tasks.addTask(0, new EntityAISwimming(this));
         this.tasks.addTask(1, new EntityAIFollowOwnerPlayer(this, 0.8D, 6F, 5F));
         this.tasks.addTask(2, new EntityAIPanicMoC(this, 1.0D));
         this.tasks.addTask(3, new EntityAIFleeFromPlayer(this, 1.0D, 4D));
@@ -57,23 +69,22 @@ public class MoCEntityBunny extends MoCEntityTameableAnimal {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(4.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.35D);
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(4.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.35D);
     }
 
     @Override
     protected void entityInit() {
         super.entityInit();
-        this.dataWatcher.addObject(23, Byte.valueOf((byte) 0)); // hasEaten - 0 false 1 true
+        this.dataManager.register(HAS_EATEN, Boolean.valueOf(false));
     }
 
     public boolean getHasEaten() {
-        return (this.dataWatcher.getWatchableObjectByte(23) == 1);
+    	return ((Boolean)this.dataManager.get(HAS_EATEN)).booleanValue();
     }
 
     public void setHasEaten(boolean flag) {
-        byte input = (byte) (flag ? 1 : 0);
-        this.dataWatcher.updateObject(23, Byte.valueOf(input));
+    	this.dataManager.set(HAS_EATEN, Boolean.valueOf(flag));
     }
 
     @Override
@@ -128,75 +139,41 @@ public class MoCEntityBunny extends MoCEntityTameableAnimal {
     }
 
     @Override
-    protected String getDeathSound() {
-        return "mocreatures:rabbitdeath";
+    protected SoundEvent getDeathSound() {
+        return MoCSoundEvents.ENTITY_RABBIT_DEATH;
     }
 
     @Override
-    protected String getHurtSound() {
-        return "mocreatures:rabbithurt";
+    protected SoundEvent getHurtSound() {
+        return MoCSoundEvents.ENTITY_RABBIT_HURT;
     }
 
     @Override
-    protected String getLivingSound() {
-        return null;
+    protected SoundEvent getAmbientSound() {
+        return SoundEvents.ENTITY_RABBIT_AMBIENT;
     }
 
     @Override
-    public boolean interact(EntityPlayer entityplayer) {
-        if (super.interact(entityplayer)) {
-            return false;
-        }
-
-        ItemStack itemstack = entityplayer.inventory.getCurrentItem();
-
-        if ((itemstack != null) && (itemstack.getItem() == Items.golden_carrot) && !getHasEaten()) {
-            if (--itemstack.stackSize == 0) {
-                entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, null);
-            }
-            setHasEaten(true);
-            MoCTools.playCustomSound(this, "mocreatures:eating", this.worldObj);
+    public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
+        if (super.processInteract(player, hand, stack)) {
             return true;
         }
-
-        /*
-         * if (itemstack != null && this.getIsTamed() && itemstack.getItem() ==
-         * Items.golden_carrot) { if (--itemstack.stackSize == 0) {
-         * entityplayer.
-         * inventory.setInventorySlotContents(entityplayer.inventory
-         * .currentItem, null); } setHasEaten(true);
-         * MoCTools.playCustomSound(this, "eating", worldObj); if
-         * (MoCreatures.isServer()) { MoCEntityBunny baby = new
-         * MoCEntityBunny(worldObj); baby.setPosition(posX, posY, posZ);
-         * worldObj.spawnEntityInWorld(baby); worldObj.playSoundAtEntity(this,
-         * "mob.chickenplop", 1.0F, ((rand.nextFloat() - rand.nextFloat()) *
-         * 0.2F) + 1.0F); baby.setAdult(false); baby.setType(this.getType());
-         * baby.setOwner(this.getOwnerName()); baby.setTamed(true);
-         * baby.setAdult(false); MoCTools.tameWithName(entityplayer, baby); }
-         * return true; }
-         */
-
-        this.rotationYaw = entityplayer.rotationYaw;
+        boolean onMainHand = (hand == EnumHand.MAIN_HAND);
+        if ((stack != null) && onMainHand && (stack.getItem() == Items.GOLDEN_CARROT) && !getHasEaten()) {
+            if (--stack.stackSize == 0) {
+                player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
+            }
+            setHasEaten(true);
+            MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_GENERIC_EATING);
+            return true;
+        }
         if (this.getRidingEntity() == null) {
-            // This is required since the server will send a Packet39AttachEntity which informs the client to mount
-            if (MoCreatures.isServer()) {
-                mountEntity(entityplayer);
-            }
-
+            this.startRiding(player);
+            this.rotationYaw = player.rotationYaw;
             if (MoCreatures.isServer() && !getIsTamed()) {
-                MoCTools.tameWithName(entityplayer, this);
-            }
-        } else {
-            this.worldObj.playSoundAtEntity(this, "mocreatures:rabbitlift", 1.0F, ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F) + 1.0F);
-            if (MoCreatures.isServer()) {
-                this.mountEntity(null);
+                MoCTools.tameWithName(player, this);
             }
         }
-
-        this.motionX = entityplayer.motionX * 5D;
-        this.motionY = (entityplayer.motionY / 2D) + 0.5D;
-        this.motionZ = entityplayer.motionZ * 5D;
-
         return true;
     }
 
@@ -243,7 +220,7 @@ public class MoCEntityBunny extends MoCEntityTameableAnimal {
                     }
                     entitybunny1.setType(babytype);
                     this.worldObj.spawnEntityInWorld(entitybunny1);
-                    this.worldObj.playSoundAtEntity(this, "mob.chickenplop", 1.0F, ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F) + 1.0F);
+                    MoCTools.playCustomSound(this, SoundEvents.ENTITY_CHICKEN_EGG);
                     proceed();
                     entitybunny.proceed();
                     break;
@@ -258,16 +235,6 @@ public class MoCEntityBunny extends MoCEntityTameableAnimal {
         this.bunnyReproduceTickerA = this.rand.nextInt(64);
     }
 
-    /*@Override
-    public boolean updateMount() {
-        return true;
-    }*/
-
-    /*@Override
-    public boolean forceUpdates() {
-        return true;
-    }*/
-
     @Override
     public int nameYOffset() {
         return -40;
@@ -275,7 +242,7 @@ public class MoCEntityBunny extends MoCEntityTameableAnimal {
 
     @Override
     public boolean isMyHealFood(ItemStack par1ItemStack) {
-        return par1ItemStack != null && par1ItemStack.getItem() == Items.carrot;
+        return par1ItemStack != null && par1ItemStack.getItem() == Items.CARROT;
     }
 
     /**
@@ -309,5 +276,11 @@ public class MoCEntityBunny extends MoCEntityTameableAnimal {
     @Override
     public float getAdjustedYOffset() {
         return 0.2F;
+    }
+    
+    @Override
+    public boolean canRidePlayer()
+    {
+    	return true;
     }
 }

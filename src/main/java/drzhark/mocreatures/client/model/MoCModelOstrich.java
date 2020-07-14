@@ -492,7 +492,7 @@ public class MoCModelOstrich extends ModelBase {
         boolean isHiding = entityostrich.getHiding();
         boolean wingFlap = (entityostrich.wingCounter != 0);
         boolean bagged = entityostrich.getIsChested();
-        boolean rider = (entityostrich.riddenByEntity != null);
+        boolean rider = (entityostrich.isBeingRidden());
         int jumpCounter = entityostrich.jumpCounter;
         boolean floating = (entityostrich.isFlyer() && entityostrich.isOnAir());
 
@@ -1143,8 +1143,8 @@ public class MoCModelOstrich extends ModelBase {
     ModelRenderer Tailpart4;
     ModelRenderer Tailpart5;
 
-    private byte helmet;
+    private int helmet;
     private byte typeI;
-    private byte flagColor;
+    private int flagColor;
     private float radianF = 57.29578F;
 }

@@ -31,7 +31,7 @@ public class MoCRenderTurtle extends MoCRenderMoC<MoCEntityTurtle> {
         }
         if (entityturtle.getIsHiding()) {
             adjustHeight(entityturtle, 0.15F * entityturtle.getEdad() * 0.01F);
-        } else if (!entityturtle.getIsHiding() && !entityturtle.getIsUpsideDown() && !entityturtle.isInsideOfMaterial(Material.water)) {
+        } else if (!entityturtle.getIsHiding() && !entityturtle.getIsUpsideDown() && !entityturtle.isInsideOfMaterial(Material.WATER)) {
             adjustHeight(entityturtle, 0.05F * entityturtle.getEdad() * 0.01F);
         }
         if (entityturtle.getIsUpsideDown()) {

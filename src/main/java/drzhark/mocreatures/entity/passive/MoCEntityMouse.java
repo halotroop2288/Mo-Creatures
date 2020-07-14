@@ -5,6 +5,7 @@ import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityAnimal;
 import drzhark.mocreatures.entity.ai.EntityAIFleeFromPlayer;
 import drzhark.mocreatures.entity.ai.EntityAIWanderMoC2;
+import drzhark.mocreatures.util.MoCSoundEvents;
 import net.minecraft.block.Block;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIPanic;
@@ -13,21 +14,31 @@ import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
+
+import javax.annotation.Nullable;
 
 public class MoCEntityMouse extends MoCEntityAnimal {
 
     public MoCEntityMouse(World world) {
         super(world);
         setSize(0.3F, 0.3F);
-        this.tasks.addTask(0, new EntityAISwimming(this));
+    }
+
+    @Override
+    protected void initEntityAI() {
+    	this.tasks.addTask(0, new EntityAISwimming(this));
         this.tasks.addTask(1, new EntityAIFleeFromPlayer(this, 1.2D, 4D));
         this.tasks.addTask(2, new EntityAIPanic(this, 1.4D));
         this.tasks.addTask(5, new EntityAIWanderMoC2(this, 1.0D));
@@ -37,8 +48,8 @@ public class MoCEntityMouse extends MoCEntityAnimal {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(4.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.35D);
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(4.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.35D);
     }
 
     @Override
@@ -79,30 +90,8 @@ public class MoCEntityMouse extends MoCEntityAnimal {
         return true;
     }
 
-    /*@Override
-    protected void entityInit() {
-        super.entityInit();
-        this.dataWatcher.addObject(23, Byte.valueOf((byte) 0)); // byte IsPicked, 0 = false 1 = true
-    }*/
-
     public boolean getIsPicked() {
         return this.getRidingEntity() != null;
-        //return (this.dataWatcher.getWatchableObjectByte(23) == 1);
-    }
-
-    /*public void setPicked(boolean flag) {
-        byte input = (byte) (flag ? 1 : 0);
-        this.dataWatcher.updateObject(23, Byte.valueOf(input));
-    }*/
-
-    @SuppressWarnings("unused")
-    private boolean checkNearCats() {
-        return true;
-    }
-
-    @SuppressWarnings("unused")
-    private boolean checkNearRock() {
-        return true;
     }
 
     public boolean climbing() {
@@ -117,29 +106,29 @@ public class MoCEntityMouse extends MoCEntityAnimal {
         BlockPos pos = new BlockPos(i, j, k);
         Block block = this.worldObj.getBlockState(pos.down()).getBlock();
         return ((MoCreatures.entityMap.get(this.getClass()).getFrequency() > 0) && this.worldObj.checkNoEntityCollision(this.getEntityBoundingBox())
-                && (this.worldObj.getCollidingBoundingBoxes(this, this.getEntityBoundingBox()).size() == 0)
-                && !this.worldObj.isAnyLiquid(this.getEntityBoundingBox()) && ((block == Blocks.cobblestone) || (block == Blocks.planks)
-                || (block == Blocks.dirt) || (block == Blocks.stone) || (block == Blocks.grass)));
-    }
-
-    @Override
-    protected String getDeathSound() {
-        return "mocreatures:micedying";
+                && (this.worldObj.getCollisionBoxes(this, this.getEntityBoundingBox()).size() == 0)
+                && !this.worldObj.containsAnyLiquid(this.getEntityBoundingBox()) && ((block == Blocks.COBBLESTONE) || (block == Blocks.PLANKS)
+                || (block == Blocks.DIRT) || (block == Blocks.STONE) || (block == Blocks.GRASS)));
     }
 
     @Override
     protected Item getDropItem() {
-        return Items.wheat_seeds;
+        return Items.WHEAT_SEEDS;
     }
 
     @Override
-    protected String getHurtSound() {
-        return "mocreatures:micehurt";
+    protected SoundEvent getDeathSound() {
+        return MoCSoundEvents.ENTITY_MOUSE_DEATH;
     }
 
     @Override
-    protected String getLivingSound() {
-        return "mocreatures:micegrunt";
+    protected SoundEvent getHurtSound() {
+        return MoCSoundEvents.ENTITY_MOUSE_HURT;
+    }
+
+    @Override
+    protected SoundEvent getAmbientSound() {
+        return MoCSoundEvents.ENTITY_MOUSE_AMBIENT;
     }
 
     @Override
@@ -160,24 +149,11 @@ public class MoCEntityMouse extends MoCEntityAnimal {
     }
 
     @Override
-    public boolean interact(EntityPlayer entityplayer) {
-        this.rotationYaw = entityplayer.rotationYaw;
+    public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
         if (this.getRidingEntity() == null) {
-            if (MoCreatures.isServer()) {
-                mountEntity(entityplayer);
+                this.startRiding(player);
+            this.rotationYaw = player.rotationYaw;
             }
-            //setPicked(true);
-        } else {
-            this.worldObj.playSoundAtEntity(this, "mob.chickenplop", 1.0F, ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F) + 1.0F);
-            //setPicked(false);
-            if (MoCreatures.isServer()) {
-                this.mountEntity(null);
-            }
-        }
-        this.motionX = entityplayer.motionX * 5D;
-        this.motionY = (entityplayer.motionY / 2D) + 0.5D;
-        this.motionZ = entityplayer.motionZ * 5D;
-
         return true;
     }
 
@@ -192,9 +168,16 @@ public class MoCEntityMouse extends MoCEntityAnimal {
         if (!this.onGround && (this.getRidingEntity() != null)) {
             this.rotationYaw = this.getRidingEntity().rotationYaw;
         }
+        
     }
 
     public boolean upsideDown() {
         return getIsPicked();
+    }
+    
+    @Override
+    public boolean canRidePlayer()
+    {
+    	return true;
     }
 }

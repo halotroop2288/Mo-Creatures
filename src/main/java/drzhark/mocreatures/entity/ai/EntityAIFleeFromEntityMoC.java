@@ -9,7 +9,7 @@ import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.util.EntitySelectors;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.List;
 
@@ -70,8 +70,8 @@ public class EntityAIFleeFromEntityMoC extends EntityAIBase {
             return false;
         } else {
             this.closestLivingEntity = list.get(0);
-            Vec3 vec3 =
-                    RandomPositionGenerator.findRandomTargetBlockAwayFrom(this.theEntity, 16, 7, new Vec3(this.closestLivingEntity.posX,
+            Vec3d vec3 =
+                    RandomPositionGenerator.findRandomTargetBlockAwayFrom(this.theEntity, 16, 7, new Vec3d(this.closestLivingEntity.posX,
                             this.closestLivingEntity.posY, this.closestLivingEntity.posZ));
 
             if (vec3 == null) {

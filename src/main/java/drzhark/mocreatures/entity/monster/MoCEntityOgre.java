@@ -7,20 +7,22 @@ import drzhark.mocreatures.entity.ai.EntityAINearestAttackableTargetMoC;
 import drzhark.mocreatures.network.MoCMessageHandler;
 import drzhark.mocreatures.network.message.MoCMessageAnimation;
 import drzhark.mocreatures.network.message.MoCMessageExplode;
+import drzhark.mocreatures.util.MoCSoundEvents;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIAttackOnCollide;
+import net.minecraft.entity.ai.EntityAIAttackMelee;
 import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 
@@ -36,9 +38,12 @@ public class MoCEntityOgre extends MoCEntityMob {
     public MoCEntityOgre(World world) {
         super(world);
         setSize(1.9F, 3F);
-        this.isImmuneToFire = false;
-        this.tasks.addTask(0, new EntityAISwimming(this));
-        this.tasks.addTask(2, new EntityAIAttackOnCollide(this, 1.0D, true));
+    }
+
+    @Override
+    protected void initEntityAI() {
+    	this.tasks.addTask(0, new EntityAISwimming(this));
+        this.tasks.addTask(2, new EntityAIAttackMelee(this, 1.0D, true));
         this.tasks.addTask(8, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
         this.targetTasks.addTask(1, new EntityAINearestAttackableTargetMoC(this, EntityPlayer.class, true));
     }
@@ -46,59 +51,27 @@ public class MoCEntityOgre extends MoCEntityMob {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(50);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.25D);
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(calculateMaxHealth());
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.25D);
         this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(3.0D);
     }
 
     @Override
     public void selectType() {
-        if (this.worldObj.provider.doesWaterVaporize()) {
-            setType(this.rand.nextInt(2) + 3);
-            this.isImmuneToFire = true;
-
-        } else {
-            if (getType() == 0) {
-                int fOgreChance = MoCreatures.proxy.fireOgreChance;
-                int cOgreChance = MoCreatures.proxy.caveOgreChance;
-                int j = this.rand.nextInt(100);
-
-                if (canCaveOgreSpawn() && (j >= (100 - cOgreChance))) {
-                    setType(this.rand.nextInt(2) + 5);
-                } else if (j >= (100 - fOgreChance)) {
-                    setType(this.rand.nextInt(2) + 3);
-                    this.isImmuneToFire = true;
-                } else {
-                    setType(this.rand.nextInt(2) + 1);
-                }
-            }
+    	if (getType() == 0) {
+        	setType(this.rand.nextInt(2) + 1);
         }
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(getType() > 4 ? 50.0D : 35.0D);
-        this.setHealth(getMaxHealth());
     }
 
-    @Override
-    public ResourceLocation getTexture() {
-        switch (getType()) {
-            case 1:
-            case 2:
-                return MoCreatures.proxy.getTexture("ogregreen.png");
-            case 3:
-            case 4:
-                return MoCreatures.proxy.getTexture("ogrered.png");
-            case 5:
-            case 6:
-                return MoCreatures.proxy.getTexture("ogreblue.png");
-            default:
-                return MoCreatures.proxy.getTexture("ogregreen.png");
-        }
+    public float calculateMaxHealth() {
+        return 35F;
     }
 
     @Override
     public boolean attackEntityFrom(DamageSource damagesource, float i) {
         if (super.attackEntityFrom(damagesource, i)) {
             Entity entity = damagesource.getEntity();
-            if ((this.riddenByEntity == entity) || (this.getRidingEntity() == entity)) {
+            if (this.isRidingOrBeingRiddenBy(entity)) {
                 return true;
             }
             if ((entity != this) && (this.worldObj.getDifficulty().getDifficultyId() > 0) && entity instanceof EntityLivingBase) {
@@ -118,39 +91,21 @@ public class MoCEntityOgre extends MoCEntityMob {
     }
 
     @Override
-    protected String getDeathSound() {
-        return "mocreatures:ogredying";
+    protected SoundEvent getDeathSound() {
+        return MoCSoundEvents.ENTITY_OGRE_DEATH;
     }
 
     @Override
-    protected Item getDropItem() {
-        if (getType() < 3) {
-            return Item.getItemFromBlock(Blocks.obsidian);
-        } else if (getType() < 5) {
-            boolean flag = (this.rand.nextInt(100) < MoCreatures.proxy.rareItemDropChance);
-            if (!flag) {
-                return Item.getItemFromBlock(Blocks.fire);
-            }
-            return MoCreatures.heartfire;
-        }
-        return Items.diamond;
+    protected SoundEvent getHurtSound() {
+        return MoCSoundEvents.ENTITY_OGRE_HURT;
     }
 
     @Override
-    protected String getHurtSound() {
-        return "mocreatures:ogrehurt";
-    }
-
-    @Override
-    protected String getLivingSound() {
-        return "mocreatures:ogre";
+    protected SoundEvent getAmbientSound() {
+        return MoCSoundEvents.ENTITY_OGRE_AMBIENT;
     }
 
     public boolean isFireStarter() {
-        if (getType() == 3 || getType() == 4) {
-            this.isImmuneToFire = true;
-            return true;
-        }
         return false;
     }
 
@@ -159,15 +114,7 @@ public class MoCEntityOgre extends MoCEntityMob {
      * @return
      */
     public float getDestroyForce() {
-        int t = getType();
-        if (t < 3) //green
-        {
-            return MoCreatures.proxy.ogreStrength;
-        } else if (t < 5) //red
-        {
-            return MoCreatures.proxy.fireOgreStrength;
-        }
-        return MoCreatures.proxy.caveOgreStrength;
+        return MoCreatures.proxy.ogreStrength;
     }
 
     public int getAttackRange() {
@@ -181,7 +128,7 @@ public class MoCEntityOgre extends MoCEntityMob {
                 this.smashCounter = 0;
                 performDestroyBlastAttack();
                 MoCMessageHandler.INSTANCE.sendToAllAround(new MoCMessageExplode(this.getEntityId()),
-                        new TargetPoint(this.worldObj.provider.getDimensionId(), this.posX, this.posY, this.posZ, 64));
+                        new TargetPoint(this.worldObj.provider.getDimensionType().getId(), this.posX, this.posY, this.posZ, 64));
             }
 
             if ((this.getAttackTarget() != null) && (this.rand.nextInt(40) == 0) && this.smashCounter == 0 && this.attackCounter == 0) {
@@ -207,10 +154,10 @@ public class MoCEntityOgre extends MoCEntityMob {
     /**
      * Starts counter to perform the DestroyBlast and synchronizes animations with clients
      */
-    private void startDestroyBlast() {
+    protected void startDestroyBlast() {
         this.smashCounter = 1;
         MoCMessageHandler.INSTANCE.sendToAllAround(new MoCMessageAnimation(this.getEntityId(), 3),
-                new TargetPoint(this.worldObj.provider.getDimensionId(), this.posX, this.posY, this.posZ, 64));
+                new TargetPoint(this.worldObj.provider.getDimensionType().getId(), this.posX, this.posY, this.posZ, 64));
     }
 
     /**
@@ -225,13 +172,13 @@ public class MoCEntityOgre extends MoCEntityMob {
 
     @Override
     protected boolean isHarmedByDaylight() {
-        return this.getType() > 2;
+        return false;
     }
 
     /**
      * Starts attack counters and synchronizes animations with clients
      */
-    private void startArmSwingAttack() {
+    protected void startArmSwingAttack() {
         if (MoCreatures.isServer()) {
             if (this.smashCounter != 0)
                 return;
@@ -242,12 +189,12 @@ public class MoCEntityOgre extends MoCEntityMob {
                 this.attackCounter = 1;
                 this.armToAnimate = 1;
                 MoCMessageHandler.INSTANCE.sendToAllAround(new MoCMessageAnimation(this.getEntityId(), 1),
-                        new TargetPoint(this.worldObj.provider.getDimensionId(), this.posX, this.posY, this.posZ, 64));
+                        new TargetPoint(this.worldObj.provider.getDimensionType().getId(), this.posX, this.posY, this.posZ, 64));
             } else {
                 this.attackCounter = 1;
                 this.armToAnimate = 2;
                 MoCMessageHandler.INSTANCE.sendToAllAround(new MoCMessageAnimation(this.getEntityId(), 2),
-                        new TargetPoint(this.worldObj.provider.getDimensionId(), this.posX, this.posY, this.posZ, 64));
+                        new TargetPoint(this.worldObj.provider.getDimensionType().getId(), this.posX, this.posY, this.posZ, 64));
             }
         }
     }
@@ -262,7 +209,7 @@ public class MoCEntityOgre extends MoCEntityMob {
     }
 
     public int getMovingHead() {
-        if (getType() == 1 || getType() == 3 || getType() == 5) //single headed ogre
+        if (getType() == 1) //single headed ogre
         {
             return 1;
         }
@@ -271,11 +218,6 @@ public class MoCEntityOgre extends MoCEntityMob {
             this.movingHead = this.rand.nextInt(2) + 2; //randomly changes the focus head, returns 2 or 3
         }
         return this.movingHead;
-    }
-
-    private boolean canCaveOgreSpawn() {
-        return (!this.worldObj.canBlockSeeSky(new BlockPos(MathHelper.floor_double(this.posX), MathHelper.floor_double(this.posY), MathHelper
-                .floor_double(this.posZ)))) && (this.posY < 50D);
     }
 
     @Override

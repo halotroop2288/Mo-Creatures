@@ -4,19 +4,21 @@ import drzhark.mocreatures.MoCTools;
 import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityMob;
 import drzhark.mocreatures.entity.ai.EntityAINearestAttackableTargetMoC;
+import drzhark.mocreatures.util.MoCSoundEvents;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EnumCreatureAttribute;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIAttackOnCollide;
+import net.minecraft.entity.ai.EntityAIAttackMelee;
 import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
 public class MoCEntityHorseMob extends MoCEntityMob {
@@ -31,18 +33,21 @@ public class MoCEntityHorseMob extends MoCEntityMob {
     public MoCEntityHorseMob(World world) {
         super(world);
         setSize(1.4F, 1.6F);
-        this.tasks.addTask(0, new EntityAISwimming(this));
-        this.tasks.addTask(2, new EntityAIAttackOnCollide(this, 1.0D, true));
+    }
+
+    @Override
+    protected void initEntityAI() {
+    	this.tasks.addTask(0, new EntityAISwimming(this));
+        this.tasks.addTask(2, new EntityAIAttackMelee(this, 1.0D, true));
         this.tasks.addTask(8, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
         this.targetTasks.addTask(1, new EntityAINearestAttackableTargetMoC(this, EntityPlayer.class, true));
-
     }
 
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(30.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.3D);
+        getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(30.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.3D);
         this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(3.0D);
     }
 
@@ -135,25 +140,25 @@ public class MoCEntityHorseMob extends MoCEntityMob {
     }
 
     @Override
-    protected String getDeathSound() {
+    protected SoundEvent getDeathSound() {
         openMouth();
-        return "mocreatures:horsedyingundead";
+        return MoCSoundEvents.ENTITY_HORSE_DEATH_UNDEAD;
     }
 
     @Override
-    protected String getHurtSound() {
+    protected SoundEvent getHurtSound() {
         openMouth();
         stand();
-        return "mocreatures:horsehurtundead";
+        return MoCSoundEvents.ENTITY_HORSE_HURT_UNDEAD;
     }
 
     @Override
-    protected String getLivingSound() {
+    protected SoundEvent getAmbientSound() {
         openMouth();
         if (this.rand.nextInt(10) == 0) {
             stand();
         }
-        return "mocreatures:horsegruntundead";
+        return MoCSoundEvents.ENTITY_HORSE_AMBIENT_UNDEAD;
     }
 
     public boolean isOnAir() {
@@ -216,7 +221,7 @@ public class MoCEntityHorseMob extends MoCEntityMob {
             moveTail();
         }
 
-        if (!isOnAir() && (this.riddenByEntity == null) && this.rand.nextInt(250) == 0) {
+        if (!isOnAir() && (!this.isBeingRidden()) && this.rand.nextInt(250) == 0) {
             stand();
         }
 
@@ -233,11 +238,11 @@ public class MoCEntityHorseMob extends MoCEntityMob {
                 wingFlap();
             }
 
-            if (!isOnAir() && (this.riddenByEntity == null) && this.rand.nextInt(300) == 0) {
+            if (!isOnAir() && (!this.isBeingRidden()) && this.rand.nextInt(300) == 0) {
                 setEating();
             }
 
-            if (this.riddenByEntity == null && this.rand.nextInt(100) == 0) {
+            if (!this.isBeingRidden() && this.rand.nextInt(100) == 0) {
                 MoCTools.findMobRider(this);
                 /*List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(4D, 4D, 4D));
                 for (int i = 0; i < list.size(); i++) {
@@ -298,20 +303,20 @@ public class MoCEntityHorseMob extends MoCEntityMob {
         }
         if (this.getType() == 26)//skely
         {
-            return Items.bone;
+            return Items.BONE;
         }
         if ((this.getType() == 23 || this.getType() == 24 || this.getType() == 25)) {
             if (flag) {
                 return MoCreatures.heartundead;
             }
-            return Items.rotten_flesh;
+            return Items.ROTTEN_FLESH;
         }
 
         if (this.getType() == 21 || this.getType() == 22) {
-            return Items.ghast_tear;
+            return Items.GHAST_TEAR;
         }
 
-        return Items.leather;
+        return Items.LEATHER;
     }
 
     @Override
@@ -323,7 +328,7 @@ public class MoCEntityHorseMob extends MoCEntityMob {
             stand();
         }
         openMouth();
-        MoCTools.playCustomSound(this, "horsemad", this.worldObj);
+        MoCTools.playCustomSound(this, MoCSoundEvents.ENTITY_HORSE_MAD);
         return super.attackEntityAsMob(entityIn);
     }
 
@@ -385,11 +390,11 @@ public class MoCEntityHorseMob extends MoCEntityMob {
     }
 
     @Override
-    public void updateRiderPosition() {
+    public void updatePassenger(Entity passenger) {
         double dist = (0.4D);
         double newPosX = this.posX + (dist * Math.sin(this.renderYawOffset / 57.29578F));
         double newPosZ = this.posZ - (dist * Math.cos(this.renderYawOffset / 57.29578F));
-        this.riddenByEntity.setPosition(newPosX, this.posY + getMountedYOffset() + this.riddenByEntity.getYOffset(), newPosZ);
-        this.riddenByEntity.rotationYaw = this.rotationYaw;
+        passenger.setPosition(newPosX, this.posY + getMountedYOffset() + passenger.getYOffset(), newPosZ);
+        passenger.rotationYaw = this.rotationYaw;
     }
 }

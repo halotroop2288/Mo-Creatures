@@ -5,15 +5,17 @@ import drzhark.mocreatures.entity.MoCEntityMob;
 import drzhark.mocreatures.entity.ai.EntityAINearestAttackableTargetMoC;
 import drzhark.mocreatures.network.MoCMessageHandler;
 import drzhark.mocreatures.network.message.MoCMessageAnimation;
+import drzhark.mocreatures.util.MoCSoundEvents;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIAttackOnCollide;
+import net.minecraft.entity.ai.EntityAIAttackMelee;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 
@@ -28,7 +30,11 @@ public class MoCEntityWraith extends MoCEntityMob//MoCEntityFlyerMob
         this.texture = "wraith.png";
         setSize(1.5F, 1.5F);
         this.isImmuneToFire = false;
-        this.tasks.addTask(2, new EntityAIAttackOnCollide(this, 1.0D, true));
+    }
+
+    @Override
+    protected void initEntityAI() {
+    	this.tasks.addTask(2, new EntityAIAttackMelee(this, 1.0D, true));
         this.tasks.addTask(8, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
         this.targetTasks.addTask(1, new EntityAINearestAttackableTargetMoC(this, EntityPlayer.class, true));
     }
@@ -38,43 +44,34 @@ public class MoCEntityWraith extends MoCEntityMob//MoCEntityFlyerMob
         super.applyEntityAttributes();
         this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE)
                 .setBaseValue(this.worldObj.getDifficulty().getDifficultyId() == 1 ? 2.0D : 3.0D); // setAttackStrength
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(10.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.25D);
-    }
-
-    /*    public boolean d2() {
-            return super.getCanSpawnHere();
-        }*/
-
-    @Override
-    protected String getDeathSound() {
-        return "mocreatures:wraithdying";
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(10.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.25D);
     }
 
     @Override
     protected Item getDropItem() {
-        return Items.gunpowder;
+        return Items.GUNPOWDER;
     }
 
     @Override
-    protected String getHurtSound() {
-        return "mocreatures:wraithhurt";
+    protected SoundEvent getDeathSound() {
+        return MoCSoundEvents.ENTITY_WRAITH_DEATH;
     }
 
     @Override
-    protected String getLivingSound() {
-        return "mocreatures:wraith";
+    protected SoundEvent getHurtSound() {
+        return MoCSoundEvents.ENTITY_WRAITH_HURT;
+    }
+
+    @Override
+    protected SoundEvent getAmbientSound() {
+        return MoCSoundEvents.ENTITY_WRAITH_AMBIENT;
     }
 
     @Override
     public boolean isFlyer() {
         return true;
     }
-
-    /*@Override
-    public float getMoveSpeed() {
-        return 1.3F;
-    }*/
 
     @Override
     public boolean canBePushed() {
@@ -113,7 +110,7 @@ public class MoCEntityWraith extends MoCEntityMob//MoCEntityFlyerMob
         if (MoCreatures.isServer()) {
             this.attackCounter = 1;
             MoCMessageHandler.INSTANCE.sendToAllAround(new MoCMessageAnimation(this.getEntityId(), 1),
-                    new TargetPoint(this.worldObj.provider.getDimensionId(), this.posX, this.posY, this.posZ, 64));
+                    new TargetPoint(this.worldObj.provider.getDimensionType().getId(), this.posX, this.posY, this.posZ, 64));
         }
     }
 

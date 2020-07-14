@@ -10,12 +10,11 @@ import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.attributes.IAttributeInstance;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.pathfinding.PathEntity;
+import net.minecraft.pathfinding.Path;
 import net.minecraft.pathfinding.PathPoint;
 import net.minecraft.scoreboard.Team;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import org.apache.commons.lang3.StringUtils;
 
 public abstract class EntitiAITargetMoC extends EntityAIBase {
 
@@ -80,7 +79,7 @@ public abstract class EntitiAITargetMoC extends EntityAIBase {
         if (team != null && team1 == team) {
             return false;
         } else {
-            if (attacker instanceof IEntityOwnable && StringUtils.isNotEmpty(((IEntityOwnable) attacker).getOwnerId())) {
+            if (attacker instanceof IEntityOwnable && ((IEntityOwnable) attacker).getOwnerId() != null) {
                 if (target instanceof IEntityOwnable && ((IEntityOwnable) attacker).getOwnerId().equals(((IEntityOwnable) target).getOwnerId())) {
                     return false;
                 }
@@ -88,7 +87,7 @@ public abstract class EntitiAITargetMoC extends EntityAIBase {
                 if (target == ((IEntityOwnable) attacker).getOwner()) {
                     return false;
                 }
-            } else if (target instanceof EntityPlayer && !includeInvincibles && ((EntityPlayer) target).capabilities.disableDamage) {
+            } else if (target instanceof EntityPlayer && includeInvincibles && ((EntityPlayer) target).capabilities.disableDamage) {
                 return false;
             }
 
@@ -138,7 +137,7 @@ public abstract class EntitiAITargetMoC extends EntityAIBase {
         if (this.taskOwner instanceof MoCEntityOgre) {
             return ((MoCEntityOgre) this.taskOwner).getAttackRange();
         }
-        IAttributeInstance iattributeinstance = this.taskOwner.getEntityAttribute(SharedMonsterAttributes.followRange);
+        IAttributeInstance iattributeinstance = this.taskOwner.getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE);
         return iattributeinstance == null ? 16.0D : iattributeinstance.getAttributeValue();
     }
 
@@ -195,13 +194,13 @@ public abstract class EntitiAITargetMoC extends EntityAIBase {
      */
     private boolean canEasilyReach(EntityLivingBase p_75295_1_) {
         this.targetSearchDelay = 10 + this.taskOwner.getRNG().nextInt(5);
-        PathEntity pathentity = this.taskOwner.getNavigator().getPathToEntityLiving(p_75295_1_);
+        Path path = this.taskOwner.getNavigator().getPathToEntityLiving(p_75295_1_);
 
-        if (pathentity == null) {
+        if (path == null) {
             //System.out.println("couldn't find path");
             return false;
         } else {
-            PathPoint pathpoint = pathentity.getFinalPathPoint();
+            PathPoint pathpoint = path.getFinalPathPoint();
 
             if (pathpoint == null) {
                 return false;

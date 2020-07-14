@@ -23,6 +23,10 @@ public class MoCEntityMediumFish extends MoCEntityTameableAquatic {
         super(world);
         setSize(0.6F, 0.3F);
         setEdad(30 + this.rand.nextInt(70));
+    }
+
+    @Override
+    protected void initEntityAI() {
         this.tasks.addTask(3, new EntityAIFleeFromEntityMoC(this, new Predicate<Entity>() {
 
             public boolean apply(Entity entity) {
@@ -35,8 +39,8 @@ public class MoCEntityMediumFish extends MoCEntityTameableAquatic {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(8.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.5D);
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(8.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.5D);
     }
 
     @Override
@@ -47,34 +51,23 @@ public class MoCEntityMediumFish extends MoCEntityTameableAquatic {
     }
 
     @Override
-    public ResourceLocation getTexture() {
-        switch (getType()) {
-            case 1:
-                return MoCreatures.proxy.getTexture("mediumfish_salmon.png");
-            case 2:
-                return MoCreatures.proxy.getTexture("mediumfish_cod.png");
-            case 3:
-                return MoCreatures.proxy.getTexture("mediumfish_bass.png");
-            default:
-                return MoCreatures.proxy.getTexture("mediumfish_salmon.png");
-        }
-
-    }
-
-    @Override
     protected void dropFewItems(boolean flag, int x) {
         int i = this.rand.nextInt(100);
         if (i < 70) {
-            entityDropItem(new ItemStack(Items.fish, 1, 0), 0.0F);
+            entityDropItem(new ItemStack(Items.FISH, 1, 0), 0.0F);
         } else {
             int j = this.rand.nextInt(2);
             for (int k = 0; k < j; k++) {
-                entityDropItem(new ItemStack(MoCreatures.mocegg, 1, getType() + 69), 0.0F);
+                entityDropItem(new ItemStack(MoCreatures.mocegg, 1, getEggNumber()), 0.0F);
             }
         }
     }
 
-    @Override
+    protected int getEggNumber() {
+		return 70;
+	}
+
+	@Override
     public void onLivingUpdate() {
         super.onLivingUpdate();
 
@@ -83,7 +76,7 @@ public class MoCEntityMediumFish extends MoCEntityTameableAquatic {
                 this.setHealth(getMaxHealth());
             }
         }
-        if (!this.isInsideOfMaterial(Material.water)) {
+        if (!this.isInsideOfMaterial(Material.WATER)) {
             this.prevRenderYawOffset = this.renderYawOffset = this.rotationYaw = this.prevRotationYaw;
             this.rotationPitch = this.prevRotationPitch;
         }
@@ -96,10 +89,10 @@ public class MoCEntityMediumFish extends MoCEntityTameableAquatic {
 
     @Override
     public float getAdjustedYOffset() {
-        if (!this.isInsideOfMaterial(Material.water)) {
-            return -0.1F;
+        if (!this.isInsideOfMaterial(Material.WATER)) {
+            return 1F;
         }
-        return 0.7F;
+        return 0.5F;
     }
 
     @Override
@@ -110,7 +103,7 @@ public class MoCEntityMediumFish extends MoCEntityTameableAquatic {
     @SideOnly(Side.CLIENT)
     @Override
     public float yawRotationOffset() {
-        if (!this.isInsideOfMaterial(Material.water)) {
+        if (!this.isInsideOfMaterial(Material.WATER)) {
             return 90F;
         }
         return 90F + super.yawRotationOffset();
@@ -118,7 +111,7 @@ public class MoCEntityMediumFish extends MoCEntityTameableAquatic {
 
     @Override
     public float rollRotationOffset() {
-        if (!isInWater()) {
+        if (!isInWater() && this.onGround) {
             return -90F;
         }
         return 0F;
@@ -131,14 +124,14 @@ public class MoCEntityMediumFish extends MoCEntityTameableAquatic {
 
     @Override
     public float getAdjustedZOffset() {
+    	if (!isInWater()) {
+            return 0.2F;
+        }
         return 0F;
     }
 
     @Override
     public float getAdjustedXOffset() {
-        if (!isInWater()) {
-            return -0.8F;
-        }
         return 0F;
     }
 

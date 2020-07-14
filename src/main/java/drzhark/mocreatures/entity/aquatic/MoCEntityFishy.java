@@ -1,6 +1,7 @@
 package drzhark.mocreatures.entity.aquatic;
 
 import com.google.common.base.Predicate;
+
 import drzhark.mocreatures.MoCTools;
 import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityTameableAquatic;
@@ -14,7 +15,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
@@ -26,11 +31,16 @@ public class MoCEntityFishy extends MoCEntityTameableAquatic {
     public int gestationtime;
 
     public static final String fishNames[] = {"Blue", "Orange", "Cyan", "Greeny", "Green", "Purple", "Yellow", "Striped", "Yellowy", "Red"};
-
+    private static final DataParameter<Boolean> HAS_EATEN = EntityDataManager.<Boolean>createKey(MoCEntityFishy.class, DataSerializers.BOOLEAN);
+    
     public MoCEntityFishy(World world) {
         super(world);
         setSize(0.3F, 0.3F);
         setEdad(50 + this.rand.nextInt(50));
+    }
+
+    @Override
+    protected void initEntityAI() {
         this.tasks.addTask(2, new EntityAIPanicMoC(this, 1.3D));
         this.tasks.addTask(3, new EntityAIFleeFromEntityMoC(this, new Predicate<Entity>() {
 
@@ -44,8 +54,8 @@ public class MoCEntityFishy extends MoCEntityTameableAquatic {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(6.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.5D);
+        getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(6.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.5D);
     }
 
     @Override
@@ -86,26 +96,22 @@ public class MoCEntityFishy extends MoCEntityTameableAquatic {
     @Override
     protected void entityInit() {
         super.entityInit();
-        this.dataWatcher.addObject(23, Byte.valueOf((byte) 0)); // byte hasEaten 0 = false 1 = true
+        this.dataManager.register(HAS_EATEN, Boolean.valueOf(false));
     }
 
     public boolean getHasEaten() {
-        return (this.dataWatcher.getWatchableObjectByte(23) == 1);
+    	return ((Boolean)this.dataManager.get(HAS_EATEN)).booleanValue();
     }
 
     public void setHasEaten(boolean flag) {
-        if (this.worldObj.isRemote) {
-            return;
-        }
-        byte input = (byte) (flag ? 1 : 0);
-        this.dataWatcher.updateObject(23, Byte.valueOf(input));
+    	this.dataManager.set(HAS_EATEN, Boolean.valueOf(flag));
     }
-
+    
     @Override
     protected void dropFewItems(boolean flag, int x) {
         int i = this.rand.nextInt(100);
         if (i < 70) {
-            entityDropItem(new ItemStack(Items.fish, 1, 0), 0.0F);
+            entityDropItem(new ItemStack(Items.FISH, 1, 0), 0.0F);
         } else {
             int j = this.rand.nextInt(2);
             for (int k = 0; k < j; k++) {
@@ -119,7 +125,7 @@ public class MoCEntityFishy extends MoCEntityTameableAquatic {
     public void onLivingUpdate() {
         super.onLivingUpdate();
 
-        if (!this.isInsideOfMaterial(Material.water)) {
+        if (!this.isInsideOfMaterial(Material.WATER)) {
             this.prevRenderYawOffset = this.renderYawOffset = this.rotationYaw = this.prevRotationYaw;
             this.rotationPitch = this.prevRotationPitch;
         }
@@ -160,7 +166,7 @@ public class MoCEntityFishy extends MoCEntityTameableAquatic {
                 }
                 if (this.gestationtime % 3 == 0) {
                     MoCMessageHandler.INSTANCE.sendToAllAround(new MoCMessageHeart(this.getEntityId()),
-                            new TargetPoint(this.worldObj.provider.getDimensionId(), this.posX, this.posY, this.posZ, 64));
+                            new TargetPoint(this.worldObj.provider.getDimensionType().getId(), this.posX, this.posY, this.posZ, 64));
                 }
                 if (this.gestationtime <= 50) {
                     continue;
@@ -170,7 +176,7 @@ public class MoCEntityFishy extends MoCEntityTameableAquatic {
                     MoCEntityFishy entityfishy1 = new MoCEntityFishy(this.worldObj);
                     entityfishy1.setPosition(this.posX, this.posY, this.posZ);
                     this.worldObj.spawnEntityInWorld(entityfishy1);
-                    this.worldObj.playSoundAtEntity(this, "mob.chickenplop", 1.0F, ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F) + 1.0F);
+                    MoCTools.playCustomSound(this, SoundEvents.ENTITY_CHICKEN_EGG);
                     setHasEaten(false);
                     entityfishy.setHasEaten(false);
                     this.gestationtime = 0;
@@ -208,24 +214,8 @@ public class MoCEntityFishy extends MoCEntityTameableAquatic {
 
     @Override
     public float rollRotationOffset() {
-        if (!this.isInsideOfMaterial(Material.water)) {
+        if (!this.isInsideOfMaterial(Material.WATER)) {
             return -90F;
-        }
-        return 0F;
-    }
-
-    @Override
-    public float getAdjustedYOffset() {
-        if (!this.isInsideOfMaterial(Material.water)) {
-            return -0.1F;
-        }
-        return 0.0F;
-    }
-
-    @Override
-    public float getAdjustedXOffset() {
-        if (!this.isInsideOfMaterial(Material.water)) {
-            return -0.2F;
         }
         return 0F;
     }
@@ -263,5 +253,26 @@ public class MoCEntityFishy extends MoCEntityTameableAquatic {
     @Override
     public float getSizeFactor() {
         return getEdad() * 0.01F;
+    }
+    
+    @Override
+    public float getAdjustedZOffset() {
+        return 0F;
+    }
+
+    @Override
+    public float getAdjustedXOffset() {
+    	if (!isInWater()) {
+            return -0.1F;
+        }
+        return 0F;
+    }
+    
+    @Override
+    public float getAdjustedYOffset() {
+        if (!this.isInsideOfMaterial(Material.WATER)) {
+            return 0.2F;
+        }
+        return -0.5F;
     }
 }

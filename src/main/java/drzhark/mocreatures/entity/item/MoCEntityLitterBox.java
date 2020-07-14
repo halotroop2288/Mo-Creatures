@@ -11,19 +11,28 @@ import net.minecraft.entity.monster.EntityMob;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.init.SoundEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.DamageSource;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 public class MoCEntityLitterBox extends EntityLiving {
 
     public int littertime;
+    private static final DataParameter<Boolean> PICKED_UP = EntityDataManager.<Boolean>createKey(MoCEntityLitterBox.class, DataSerializers.BOOLEAN);
+    private static final DataParameter<Boolean> USED_LITTER = EntityDataManager.<Boolean>createKey(MoCEntityLitterBox.class, DataSerializers.BOOLEAN);
 
     public MoCEntityLitterBox(World world) {
         super(world);
@@ -37,38 +46,30 @@ public class MoCEntityLitterBox extends EntityLiving {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(20.0D); // setMaxHealth
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(20.0D); // setMaxHealth
     }
 
     @Override
     protected void entityInit() {
         super.entityInit();
-        this.dataWatcher.addObject(16, Byte.valueOf((byte) 0)); // pickedUp - 0 false 1 true
-        this.dataWatcher.addObject(17, Byte.valueOf((byte) 0)); // usedLitter - 0 false 1 true
+        this.dataManager.register(PICKED_UP, Boolean.valueOf(false));
+        this.dataManager.register(USED_LITTER, Boolean.valueOf(false));
     }
 
     public boolean getPickedUp() {
-        return (this.dataWatcher.getWatchableObjectByte(17) == 1);
+    	return ((Boolean)this.dataManager.get(PICKED_UP)).booleanValue();
     }
 
     public boolean getUsedLitter() {
-        return (this.dataWatcher.getWatchableObjectByte(16) == 1);
+    	return ((Boolean)this.dataManager.get(USED_LITTER)).booleanValue();
     }
 
     public void setPickedUp(boolean flag) {
-        if (this.worldObj.isRemote) {
-            return;
-        }
-        byte input = (byte) (flag ? 1 : 0);
-        this.dataWatcher.updateObject(17, Byte.valueOf(input));
+    	this.dataManager.set(PICKED_UP, Boolean.valueOf(flag));
     }
 
     public void setUsedLitter(boolean flag) {
-        if (this.worldObj.isRemote) {
-            return;
-        }
-        byte input = (byte) (flag ? 1 : 0);
-        this.dataWatcher.updateObject(16, Byte.valueOf(input));
+    	this.dataManager.set(USED_LITTER, Boolean.valueOf(flag));
     }
 
     public boolean attackEntityFrom(Entity entity, int i) {
@@ -100,21 +101,6 @@ public class MoCEntityLitterBox extends EntityLiving {
     }
 
     @Override
-    protected String getDeathSound() {
-        return null;
-    }
-
-    @Override
-    protected String getHurtSound() {
-        return null;
-    }
-
-    @Override
-    protected String getLivingSound() {
-        return null;
-    }
-
-    @Override
     protected float getSoundVolume() {
         return 0.0F;
     }
@@ -136,38 +122,27 @@ public class MoCEntityLitterBox extends EntityLiving {
     }
 
     @Override
-    public boolean interact(EntityPlayer entityplayer) {
-        ItemStack itemstack = entityplayer.inventory.getCurrentItem();
-        if ((itemstack != null)
-                && MoCreatures.isServer()
-                && ((itemstack.getItem() == Items.stone_pickaxe) || (itemstack.getItem() == Items.wooden_pickaxe)
-                        || (itemstack.getItem() == Items.iron_pickaxe) || (itemstack.getItem() == Items.golden_pickaxe) || (itemstack.getItem() == Items.diamond_pickaxe))) {
-            entityplayer.inventory.addItemStackToInventory(new ItemStack(MoCreatures.litterbox));
-            this.worldObj.playSoundAtEntity(this, "random.pop", 0.2F, (((this.rand.nextFloat() - this.rand.nextFloat()) * 0.7F) + 1.0F) * 2.0F);
+    public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
+        if ((stack != null) && ((stack.getItem() == Items.STONE_PICKAXE) || (stack.getItem() == Items.WOODEN_PICKAXE)
+                        || (stack.getItem() == Items.IRON_PICKAXE) || (stack.getItem() == Items.GOLDEN_PICKAXE) || (stack.getItem() == Items.DIAMOND_PICKAXE))) {
+            player.inventory.addItemStackToInventory(new ItemStack(MoCreatures.litterbox));
+            this.playSound(SoundEvents.ENTITY_ITEM_PICKUP, 0.2F, (((this.rand.nextFloat() - this.rand.nextFloat()) * 0.7F) + 1.0F) * 2.0F);
             setDead();
             return true;
         }
 
-        if ((itemstack != null) && MoCreatures.isServer() && (itemstack.getItem() == Item.getItemFromBlock(Blocks.sand))) {
-            if (--itemstack.stackSize == 0) {
-                entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, null);
+        if ((stack != null) && (stack.getItem() == Item.getItemFromBlock(Blocks.SAND))) {
+            if (--stack.stackSize == 0) {
+                player.inventory.setInventorySlotContents(player.inventory.currentItem, null);
             }
             setUsedLitter(false);
             this.littertime = 0;
             return true;
         } else {
-            this.rotationYaw = entityplayer.rotationYaw;
             if (this.getRidingEntity() == null) {
-                if (MoCreatures.isServer()) {
-                    mountEntity(entityplayer);
-                }
-            } else {
-                if (MoCreatures.isServer()) {
-                    this.mountEntity(null);
-                }
-            }
-            this.worldObj.playSoundAtEntity(this, "mob.chickenplop", 1.0F, ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F) + 1.0F);
-            return true;
+            	this.rotationYaw = player.rotationYaw;
+                this.startRiding(player);
+            }return true;
         }
     }
 
@@ -210,6 +185,8 @@ public class MoCEntityLitterBox extends EntityLiving {
             setUsedLitter(false);
             this.littertime = 0;
         }
+        
+        if (this.isRiding()) MoCTools.dismountSneakingPlayer(this);
     }
 
     @Override

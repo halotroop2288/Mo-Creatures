@@ -7,28 +7,37 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
 public class MoCEntitySnail extends MoCEntityAmbient {
 
-    public MoCEntitySnail(World world) {
+	private static final DataParameter<Boolean> IS_HIDDING = EntityDataManager.<Boolean>createKey(MoCEntitySnail.class, DataSerializers.BOOLEAN);
+    
+	public MoCEntitySnail(World world) {
         super(world);
         setSize(0.2F, 0.2F);
-        this.tasks.addTask(1, new EntityAIWanderMoC2(this, 0.8D));
     }
 
+	@Override
+    protected void initEntityAI() {
+		this.tasks.addTask(1, new EntityAIWanderMoC2(this, 0.8D));
+    }
+    
     @Override
     protected void entityInit() {
         super.entityInit();
-        this.dataWatcher.addObject(23, Byte.valueOf((byte) 0));
+        this.dataManager.register(IS_HIDDING, Boolean.valueOf(false));
     }
 
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(5.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.10D);
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(5.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.10D);
     }
 
     @Override
@@ -64,12 +73,11 @@ public class MoCEntitySnail extends MoCEntityAmbient {
     }
 
     public boolean getIsHiding() {
-        return (this.dataWatcher.getWatchableObjectByte(23) == 1);
+    	return ((Boolean)this.dataManager.get(IS_HIDDING)).booleanValue();
     }
 
     public void setIsHiding(boolean flag) {
-        byte input = (byte) (flag ? 1 : 0);
-        this.dataWatcher.updateObject(23, Byte.valueOf(input));
+    	this.dataManager.set(IS_HIDDING, Boolean.valueOf(flag));
     }
 
     @Override
@@ -110,7 +118,7 @@ public class MoCEntitySnail extends MoCEntityAmbient {
 
     @Override
     protected Item getDropItem() {
-        return Items.slime_ball;
+        return Items.SLIME_BALL;
     }
 
     @Override

@@ -7,36 +7,44 @@ import drzhark.mocreatures.entity.ai.EntityAIWanderMoC2;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.datasync.DataParameter;
+import net.minecraft.network.datasync.DataSerializers;
+import net.minecraft.network.datasync.EntityDataManager;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
 public class MoCEntityAnt extends MoCEntityInsect {
 
+	private static final DataParameter<Boolean> FOUND_FOOD = EntityDataManager.<Boolean>createKey(MoCEntityAnt.class, DataSerializers.BOOLEAN);
+    
     public MoCEntityAnt(World world) {
         super(world);
         this.texture = "ant.png";
-        this.tasks.addTask(1, new EntityAIWanderMoC2(this, 1.2D));
     }
 
     @Override
+    protected void initEntityAI() {
+    	this.tasks.addTask(1, new EntityAIWanderMoC2(this, 1.2D));
+    }
+    
+    @Override
     protected void entityInit() {
         super.entityInit();
-        this.dataWatcher.addObject(23, Byte.valueOf((byte) 0)); // foundFood 0 = false, 1 = true
+        this.dataManager.register(FOUND_FOOD, Boolean.valueOf(false));
     }
 
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.28D);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.28D);
     }
 
     public boolean getHasFood() {
-        return (this.dataWatcher.getWatchableObjectByte(23) == 1);
+    	return ((Boolean)this.dataManager.get(FOUND_FOOD)).booleanValue();
     }
 
     public void setHasFood(boolean flag) {
-        byte input = (byte) (flag ? 1 : 0);
-        this.dataWatcher.updateObject(23, Byte.valueOf(input));
+    	this.dataManager.set(FOUND_FOOD, Boolean.valueOf(flag));
     }
 
     @Override
@@ -68,15 +76,15 @@ public class MoCEntityAnt extends MoCEntityInsect {
         }
 
         if (getHasFood()) {
-            if (this.riddenByEntity == null) {
+            if (!this.isBeingRidden()) {
                 EntityItem entityitem = MoCTools.getClosestFood(this, 2D);
                 if (entityitem != null && entityitem.getRidingEntity() == null) {
-                    entityitem.mountEntity(this);
+                    entityitem.startRiding(this);
                     return;
 
                 }
 
-                if (this.riddenByEntity == null) {
+                if (!this.isBeingRidden()) {
                     setHasFood(false);
                 }
             }

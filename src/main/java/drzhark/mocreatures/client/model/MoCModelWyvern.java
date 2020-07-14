@@ -785,7 +785,7 @@ public class MoCModelWyvern extends ModelBase {
 
         MoCEntityWyvern wyvern = (MoCEntityWyvern) entity;
         int armor = wyvern.getArmorType();
-        this.isRidden = (wyvern.riddenByEntity != null);
+        this.isRidden = (wyvern.isBeingRidden());
         this.isChested = wyvern.getIsChested();
         this.isSaddled = wyvern.getIsRideable();
         this.flapwings = (wyvern.wingFlapCounter != 0);

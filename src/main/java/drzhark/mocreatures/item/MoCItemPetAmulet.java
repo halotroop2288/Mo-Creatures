@@ -6,21 +6,25 @@ import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.IMoCEntity;
 import drzhark.mocreatures.entity.IMoCTameable;
 import drzhark.mocreatures.entity.passive.MoCEntityKitty;
-import drzhark.mocreatures.entity.passive.MoCEntityNewBigCat;
+import drzhark.mocreatures.entity.passive.MoCEntityBigCat;
 import drzhark.mocreatures.network.MoCMessageHandler;
 import drzhark.mocreatures.network.message.MoCMessageAppear;
-import drzhark.mocreatures.utils.MoCLog;
+import drzhark.mocreatures.util.MoCLog;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumHand;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.List;
+import java.util.UUID;
 
 public class MoCItemPetAmulet extends MoCItem {
 
@@ -30,6 +34,7 @@ public class MoCItemPetAmulet extends MoCItem {
     private int creatureType;
     private String spawnClass;
     private String ownerName;
+    private UUID ownerUniqueId;
     private int amuletType;
     private boolean adult;
     private int PetId;
@@ -46,7 +51,7 @@ public class MoCItemPetAmulet extends MoCItem {
     }
 
     @Override
-    public ItemStack onItemRightClick(ItemStack itemstack, World worldObj, EntityPlayer entityplayer) {
+    public ActionResult<ItemStack> onItemRightClick(ItemStack itemstack, World world, EntityPlayer entityplayer, EnumHand hand) {
         double dist = 1D;
         double newPosY = entityplayer.posY;
         double newPosX = entityplayer.posX - (dist * Math.cos((MoCTools.realAngle(entityplayer.rotationYaw - 90F)) / 57.29578F));
@@ -58,17 +63,17 @@ public class MoCItemPetAmulet extends MoCItem {
         }
 
         //entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, new ItemStack(MoCreatures.fishnet, 1, 0));
-        if (MoCreatures.isServer()) {
+        if (!world.isRemote && hand == EnumHand.MAIN_HAND) {
             initAndReadNBT(itemstack);
             if (this.spawnClass.isEmpty())// || creatureType == 0)
             {
-                return itemstack;
+            	return new ActionResult(EnumActionResult.SUCCESS, itemstack);
             }
             try {
                 if (this.spawnClass.equalsIgnoreCase("MoCHorse")) {
                     this.spawnClass = "WildHorse";
                 }
-                if (this.spawnClass.equalsIgnoreCase("BigCat")) {
+                /*if (this.spawnClass.equalsIgnoreCase("BigCat")) {
                     switch (this.creatureType) {
                         case 1:
                             this.spawnClass = "Lion";
@@ -98,7 +103,7 @@ public class MoCItemPetAmulet extends MoCItem {
                             this.creatureType = 2;
                             break;
                     }
-                }
+                }*/
                 if (this.spawnClass.equalsIgnoreCase("Ray")) {
                     switch (this.creatureType) {
                         case 1:
@@ -109,7 +114,7 @@ public class MoCItemPetAmulet extends MoCItem {
                             break;
                     }
                 }
-                EntityLiving tempLiving = MoCTools.spawnListByNameClass(this.spawnClass, worldObj);
+                EntityLiving tempLiving = MoCTools.spawnListByNameClass(this.spawnClass, world);
                 if (tempLiving != null && tempLiving instanceof IMoCEntity) {
                     IMoCTameable storedCreature = (IMoCTameable) tempLiving;
                     ((EntityLiving) storedCreature).setPosition(newPosX, newPosY, newPosZ);
@@ -117,12 +122,13 @@ public class MoCItemPetAmulet extends MoCItem {
                     storedCreature.setTamed(true);
                     storedCreature.setPetName(this.name);
                     storedCreature.setOwnerPetId(this.PetId);
-                    storedCreature.setOwner(entityplayer.getName());
+                    storedCreature.setOwnerId(entityplayer.getUniqueID());
+                    this.ownerName = entityplayer.getName();
                     ((EntityLiving) storedCreature).setHealth(this.health);
                     storedCreature.setEdad(this.edad);
                     storedCreature.setAdult(this.adult);
-                    if (storedCreature instanceof MoCEntityNewBigCat) {
-                        ((MoCEntityNewBigCat) storedCreature).setHasAmulet(true);
+                    if (storedCreature instanceof MoCEntityBigCat) {
+                        ((MoCEntityBigCat) storedCreature).setHasAmulet(true);
                     }
                     // special case for kitty
                     if (this.spawnClass.equalsIgnoreCase("Kitty")) {
@@ -130,10 +136,10 @@ public class MoCItemPetAmulet extends MoCItem {
                     }
 
                     //if the player using the amulet is different than the original owner
-                    if (this.ownerName != "" && !(this.ownerName.equals(entityplayer.getName())) && MoCreatures.instance.mapData != null) {
-                        MoCPetData oldOwner = MoCreatures.instance.mapData.getPetData(this.ownerName);
-                        MoCPetData newOwner = MoCreatures.instance.mapData.getPetData(entityplayer.getName());
-                        EntityPlayer epOwner = worldObj.getPlayerEntityByName(entityplayer.getName());
+                    if (!(this.ownerUniqueId.equals(entityplayer.getUniqueID())) && MoCreatures.instance.mapData != null) {
+                        MoCPetData oldOwner = MoCreatures.instance.mapData.getPetData(this.ownerUniqueId);
+                        MoCPetData newOwner = MoCreatures.instance.mapData.getPetData(entityplayer.getUniqueID());
+                        EntityPlayer epOwner = world.getPlayerEntityByName(entityplayer.getName());
                         int maxCount = MoCreatures.proxy.maxTamed;
                         if (MoCTools.isThisPlayerAnOP(epOwner)) {
                             maxCount = MoCreatures.proxy.maxOPTamed;
@@ -156,14 +162,14 @@ public class MoCItemPetAmulet extends MoCItem {
 
                     if (entityplayer.worldObj.spawnEntityInWorld((EntityLiving) storedCreature)) {
                         MoCMessageHandler.INSTANCE.sendToAllAround(new MoCMessageAppear(((EntityLiving) storedCreature).getEntityId()),
-                                new TargetPoint(entityplayer.worldObj.provider.getDimensionId(), entityplayer.posX, entityplayer.posY,
+                                new TargetPoint(entityplayer.worldObj.provider.getDimensionType().getId(), entityplayer.posX, entityplayer.posY,
                                         entityplayer.posZ, 64));
-                        if (this.ownerName.isEmpty() || this.name.isEmpty()) {
+                        if (this.ownerUniqueId == null || this.name.isEmpty()) {
                             MoCTools.tameWithName(entityplayer, storedCreature);
                         }
 
                         entityplayer.inventory.setInventorySlotContents(entityplayer.inventory.currentItem, emptyAmulet);
-                        MoCPetData petData = MoCreatures.instance.mapData.getPetData(storedCreature.getOwnerName());
+                        MoCPetData petData = MoCreatures.instance.mapData.getPetData(storedCreature.getOwnerId());
                         if (petData != null) {
                             petData.setInAmulet(storedCreature.getOwnerPetId(), false);
                         }
@@ -176,7 +182,7 @@ public class MoCItemPetAmulet extends MoCItem {
             }
         }
 
-        return itemstack;
+        return new ActionResult<ItemStack>(EnumActionResult.SUCCESS, itemstack);
     }
 
     public void readFromNBT(NBTTagCompound nbt) {
@@ -188,6 +194,9 @@ public class MoCItemPetAmulet extends MoCItem {
         this.spawnClass = nbt.getString("SpawnClass");
         this.adult = nbt.getBoolean("Adult");
         this.ownerName = nbt.getString("OwnerName");
+        if (nbt.hasUniqueId("OwnerUUID")) {
+            this.ownerUniqueId = nbt.getUniqueId("OwnerUUID");
+        }
     }
 
     public void writeToNBT(NBTTagCompound nbt) {
@@ -199,6 +208,9 @@ public class MoCItemPetAmulet extends MoCItem {
         nbt.setString("SpawnClass", this.spawnClass);
         nbt.setBoolean("Adult", this.adult);
         nbt.setString("OwnerName", this.ownerName);
+        if (this.ownerUniqueId != null) {
+            nbt.setUniqueId("OwnerUUID", ownerUniqueId);
+        }
     }
 
     @SideOnly(Side.CLIENT)
@@ -209,13 +221,13 @@ public class MoCItemPetAmulet extends MoCItem {
     public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List<String> par3List, boolean par4) {
         initAndReadNBT(par1ItemStack);
         if (this.spawnClass != "") {
-            par3List.add(EnumChatFormatting.AQUA + this.spawnClass);
+            par3List.add(TextFormatting.AQUA + this.spawnClass);
         }
         if (this.name != "") {
-            par3List.add(EnumChatFormatting.BLUE + this.name);
+            par3List.add(TextFormatting.BLUE + this.name);
         }
         if (this.ownerName != "") {
-            par3List.add(EnumChatFormatting.DARK_BLUE + "Owned by " + this.ownerName);
+            par3List.add(TextFormatting.DARK_BLUE + "Owned by " + this.ownerName);
         }
     }
 

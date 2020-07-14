@@ -36,7 +36,7 @@ public class BiomeData {
     }
 
     public String getBiomeName() {
-        return this.biome.biomeName;
+        return this.biome.getBiomeName();
     }
 
     public Biome getBiome() {
@@ -44,7 +44,7 @@ public class BiomeData {
     }
 
     public int getBiomeID() {
-        return this.biome.biomeID;
+        return Biome.getIdForBiome(this.biome);
     }
 
     public String getTag() {

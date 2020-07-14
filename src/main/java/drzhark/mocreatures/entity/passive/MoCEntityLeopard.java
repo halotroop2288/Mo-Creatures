@@ -6,15 +6,19 @@ import drzhark.mocreatures.entity.IMoCTameable;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
 
-public class MoCEntityLeopard extends MoCEntityNewBigCat {
+import javax.annotation.Nullable;
+
+public class MoCEntityLeopard extends MoCEntityBigCat {
 
     public MoCEntityLeopard(World world) {
         super(world);
@@ -61,18 +65,17 @@ public class MoCEntityLeopard extends MoCEntityNewBigCat {
     }
 
     @Override
-    public boolean interact(EntityPlayer entityplayer) {
-
-        if (super.interact(entityplayer)) {
-            return false;
+    public boolean processInteract(EntityPlayer player, EnumHand hand, @Nullable ItemStack stack) {
+        if (super.processInteract(player, hand, stack)) {
+            return true;
         }
 
-        if (getIsRideable() && getIsAdult() && (this.riddenByEntity == null)) {
-            entityplayer.rotationYaw = this.rotationYaw;
-            entityplayer.rotationPitch = this.rotationPitch;
+        if (getIsRideable() && getIsAdult() && (!this.isBeingRidden())) {
+            player.rotationYaw = this.rotationYaw;
+            player.rotationPitch = this.rotationPitch;
             setSitting(false);
             if (MoCreatures.isServer()) {
-                entityplayer.mountEntity(this);
+                player.startRiding(this);
             }
             return true;
         }
@@ -82,7 +85,13 @@ public class MoCEntityLeopard extends MoCEntityNewBigCat {
     @Override
     public String getOffspringClazz(IMoCTameable mate) {
         if (mate instanceof MoCEntityPanther && ((MoCEntityPanther) mate).getType() == 1) {
-            return "Panther";
+            return "Pantard";//"Panther";
+        }
+        if (mate instanceof MoCEntityTiger && ((MoCEntityTiger) mate).getType() == 1) {
+            return "Leoger";//"Tiger";
+        }
+        if (mate instanceof MoCEntityLion && ((MoCEntityLion) mate).getType() == 2) {
+            return "Liard";//"Lion";
         }
         return "Leopard";
     }
@@ -90,7 +99,13 @@ public class MoCEntityLeopard extends MoCEntityNewBigCat {
     @Override
     public int getOffspringTypeInt(IMoCTameable mate) {
         if (mate instanceof MoCEntityPanther && ((MoCEntityPanther) mate).getType() == 1) {
-            return 3; //jaglion
+            return 1;//3; //panthard
+        }
+        if (mate instanceof MoCEntityTiger && ((MoCEntityTiger) mate).getType() == 1) {
+            return 1;//4; //leoger
+        }
+        if (mate instanceof MoCEntityLion && ((MoCEntityLion) mate).getType() == 2) {
+            return 1;//4; //liard
         }
         return this.getType();
     }
@@ -98,7 +113,9 @@ public class MoCEntityLeopard extends MoCEntityNewBigCat {
     @Override
     public boolean compatibleMate(Entity mate) {
         return (mate instanceof MoCEntityLeopard && ((MoCEntityLeopard) mate).getType() == this.getType())
-                || (mate instanceof MoCEntityPanther && ((MoCEntityPanther) mate).getType() == 1);
+                || (mate instanceof MoCEntityPanther && ((MoCEntityPanther) mate).getType() == 1)
+                || (mate instanceof MoCEntityTiger && ((MoCEntityTiger) mate).getType() == 1)
+                || (mate instanceof MoCEntityLion && ((MoCEntityLion) mate).getType() == 2);
     }
 
     @Override

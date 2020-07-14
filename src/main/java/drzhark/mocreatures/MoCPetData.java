@@ -5,10 +5,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.util.BlockPos;
+import net.minecraft.util.math.BlockPos;
 
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.UUID;
 
 public class MoCPetData {
 
@@ -16,18 +17,18 @@ public class MoCPetData {
     private NBTTagList tamedList = new NBTTagList();
     private BitSet IDMap = new BitSet(Long.SIZE << 4);
     @SuppressWarnings("unused")
-    private final String ownerName;
+    private final UUID ownerUniqueId;
     private ArrayList<Integer> usedPetIds = new ArrayList<Integer>();
 
     public MoCPetData(IMoCTameable pet) {
         this.ownerData.setTag("TamedList", this.tamedList);
-        this.ownerName = MoCreatures.isServer() ? pet.getOwnerName() : Minecraft.getMinecraft().thePlayer.getName();
+        this.ownerUniqueId = MoCreatures.isServer() ? pet.getOwnerId() : Minecraft.getMinecraft().thePlayer.getUniqueID();
     }
 
-    public MoCPetData(NBTTagCompound nbt, String owner) {
+    public MoCPetData(NBTTagCompound nbt, UUID owner) {
         this.ownerData = nbt;
         this.tamedList = nbt.getTagList("TamedList", 10);
-        this.ownerName = owner;
+        this.ownerUniqueId = owner;
         this.loadPetDataMap(nbt.getCompoundTag("PetIdData"));
     }
 
@@ -41,7 +42,7 @@ public class MoCPetData {
             petData.setInteger("ChunkX", coords.getX());
             petData.setInteger("ChunkY", coords.getY());
             petData.setInteger("ChunkZ", coords.getZ());
-            petData.setInteger("Dimension", ((Entity) pet).worldObj.provider.getDimensionId());
+            petData.setInteger("Dimension", ((Entity) pet).worldObj.provider.getDimensionType().getId());
             this.tamedList.appendTag(petData);
             this.ownerData.setTag("PetIdData", savePetDataMap());
             return id;

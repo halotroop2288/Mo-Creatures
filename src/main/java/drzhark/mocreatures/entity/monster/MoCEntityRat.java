@@ -3,17 +3,19 @@ package drzhark.mocreatures.entity.monster;
 import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityMob;
 import drzhark.mocreatures.entity.ai.EntityAINearestAttackableTargetMoC;
+import drzhark.mocreatures.util.MoCSoundEvents;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
-import net.minecraft.entity.ai.EntityAIAttackOnCollide;
+import net.minecraft.entity.ai.EntityAIAttackMelee;
 import net.minecraft.entity.ai.EntityAISwimming;
 import net.minecraft.entity.ai.EntityAIWatchClosest;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
-import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.world.World;
 
 import java.util.Iterator;
@@ -24,8 +26,12 @@ public class MoCEntityRat extends MoCEntityMob {
     public MoCEntityRat(World world) {
         super(world);
         setSize(0.5F, 0.5F);
-        this.tasks.addTask(0, new EntityAISwimming(this));
-        this.tasks.addTask(2, new EntityAIAttackOnCollide(this, 1.0D, true));
+    }
+
+    @Override
+    protected void initEntityAI() {
+    	this.tasks.addTask(0, new EntityAISwimming(this));
+        this.tasks.addTask(2, new EntityAIAttackMelee(this, 1.0D, true));
         this.tasks.addTask(8, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
         this.targetTasks.addTask(1, new EntityAINearestAttackableTargetMoC(this, EntityPlayer.class, true));
     }
@@ -33,8 +39,8 @@ public class MoCEntityRat extends MoCEntityMob {
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();
-        this.getEntityAttribute(SharedMonsterAttributes.maxHealth).setBaseValue(10.0D);
-        this.getEntityAttribute(SharedMonsterAttributes.movementSpeed).setBaseValue(0.3D);
+        this.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(10.0D);
+        this.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.3D);
         this.getEntityAttribute(SharedMonsterAttributes.ATTACK_DAMAGE).setBaseValue(3.0D);
     }
 
@@ -81,7 +87,7 @@ public class MoCEntityRat extends MoCEntityMob {
             if (MoCreatures.isServer()) {
                 List<MoCEntityRat> list =
                         this.worldObj.getEntitiesWithinAABB(MoCEntityRat.class,
-                                AxisAlignedBB.fromBounds(this.posX, this.posY, this.posZ, this.posX + 1.0D, this.posY + 1.0D, this.posZ + 1.0D)
+                                new AxisAlignedBB(this.posX, this.posY, this.posZ, this.posX + 1.0D, this.posY + 1.0D, this.posZ + 1.0D)
                                         .expand(16D, 4D, 16D));
                 Iterator<MoCEntityRat> iterator = list.iterator();
                 do {
@@ -113,23 +119,23 @@ public class MoCEntityRat extends MoCEntityMob {
     }
 
     @Override
-    protected String getDeathSound() {
-        return "mocreatures:ratdying";
-    }
-
-    @Override
     protected Item getDropItem() {
         return MoCreatures.ratRaw;
     }
 
     @Override
-    protected String getHurtSound() {
-        return "mocreatures:rathurt";
+    protected SoundEvent getDeathSound() {
+        return MoCSoundEvents.ENTITY_RAT_DEATH;
     }
 
     @Override
-    protected String getLivingSound() {
-        return "mocreatures:ratgrunt";
+    protected SoundEvent getHurtSound() {
+        return MoCSoundEvents.ENTITY_RAT_HURT;
+    }
+
+    @Override
+    protected SoundEvent getAmbientSound() {
+        return MoCSoundEvents.ENTITY_RAT_AMBIENT;
     }
 
     @Override
