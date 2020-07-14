@@ -1,5 +1,6 @@
 package drzhark.mocreatures.entity;
 
+import drzhark.mocreatures.MoCTools;
 import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.ai.EntityAIMoverHelperMoC;
 import drzhark.mocreatures.entity.ai.EntityAIWanderMoC2;
@@ -13,6 +14,7 @@ import drzhark.mocreatures.network.message.MoCMessageHealth;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.monster.EntityMob;
@@ -41,8 +43,6 @@ public abstract class MoCEntityMob extends EntityMob implements IMoCEntity//, IE
 
     protected boolean divePending;
     protected int maxHealth;
-    private PathEntity entitypath;
-    private boolean riderIsDisconnecting;
     protected float moveSpeed;
     protected String texture;
     protected PathNavigate navigatorWater;
@@ -52,7 +52,6 @@ public abstract class MoCEntityMob extends EntityMob implements IMoCEntity//, IE
     public MoCEntityMob(World world) {
         super(world);
         setTamed(false);
-        this.riderIsDisconnecting = false;
         this.texture = "blank.jpg";
         this.moveHelper = new EntityAIMoverHelperMoC(this);
         this.navigatorWater = new PathNavigateSwimmer(this, world);
@@ -69,9 +68,9 @@ public abstract class MoCEntityMob extends EntityMob implements IMoCEntity//, IE
     }
 
     @Override
-    public IEntityLivingData onSpawnFirstTime(DifficultyInstance difficulty, IEntityLivingData par1EntityLivingData) {
+    public IEntityLivingData onInitialSpawn(DifficultyInstance difficulty, IEntityLivingData par1EntityLivingData) {
         selectType();
-        return super.onSpawnFirstTime(difficulty, par1EntityLivingData);
+        return super.onInitialSpawn(difficulty, par1EntityLivingData);
     }
 
     @Override
@@ -123,7 +122,7 @@ public abstract class MoCEntityMob extends EntityMob implements IMoCEntity//, IE
     }
 
     @Override
-    public String getName() {
+    public String getPetName() {
         return this.dataWatcher.getWatchableObjectString(17);
     }
 
@@ -144,7 +143,7 @@ public abstract class MoCEntityMob extends EntityMob implements IMoCEntity//, IE
     }
 
     @Override
-    public void setName(String name) {
+    public void setPetName(String name) {
         this.dataWatcher.updateObject(17, String.valueOf(name));
     }
 
@@ -194,9 +193,9 @@ public abstract class MoCEntityMob extends EntityMob implements IMoCEntity//, IE
     protected EntityLivingBase getClosestEntityLiving(Entity entity, double d) {
         double d1 = -1D;
         EntityLivingBase entityliving = null;
-        List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(d, d, d));
+        List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(d, d, d));
         for (int i = 0; i < list.size(); i++) {
-            Entity entity1 = (Entity) list.get(i);
+            Entity entity1 = list.get(i);
 
             if (entitiesToIgnore(entity1)) {
                 continue;
@@ -287,7 +286,6 @@ public abstract class MoCEntityMob extends EntityMob implements IMoCEntity//, IE
      *
      * @return
      */
-    @Override
     public boolean isFlyer() {
         return false;
     }
@@ -295,10 +293,11 @@ public abstract class MoCEntityMob extends EntityMob implements IMoCEntity//, IE
     @Override
     public void writeEntityToNBT(NBTTagCompound nbttagcompound) {
         super.writeEntityToNBT(nbttagcompound);
+        nbttagcompound = MoCTools.getEntityData(this);
         nbttagcompound.setBoolean("Tamed", getIsTamed());
         nbttagcompound.setBoolean("Adult", getIsAdult());
         nbttagcompound.setInteger("Edad", getEdad());
-        nbttagcompound.setString("Name", getName());
+        nbttagcompound.setString("Name", getPetName());
         nbttagcompound.setInteger("TypeInt", getType());
 
     }
@@ -306,10 +305,11 @@ public abstract class MoCEntityMob extends EntityMob implements IMoCEntity//, IE
     @Override
     public void readEntityFromNBT(NBTTagCompound nbttagcompound) {
         super.readEntityFromNBT(nbttagcompound);
+        nbttagcompound = MoCTools.getEntityData(this);
         setTamed(nbttagcompound.getBoolean("Tamed"));
         setAdult(nbttagcompound.getBoolean("Adult"));
         setEdad(nbttagcompound.getInteger("Edad"));
-        setName(nbttagcompound.getString("Name"));
+        setPetName(nbttagcompound.getString("Name"));
         setType(nbttagcompound.getInteger("TypeInt"));
 
     }
@@ -400,7 +400,7 @@ public abstract class MoCEntityMob extends EntityMob implements IMoCEntity//, IE
     @Override
     public boolean renderName() {
         return MoCreatures.proxy.getDisplayPetName()
-                && (getName() != null && !getName().equals("") && (this.riddenByEntity == null) && (this.ridingEntity == null));
+                && (getPetName() != null && !getPetName().equals("") && (this.riddenByEntity == null) && (this.ridingEntity == null));
     }
 
     /*@Override
@@ -534,11 +534,6 @@ public abstract class MoCEntityMob extends EntityMob implements IMoCEntity//, IE
     }
 
     @Override
-    public void riderIsDisconnecting(boolean flag) {
-        this.riderIsDisconnecting = true;
-    }
-
-    @Override
     public boolean canAttackTarget(EntityLivingBase entity) {
         return false;
     }
@@ -583,7 +578,7 @@ public abstract class MoCEntityMob extends EntityMob implements IMoCEntity//, IE
                 entityIn.attackEntityFrom(DamageSource.causeMobDamage(this), ((int) this.getEntityAttribute(SharedMonsterAttributes.attackDamage)
                         .getAttributeValue()));
         if (flag) {
-            this.func_174815_a(this, entityIn);
+            this.applyEnchantments(this, entityIn);
         }
 
         return flag;
@@ -614,9 +609,25 @@ public abstract class MoCEntityMob extends EntityMob implements IMoCEntity//, IE
         return false;
     }
 
-    //TODO add a timer / deactivate flying behaviour
+    //TODO add a timer / deactivate flying behaviour 
     @Override
     public boolean getIsFlying() {
         return isFlyer();
+    }
+
+    /**
+     * Returns true if the entity is of the @link{EnumCreatureType} provided
+     *
+     * @param type The EnumCreatureType type this entity is evaluating
+     * @param forSpawnCount If this is being invoked to check spawn count caps.
+     * @return If the creature is of the type provided
+     */
+    @Override
+    public boolean isCreatureType(EnumCreatureType type, boolean forSpawnCount) {
+        if (type == EnumCreatureType.MONSTER) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

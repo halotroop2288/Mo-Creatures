@@ -1,21 +1,16 @@
 package drzhark.mocreatures.network.message;
 
-import drzhark.mocreatures.client.MoCClientProxy;
-import drzhark.mocreatures.client.gui.helpers.MoCGUIEntityNamer;
-import drzhark.mocreatures.entity.IMoCEntity;
+import drzhark.mocreatures.network.MoCMessageHandler;
 import io.netty.buffer.ByteBuf;
-import net.minecraft.entity.Entity;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-import java.util.List;
-
 public class MoCMessageNameGUI implements IMessage, IMessageHandler<MoCMessageNameGUI, IMessage> {
 
-    int entityId;
+    public int entityId;
 
     public MoCMessageNameGUI() {
     }
@@ -44,13 +39,7 @@ public class MoCMessageNameGUI implements IMessage, IMessageHandler<MoCMessageNa
 
     @SideOnly(Side.CLIENT)
     public void handleClientMessage(MoCMessageNameGUI message, MessageContext ctx) {
-        List<Entity> entList = MoCClientProxy.mc.thePlayer.worldObj.loadedEntityList;
-        for (Entity ent : entList) {
-            if (ent.getEntityId() == message.entityId && ent instanceof IMoCEntity) {
-                MoCClientProxy.mc.displayGuiScreen(new MoCGUIEntityNamer(((IMoCEntity) ent), ((IMoCEntity) ent).getName()));
-                break;
-            }
-        }
+        MoCMessageHandler.handleMessage(message, ctx);
     }
 
     @Override

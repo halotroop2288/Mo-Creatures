@@ -20,7 +20,7 @@ public class EntityAIMoverHelperMoC extends EntityMoveHelper {
 
     @Override
     public void onUpdateMoveHelper() {
-        boolean isFlyer = ((IMoCEntity) this.theCreature).isFlyer();
+        boolean isFlyer = ((IMoCEntity) theCreature).isFlyer();
         //boolean isFlying = ((IMoCEntity) theCreature).getIsFlying();
         boolean isSwimmer = this.theCreature.isInWater(); //TODO && theCreature.isSwimmer()
 
@@ -32,7 +32,7 @@ public class EntityAIMoverHelperMoC extends EntityMoveHelper {
         /*
          * Flying specific movement code
          */
-        if (isFlyer && this.theCreature.riddenByEntity == null) {
+        if (isFlyer && theCreature.riddenByEntity == null) {
             this.flyingMovementUpdate();
         }
 
@@ -61,14 +61,14 @@ public class EntityAIMoverHelperMoC extends EntityMoveHelper {
             this.theCreature.renderYawOffset = this.theCreature.rotationYaw;
             float f1 = (float) (this.speed * this.theCreature.getEntityAttribute(SharedMonsterAttributes.movementSpeed).getAttributeValue());
             this.theCreature.setAIMoveSpeed(this.theCreature.getAIMoveSpeed() + (f1 - this.theCreature.getAIMoveSpeed()) * 0.125F);
-            double d4 = Math.sin((this.theCreature.ticksExisted + this.theCreature.getEntityId()) * 0.75D) * 0.01D;
-            double d5 = Math.cos(this.theCreature.rotationYaw * (float) Math.PI / 180.0F);
-            double d6 = Math.sin(this.theCreature.rotationYaw * (float) Math.PI / 180.0F);
+            double d4 = Math.sin((double) (this.theCreature.ticksExisted + this.theCreature.getEntityId()) * 0.75D) * 0.01D;
+            double d5 = Math.cos((double) (this.theCreature.rotationYaw * (float) Math.PI / 180.0F));
+            double d6 = Math.sin((double) (this.theCreature.rotationYaw * (float) Math.PI / 180.0F));
             this.theCreature.motionX += d4 * d5;
             this.theCreature.motionZ += d4 * d6;
             //d4 = Math.sin((double)(this.theCreature.ticksExisted + this.theCreature.getEntityId()) * 0.75D) * 0.05D;
             this.theCreature.motionY += d4 * (d6 + d5) * 0.25D;
-            this.theCreature.motionY += this.theCreature.getAIMoveSpeed() * d1 * 1.5D;
+            this.theCreature.motionY += (double) this.theCreature.getAIMoveSpeed() * d1 * 1.5D;
         }
     }
 
@@ -78,13 +78,13 @@ public class EntityAIMoverHelperMoC extends EntityMoveHelper {
     private void flyingMovementUpdate() {
 
         //Flying alone
-        if (((IMoCEntity) this.theCreature).getIsFlying()) {
+        if (((IMoCEntity) theCreature).getIsFlying()) {
             int distY = MoCTools.distanceToFloor(this.theCreature);
-            if (distY <= ((IMoCEntity) this.theCreature).minFlyingHeight()
+            if (distY <= ((IMoCEntity) theCreature).minFlyingHeight()
                     && (this.theCreature.isCollidedHorizontally || this.theCreature.worldObj.rand.nextInt(100) == 0)) {
                 this.theCreature.motionY += 0.02D;
             }
-            if (distY > ((IMoCEntity) this.theCreature).maxFlyingHeight() || this.theCreature.worldObj.rand.nextInt(150) == 0) {
+            if (distY > ((IMoCEntity) theCreature).maxFlyingHeight() || this.theCreature.worldObj.rand.nextInt(150) == 0) {
                 this.theCreature.motionY -= 0.02D;
             }
 
@@ -100,24 +100,24 @@ public class EntityAIMoverHelperMoC extends EntityMoveHelper {
      * Makes creatures in the water float to the right depth
      */
     private void swimmerMovementUpdate() {
-        if (this.theCreature.riddenByEntity != null) {
+        if (theCreature.riddenByEntity != null) {
             return;
         }
 
-        double distToSurface = (MoCTools.waterSurfaceAtGivenEntity(this.theCreature) - this.theCreature.posY);
-        if (distToSurface > ((IMoCEntity) this.theCreature).getDivingDepth()) {
-            if (this.theCreature.motionY < 0) {
-                this.theCreature.motionY = 0;
+        double distToSurface = (MoCTools.waterSurfaceAtGivenEntity(theCreature) - theCreature.posY);
+        if (distToSurface > ((IMoCEntity) theCreature).getDivingDepth()) {
+            if (theCreature.motionY < 0) {
+                theCreature.motionY = 0;
             }
-            this.theCreature.motionY += 0.001D;// 0.001
-            this.theCreature.motionY += (distToSurface * 0.01);
+            theCreature.motionY += 0.001D;// 0.001
+            theCreature.motionY += (distToSurface * 0.01);
         }
 
-        if (!this.theCreature.getNavigator().noPath() && this.theCreature.isCollidedHorizontally) {
-            if (this.theCreature instanceof MoCEntityAquatic) {
-                this.theCreature.motionY = 0.05D;
+        if (!theCreature.getNavigator().noPath() && theCreature.isCollidedHorizontally) {
+            if (theCreature instanceof MoCEntityAquatic) {
+                theCreature.motionY = 0.05D;
             } else {
-                ((IMoCEntity) this.theCreature).forceEntityJump();
+                ((IMoCEntity) theCreature).forceEntityJump();
             }
         }
 

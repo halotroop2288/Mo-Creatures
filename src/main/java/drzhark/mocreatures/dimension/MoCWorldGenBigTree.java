@@ -268,18 +268,6 @@ public class MoCWorldGenBigTree extends WorldGenAbstractTree {
                 var14[var6] = MathHelper.floor_double(par1ArrayOfInteger[var6] + var15 + 0.5D);
                 var14[var7] = MathHelper.floor_double(par1ArrayOfInteger[var7] + var15 * var10 + 0.5D);
                 var14[var8] = MathHelper.floor_double(par1ArrayOfInteger[var8] + var15 * var12 + 0.5D);
-                byte var17 = 0;
-                int var18 = Math.abs(var14[0] - par1ArrayOfInteger[0]);
-                int var19 = Math.abs(var14[2] - par1ArrayOfInteger[2]);
-                int var20 = Math.max(var18, var19);
-
-                if (var20 > 0) {
-                    if (var18 == var20) {
-                        var17 = 4;
-                    } else if (var19 == var20) {
-                        var17 = 8;
-                    }
-                }
                 this.setBlockAndNotifyAdequately(this.worldObj, new BlockPos(var14[0], var14[1], var14[2]), this.iBlockStateLog);
             }
         }
@@ -416,15 +404,13 @@ public class MoCWorldGenBigTree extends WorldGenAbstractTree {
 
         /*IBlockState iblockstate2 = this.worldObj.getBlockState(new BlockPos(this.basePos[0], this.basePos[1] - 1, this.basePos[2]));
 
-        if (iblockstate2.getBlock() != MoCreatures.mocDirt.getDefaultState().getBlock()
+        if (iblockstate2.getBlock() != MoCreatures.mocDirt.getDefaultState().getBlock() 
                 && iblockstate2.getBlock() != MoCreatures.mocGrass.getDefaultState().getBlock() ) {
             System.out.println("invalid tree location option b = " +  iblockstate2.getBlock());
         }
         */
         if (block != MoCreatures.mocDirt && block != MoCreatures.mocGrass) {
-            //System.out.println("invalid tree location = " + block + ", x=" + pos.getX() + ", y=" + pos.getY() + ", z=" + pos.getZ());
             return false;
-
         } else {
             int var4 = this.checkBlockLine(var1, var2);
 

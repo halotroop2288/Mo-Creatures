@@ -152,9 +152,9 @@ public class MoCTools {
     }
 
     public static void buckleMobs(EntityLiving entityattacker, Double dist, World worldObj) {
-        List list = worldObj.getEntitiesWithinAABBExcludingEntity(entityattacker, entityattacker.getEntityBoundingBox().expand(dist, 2D, dist));
+        List<Entity> list = worldObj.getEntitiesWithinAABBExcludingEntity(entityattacker, entityattacker.getEntityBoundingBox().expand(dist, 2D, dist));
         for (int i = 0; i < list.size(); i++) {
-            Entity entitytarget = (Entity) list.get(i);
+            Entity entitytarget = list.get(i);
             if (!(entitytarget instanceof EntityLiving) || (entityattacker.riddenByEntity != null && entitytarget == entityattacker.riddenByEntity)) {
                 continue;
             }
@@ -167,9 +167,9 @@ public class MoCTools {
     }
 
     public static void buckleMobsNotPlayers(EntityLiving entityattacker, Double dist, World worldObj) {
-        List list = worldObj.getEntitiesWithinAABBExcludingEntity(entityattacker, entityattacker.getEntityBoundingBox().expand(dist, 2D, dist));
+        List<Entity> list = worldObj.getEntitiesWithinAABBExcludingEntity(entityattacker, entityattacker.getEntityBoundingBox().expand(dist, 2D, dist));
         for (int i = 0; i < list.size(); i++) {
-            Entity entitytarget = (Entity) list.get(i);
+            Entity entitytarget = list.get(i);
             if (!(entitytarget instanceof EntityLiving) || (entitytarget instanceof EntityPlayer)
                     || (entityattacker.riddenByEntity != null && entitytarget == entityattacker.riddenByEntity)) {
                 continue;
@@ -189,7 +189,7 @@ public class MoCTools {
         for (int i = 0; i < numberToSpawn; i++) {
             EntityLiving entityliving = null;
             try {
-                Class entityClass = MoCreatures.instaSpawnerMap.get(entityId);
+                Class<? extends EntityLiving> entityClass = MoCreatures.instaSpawnerMap.get(entityId);
                 entityliving = (EntityLiving) entityClass.getConstructor(new Class[] {World.class}).newInstance(new Object[] {worldObj});
             } catch (Exception e) {
                 e.printStackTrace();
@@ -210,7 +210,7 @@ public class MoCTools {
             EntityLiving entityToSpawn = null;
             try {
                 MoCEntityData entityData = MoCreatures.mocEntityMap.get(eName);
-                Class myClass = entityData.getEntityClass();
+                Class<? extends EntityLiving> myClass = entityData.getEntityClass();
                 entityToSpawn = (EntityLiving) myClass.getConstructor(new Class[] {World.class}).newInstance(new Object[] {worldObj});
             } catch (Exception e) {
                 e.printStackTrace();
@@ -218,7 +218,7 @@ public class MoCTools {
 
             if (entityToSpawn != null) {
                 IEntityLivingData entitylivingdata = null;
-                entityToSpawn.onSpawnFirstTime(player.worldObj.getDifficultyForLocation(new BlockPos(entityToSpawn)), entitylivingdata); // onSpawnWithEgg
+                entityToSpawn.onInitialSpawn(player.worldObj.getDifficultyForLocation(new BlockPos(entityToSpawn)), entitylivingdata); // onSpawnWithEgg
                 entityToSpawn.setLocationAndAngles(player.posX, player.posY, player.posZ, player.rotationYaw, player.rotationPitch);
                 worldObj.spawnEntityInWorld(entityToSpawn);
             }
@@ -246,9 +246,8 @@ public class MoCTools {
         EntityLiving entityToSpawn = null;
         try {
             MoCEntityData entityData = MoCreatures.mocEntityMap.get(eName);
-            Class myClass = null;
-            if (entityData == null && eName.contains("PetScorpion")) // since we don't add this to our map, we need to check for it manually
-            {
+            Class<? extends EntityLiving> myClass = null;
+            if (entityData == null && eName.contains("PetScorpion")) { // since we don't add this to our map, we need to check for it manually
                 myClass = MoCEntityPetScorpion.class;
             } else if (entityData == null && eName.contains("ManticorePet")) // since we don't add this to our map, we need to check for it manually
             {
@@ -343,7 +342,6 @@ public class MoCTools {
     }
 
     public static void checkForTwistedEntities(World world) {
-        int k = 0;
         for (int l = 0; l < world.loadedEntityList.size(); l++) {
             Entity entity = (Entity) world.loadedEntityList.get(l);
             if (entity instanceof EntityLivingBase) {
@@ -627,10 +625,10 @@ public class MoCTools {
         return ~i & 0xf;
     }
 
-    public int countEntities(Class class1, World worldObj) {
+    public int countEntities(Class<? extends EntityLiving> class1, World worldObj) {
         int i = 0;
         for (int j = 0; j < worldObj.loadedEntityList.size(); j++) {
-            Entity entity = (Entity) worldObj.loadedEntityList.get(j);
+            Entity entity = worldObj.loadedEntityList.get(j);
             if (class1.isAssignableFrom(entity.getClass())) {
                 i++;
             }
@@ -694,7 +692,7 @@ public class MoCTools {
             return;
         }
 
-        List list = entity.worldObj.getEntitiesWithinAABBExcludingEntity(entity, entity.getEntityBoundingBox().expand(d, d, d));
+        List<Entity> list = entity.worldObj.getEntitiesWithinAABBExcludingEntity(entity, entity.getEntityBoundingBox().expand(d, d, d));
 
         for (int i = 0; i < list.size(); i++) {
             Entity entity1 = (Entity) list.get(i);
@@ -709,7 +707,7 @@ public class MoCTools {
     }
 
     public static void repelMobs(Entity entity1, Double dist, World worldObj) {
-        List list = worldObj.getEntitiesWithinAABBExcludingEntity(entity1, entity1.getEntityBoundingBox().expand(dist, 4D, dist));
+        List<Entity> list = worldObj.getEntitiesWithinAABBExcludingEntity(entity1, entity1.getEntityBoundingBox().expand(dist, 4D, dist));
         for (int i = 0; i < list.size(); i++) {
             Entity entity = (Entity) list.get(i);
             if (!(entity instanceof EntityMob)) {
@@ -825,7 +823,7 @@ public class MoCTools {
     }
 
     public static boolean mobGriefing(World world) {
-        return world.getGameRules().getGameRuleBooleanValue("mobGriefing");
+        return world.getGameRules().getBoolean("mobGriefing");
     }
 
     public static void DestroyBlast(Entity entity, double d, double d1, double d2, float f, boolean flag) {
@@ -891,7 +889,7 @@ public class MoCTools {
             int l1 = MathHelper.floor_double(d1 + f + 1.0D);
             int i2 = MathHelper.floor_double(d2 - f - 1.0D);
             int j2 = MathHelper.floor_double(d2 + f + 1.0D);
-            List list = entity.worldObj.getEntitiesWithinAABBExcludingEntity(entity, AxisAlignedBB.fromBounds(k, k1, i2, i1, l1, j2));
+            List<Entity> list = entity.worldObj.getEntitiesWithinAABBExcludingEntity(entity, AxisAlignedBB.fromBounds(k, k1, i2, i1, l1, j2));
             Vec3 vec3d = new Vec3(d, d1, d2);
             for (int k2 = 0; k2 < list.size(); k2++) {
                 Entity entity1 = (Entity) list.get(k2);
@@ -1280,7 +1278,7 @@ public class MoCTools {
     /**
      * Method called to tame an entity, it will check that the player has slots
      * for taming, increase the taming count of the player, add the
-     * player.getCommandSenderName() as the owner of the entity, and name the entity.
+     * player.getName() as the owner of the entity, and name the entity.
      *
      * @param ep
      * @param storedCreature
@@ -1300,29 +1298,33 @@ public class MoCTools {
             int max = 0;
             max = MoCreatures.proxy.maxTamed;
             // only check count for new pets as owners may be changing the name
-            if (!MoCreatures.instance.mapData.isExistingPet(ep.getCommandSenderName(), storedCreature)) {
+            if (!MoCreatures.instance.mapData.isExistingPet(ep.getName(), storedCreature)) {
                 int count = MoCTools.numberTamedByPlayer(ep);
                 if (isThisPlayerAnOP(ep)) {
                     max = MoCreatures.proxy.maxOPTamed;
                 }
                 if (count >= max) {
-                    String message = "\2474" + ep.getCommandSenderName() + " can not tame more creatures, limit of " + max + " reached";
+                    String message = "\2474" + ep.getName() + " can not tame more creatures, limit of " + max + " reached";
                     ep.addChatMessage(new ChatComponentTranslation(message));
                     return false;
                 }
             }
         }
 
-        storedCreature.setOwner(ep.getCommandSenderName()); // ALWAYS SET OWNER. Required for our new pet save system.
+        storedCreature.setOwner(ep.getName()); // ALWAYS SET OWNER. Required for our new pet save system.
         MoCMessageHandler.INSTANCE.sendTo(new MoCMessageNameGUI(((Entity) storedCreature).getEntityId()), (EntityPlayerMP) ep);
         storedCreature.setTamed(true);
+        // Required to update petId data for pet amulets
+        if (MoCreatures.instance.mapData != null && storedCreature.getOwnerPetId() == -1) {
+            MoCreatures.instance.mapData.updateOwnerPet(storedCreature);
+        }
         return true;
     }
 
     public static int numberTamedByPlayer(EntityPlayer ep) {
         if (MoCreatures.instance.mapData != null) {
-            if (MoCreatures.instance.mapData.getPetData(ep.getCommandSenderName()) != null) {
-                return MoCreatures.instance.mapData.getPetData(ep.getCommandSenderName()).getTamedList().tagCount();
+            if (MoCreatures.instance.mapData.getPetData(ep.getName()) != null) {
+                return MoCreatures.instance.mapData.getPetData(ep.getName()).getTamedList().tagCount();
             }
         }
         return 0;
@@ -1426,7 +1428,7 @@ public class MoCTools {
                 nbtt.setInteger("SpawnClass", 21);
                 nbtt.setFloat("Health", entity.getHealth());
                 nbtt.setInteger("Edad", entity.getEdad());
-                nbtt.setString("Name", entity.getName());
+                nbtt.setString("Name", entity.getPetName());
                 nbtt.setBoolean("Rideable", entity.getIsRideable());
                 nbtt.setByte("Armor", entity.getArmorType());
                 nbtt.setInteger("CreatureType", entity.getType());
@@ -1480,7 +1482,7 @@ public class MoCTools {
                 }
                 nbtt.setFloat("Health", ((EntityLiving) entity).getHealth());
                 nbtt.setInteger("Edad", entity.getEdad());
-                nbtt.setString("Name", entity.getName());
+                nbtt.setString("Name", entity.getPetName());
                 nbtt.setInteger("CreatureType", entity.getType());
                 nbtt.setString("OwnerName", entity.getOwnerName());
                 nbtt.setBoolean("Adult", entity.getIsAdult());
@@ -1717,7 +1719,7 @@ public class MoCTools {
     public static EntityItem getClosestFood(Entity entity, double d) {
         double d1 = -1D;
         EntityItem entityitem = null;
-        List list = entity.worldObj.getEntitiesWithinAABBExcludingEntity(entity, entity.getEntityBoundingBox().expand(d, d, d));
+        List<Entity> list = entity.worldObj.getEntitiesWithinAABBExcludingEntity(entity, entity.getEntityBoundingBox().expand(d, d, d));
         for (int k = 0; k < list.size(); k++) {
             Entity entity1 = (Entity) list.get(k);
             if (!(entity1 instanceof EntityItem)) {
@@ -1746,6 +1748,14 @@ public class MoCTools {
     public static boolean isItemEdible(Item item1) {
         return (item1 instanceof ItemFood) || (item1 instanceof ItemSeeds) || item1 == Items.wheat || item1 == Items.sugar || item1 == Items.cake
                 || item1 == Items.egg;
+    }
+
+    public static NBTTagCompound getEntityData(Entity entity) {
+        if (!entity.getEntityData().hasKey(MoCConstants.MOD_ID)) {
+            entity.getEntityData().setTag(MoCConstants.MOD_ID, new NBTTagCompound());
+        }
+
+        return entity.getEntityData().getCompoundTag(MoCConstants.MOD_ID);
     }
 
     public static void findMobRider(Entity mountEntity) {

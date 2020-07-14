@@ -23,7 +23,7 @@ import java.util.List;
 public class CommandMoCPets extends CommandBase {
 
     private static List<String> commands = new ArrayList<String>();
-    private static List aliases = new ArrayList<String>();
+    private static List<String> aliases = new ArrayList<String>();
 
     static {
         commands.add("/mocpets");
@@ -37,7 +37,7 @@ public class CommandMoCPets extends CommandBase {
     }
 
     @Override
-    public List getCommandAliases() {
+    public List<String> getCommandAliases() {
         return aliases;
     }
 
@@ -56,23 +56,11 @@ public class CommandMoCPets extends CommandBase {
 
     @Override
     public void processCommand(ICommandSender par1ICommandSender, String[] paramArray) {
-        String command = "";
-        if (paramArray.length == 0) {
-            command = "help";
-        } else {
-            command = paramArray[0];
-        }
-        String page = "";
-
-        if (paramArray.length == 1) {
-            page = paramArray[0];
-        }
-
         int unloadedCount = 0;
         int loadedCount = 0;
-        ArrayList foundIds = new ArrayList();
+        ArrayList<Integer> foundIds = new ArrayList<Integer>();
         ArrayList<String> tamedlist = new ArrayList<String>();
-        String playername = par1ICommandSender.getCommandSenderName();
+        String playername = par1ICommandSender.getName();
         // search for tamed entity
         for (int dimension : DimensionManager.getIDs()) {
             WorldServer world = DimensionManager.getWorld(dimension);
@@ -84,8 +72,8 @@ public class CommandMoCPets extends CommandBase {
                         loadedCount++;
                         foundIds.add(mocreature.getOwnerPetId());
                         tamedlist.add(EnumChatFormatting.WHITE + "Found pet with " + EnumChatFormatting.DARK_AQUA + "Type" + EnumChatFormatting.WHITE
-                                + ":" + EnumChatFormatting.GREEN + ((EntityLiving) mocreature).getCommandSenderName() + EnumChatFormatting.DARK_AQUA
-                                + ", Name" + EnumChatFormatting.WHITE + ":" + EnumChatFormatting.GREEN + mocreature.getName()
+                                + ":" + EnumChatFormatting.GREEN + ((EntityLiving) mocreature).getName() + EnumChatFormatting.DARK_AQUA
+                                + ", Name" + EnumChatFormatting.WHITE + ":" + EnumChatFormatting.GREEN + mocreature.getPetName()
                                 + EnumChatFormatting.DARK_AQUA + ", Owner" + EnumChatFormatting.WHITE + ":" + EnumChatFormatting.GREEN
                                 + mocreature.getOwnerName() + EnumChatFormatting.DARK_AQUA + ", PetId" + EnumChatFormatting.WHITE + ":"
                                 + EnumChatFormatting.GREEN + mocreature.getOwnerPetId() + EnumChatFormatting.DARK_AQUA + ", Dimension"
@@ -150,7 +138,7 @@ public class CommandMoCPets extends CommandBase {
      * Returns a sorted list of all possible commands for the given
      * ICommandSender.
      */
-    protected List getSortedPossibleCommands(ICommandSender par1ICommandSender) {
+    protected List<String> getSortedPossibleCommands(ICommandSender par1ICommandSender) {
         Collections.sort(CommandMoCPets.commands);
         return CommandMoCPets.commands;
     }
@@ -159,7 +147,7 @@ public class CommandMoCPets extends CommandBase {
         for (int j = 0; j < world.loadedEntityList.size(); j++) {
             Entity entity = (Entity) world.loadedEntityList.get(j);
             // search for entities that are MoCEntityAnimal's
-            if (IMoCTameable.class.isAssignableFrom(entity.getClass()) && !((IMoCTameable) entity).getName().equals("")
+            if (IMoCTameable.class.isAssignableFrom(entity.getClass()) && !((IMoCTameable) entity).getPetName().equals("")
                     && ((IMoCTameable) entity).getOwnerPetId() == petId) {
                 // grab the entity data
                 NBTTagCompound compound = new NBTTagCompound();
@@ -167,7 +155,7 @@ public class CommandMoCPets extends CommandBase {
                 if (compound != null && compound.getString("Owner") != null) {
                     String owner = compound.getString("Owner");
                     String name = compound.getString("Name");
-                    if (owner != null && owner.equalsIgnoreCase(player.getCommandSenderName())) {
+                    if (owner != null && owner.equalsIgnoreCase(player.getName())) {
                         // check if in same dimension
                         if (entity.dimension == player.dimension) {
                             entity.setPosition(player.posX, player.posY, player.posZ);
@@ -209,12 +197,7 @@ public class CommandMoCPets extends CommandBase {
 
     public void sendPageHelp(ICommandSender sender, byte pagelimit, ArrayList<String> list, String[] par2ArrayOfStr) {
         int x = (list.size() - 1) / pagelimit;
-        boolean flag = false;
         int j = 0;
-        String par1 = "";
-        if (par2ArrayOfStr.length > 1) {
-            par1 = par2ArrayOfStr[0];
-        }
 
         if (par2ArrayOfStr.length > 0 && Character.isDigit(par2ArrayOfStr[0].charAt(0))) {
             try {

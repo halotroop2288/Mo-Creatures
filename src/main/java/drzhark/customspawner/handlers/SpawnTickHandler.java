@@ -1,6 +1,7 @@
 package drzhark.customspawner.handlers;
 
 import drzhark.customspawner.CustomSpawner;
+import drzhark.customspawner.environment.EnvironmentSettings;
 import drzhark.customspawner.type.EntitySpawnType;
 import drzhark.customspawner.utils.CMSUtils;
 import net.minecraft.world.WorldServer;
@@ -9,14 +10,11 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.WorldTickEvent;
 
 public class SpawnTickHandler {
 
-    /*
-     * @Override public String getLabel() { return "CustomMobSpawner"; }
-     */
-
     @SubscribeEvent
     public void worldTick(WorldTickEvent event) {
         WorldServer worldObj = (WorldServer) event.world;
-        for (EntitySpawnType entitySpawnType : CMSUtils.getEnvironment(worldObj).entitySpawnTypes.values()) {
+        EnvironmentSettings environment = CMSUtils.getEnvironment(worldObj);
+        for (EntitySpawnType entitySpawnType : environment.entitySpawnTypes.values()) {
             if (entitySpawnType.name().equals("UNDEFINED")) {
                 continue;
             }
@@ -26,9 +24,11 @@ public class SpawnTickHandler {
 
                 if (worldObj.playerEntities.size() > 0) {
                     spawnAmount =
-                            CustomSpawner.INSTANCE.doCustomSpawning(worldObj, entitySpawnType, entitySpawnType.getEntitySpawnDistance(),
+                            CustomSpawner.INSTANCE.doCustomSpawning(worldObj, entitySpawnType, entitySpawnType.getMobSpawnRange(),
                                     entitySpawnType.getHardSpawnLimit());
-                    //if (CustomSpawner.debug) CMSLog.logger.info("[" + environment.name() + "]" + "CustomSpawner Spawned " + spawnAmount + entitySpawnType.getLivingSpawnTypeName().toUpperCase());
+                    if (CustomSpawner.debug) {
+                        environment.envLog.logger.info("[" + environment.name() + "]" + "CustomSpawner Spawned " + spawnAmount + entitySpawnType.getEnumCreatureType());
+                    }
                 }
             }
         }

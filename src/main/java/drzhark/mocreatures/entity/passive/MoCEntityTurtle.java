@@ -55,20 +55,20 @@ public class MoCEntityTurtle extends MoCEntityTameableAnimal {
     public ResourceLocation getTexture() {
         String tempText = "turtle.png";
 
-        if (getName().equals("Donatello") || getName().equals("donatello")) {
+        if (getPetName().equals("Donatello") || getPetName().equals("donatello")) {
             tempText = "turtled.png";
         }
 
-        if (getName().equals("Leonardo") || getName().equals("leonardo")) {
+        if (getPetName().equals("Leonardo") || getPetName().equals("leonardo")) {
             tempText = "turtlel.png";
         }
 
-        if (getName().equals("Rafael") || getName().equals("rafael") || getName().equals("raphael") || getName().equals("Raphael")) {
+        if (getPetName().equals("Rafael") || getPetName().equals("rafael") || getPetName().equals("raphael") || getPetName().equals("Raphael")) {
             tempText = "turtler.png";
         }
 
-        if (getName().equals("Michelangelo") || getName().equals("michelangelo") || getName().equals("Michaelangelo")
-                || getName().equals("michaelangelo")) {
+        if (getPetName().equals("Michelangelo") || getPetName().equals("michelangelo") || getPetName().equals("Michaelangelo")
+                || getPetName().equals("michaelangelo")) {
             tempText = "turtlem.png";
         }
 
@@ -339,20 +339,20 @@ public class MoCEntityTurtle extends MoCEntityTameableAnimal {
 
     @Override
     protected Item getDropItem() {
-        if (getName().equals("Donatello") || getName().equals("donatello")) {
+        if (getPetName().equals("Donatello") || getPetName().equals("donatello")) {
             return MoCreatures.bo;
         }
 
-        if (getName().equals("Leonardo") || getName().equals("leonardo")) {
+        if (getPetName().equals("Leonardo") || getPetName().equals("leonardo")) {
             return MoCreatures.katana;
         }
 
-        if (getName().equals("Rafael") || getName().equals("rafael") || getName().equals("raphael") || getName().equals("Raphael")) {
+        if (getPetName().equals("Rafael") || getPetName().equals("rafael") || getPetName().equals("raphael") || getPetName().equals("Raphael")) {
             return MoCreatures.sai;
         }
 
-        if (getName().equals("Michelangelo") || getName().equals("michelangelo") || getName().equals("Michaelangelo")
-                || getName().equals("michaelangelo")) {
+        if (getPetName().equals("Michelangelo") || getPetName().equals("michelangelo") || getPetName().equals("Michaelangelo")
+                || getPetName().equals("michaelangelo")) {
             return MoCreatures.nunchaku;
         }
         return MoCreatures.turtleraw;
@@ -364,10 +364,10 @@ public class MoCEntityTurtle extends MoCEntityTameableAnimal {
      * @return
      */
     public boolean isTMNT() {
-        if (getName().equals("Donatello") || getName().equals("donatello") || getName().equals("Leonardo") || getName().equals("leonardo")
-                || getName().equals("Rafael") || getName().equals("rafael") || getName().equals("raphael") || getName().equals("Raphael")
-                || getName().equals("Michelangelo") || getName().equals("michelangelo") || getName().equals("Michaelangelo")
-                || getName().equals("michaelangelo")) {
+        if (getPetName().equals("Donatello") || getPetName().equals("donatello") || getPetName().equals("Leonardo") || getPetName().equals("leonardo")
+                || getPetName().equals("Rafael") || getPetName().equals("rafael") || getPetName().equals("raphael") || getPetName().equals("Raphael")
+                || getPetName().equals("Michelangelo") || getPetName().equals("michelangelo") || getPetName().equals("Michaelangelo")
+                || getPetName().equals("michaelangelo")) {
             return true;
         }
         return false;

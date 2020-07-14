@@ -12,8 +12,9 @@ import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.fml.client.FMLClientHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.gameevent.InputEvent.KeyInputEvent;
+import net.minecraftforge.fml.common.gameevent.InputEvent;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 
 public class MoCKeyHandler {
 
@@ -22,7 +23,7 @@ public class MoCKeyHandler {
     //static KeyBinding jumpBinding = new KeyBinding("jumpBind", Keyboard.KEY_F);
     //static KeyBinding jumpBinding = new KeyBinding("MoCreatures Jump", MoCClientProxy.mc.gameSettings.keyBindJump.getKeyCode(), "key.categories.movement");
     static KeyBinding diveBinding = new KeyBinding("MoCreatures Dive", Keyboard.KEY_F, "key.categories.movement");
-    static KeyBinding guiBinding = new KeyBinding("MoCreatures GUI", Keyboard.KEY_F6, "key.categories.misc");
+    static KeyBinding guiBinding = new KeyBinding("MoCreatures GUI", Keyboard.KEY_F8, "key.categories.misc");
 
     //static KeyBinding dismountBinding = new KeyBinding("MoCreatures Dismount", Keyboard.KEY_F);
 
@@ -36,25 +37,32 @@ public class MoCKeyHandler {
     }
 
     @SubscribeEvent
-    public void onKeyInput(KeyInputEvent event) {
-        Keyboard.enableRepeatEvents(true); // allow holding down key. Fixes flying
+    public void onInput(InputEvent event) {
+        int keyPressed = (Mouse.getEventButton() + -100);
+        if (keyPressed == -101) {
+            keyPressed = Keyboard.getEventKey();
+        }
+
         EntityPlayer ep = MoCClientProxy.mc.thePlayer;
-        if (ep == null || ep.ridingEntity == null) {
+        if (ep == null) {
             return;
         }
         if (FMLClientHandler.instance().getClient().ingameGUI.getChatGUI().getChatOpen()) {
             return; // if chatting return
         }
-        boolean kbJump = Keyboard.isKeyDown(MoCClientProxy.mc.gameSettings.keyBindJump.getKeyCode());
-        boolean kbDive = Keyboard.isKeyDown(diveBinding.getKeyCode());
-        boolean kbGui = Keyboard.isKeyDown(guiBinding.getKeyCode());
-        boolean isJumpKeyDown = Keyboard.isKeyDown(MoCClientProxy.mc.gameSettings.keyBindJump.getKeyCode());
+        if (Keyboard.getEventKeyState() && ep.ridingEntity != null) {
+            Keyboard.enableRepeatEvents(true); // allow holding down key. Fixes flying
+        }
+
+        // isKeyDown must be called with valid keys only. Mouse binds always use negative id's so we avoid them here.
+        boolean kbJump = MoCClientProxy.mc.gameSettings.keyBindJump.getKeyCode() >= 0 ? Keyboard.isKeyDown(MoCClientProxy.mc.gameSettings.keyBindJump.getKeyCode()) : keyPressed == MoCClientProxy.mc.gameSettings.keyBindJump.getKeyCode();
+        boolean kbDive = diveBinding.getKeyCode() >= 0 ? Keyboard.isKeyDown(diveBinding.getKeyCode()) : keyPressed == diveBinding.getKeyCode();
+        boolean kbGui = guiBinding.getKeyCode() >= 0 ? Keyboard.isKeyDown(guiBinding.getKeyCode()) : keyPressed == guiBinding.getKeyCode();
         //boolean kbDismount = kb.keyDescription.equals("MoCreatures Dismount");
 
-        if ((kbGui) && (!MoCreatures.isServer())) {
-            this.localScreen = MoCClientProxy.instance.MoCScreen;
-            if ((MoCClientProxy.mc.inGameHasFocus) && (this.localScreen != null)) {
-                GuiModScreen.show(this.localScreen.theWidget);
+        if (kbGui && !MoCreatures.isServer()) {
+            if (MoCClientProxy.mc.inGameHasFocus && (this.localScreen == null)) {
+                GuiModScreen.show(MoCClientProxy.instance.MoCScreen.theWidget);
             } else {
                 this.localScreen = null; // kill our instance
             }

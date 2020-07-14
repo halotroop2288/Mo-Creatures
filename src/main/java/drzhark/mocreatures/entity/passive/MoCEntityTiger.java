@@ -66,7 +66,7 @@ public class MoCEntityTiger extends MoCEntityNewBigCat {
             setType(3);
             return true;
         }
-
+        
         if (getIsRideable() && getIsAdult() && (this.riddenByEntity == null)) {
             entityplayer.rotationYaw = this.rotationYaw;
             entityplayer.rotationPitch = this.rotationPitch;

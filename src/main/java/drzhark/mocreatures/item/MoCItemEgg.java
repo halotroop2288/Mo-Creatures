@@ -15,17 +15,16 @@ public class MoCItemEgg extends MoCItem {
         this.maxStackSize = 16;
         setHasSubtypes(true);
         for (int i = 0; i < 91; i++) {
-            if (!MoCreatures.isServer()) {
+            if (!MoCreatures.isServer())
                 Minecraft.getMinecraft().getRenderItem().getItemModelMesher()
                         .register(this, i, new ModelResourceLocation("mocreatures:mocegg", "inventory"));
-            }
         }
     }
 
     @Override
     public ItemStack onItemRightClick(ItemStack itemstack, World world, EntityPlayer entityplayer) {
         itemstack.stackSize--;
-        if (MoCreatures.isServer()) {
+        if (MoCreatures.isServer() && entityplayer.onGround) {
             int i = itemstack.getItemDamage();
             if (i == 30) {
                 i = 31; //for ostrich eggs. placed eggs become stolen eggs.

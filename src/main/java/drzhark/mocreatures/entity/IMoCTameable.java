@@ -6,13 +6,15 @@ public interface IMoCTameable {
 
     boolean isRiderDisconnecting();
 
+    void setRiderDisconnecting(boolean flag);
+
     void playTameEffect(boolean par1);
 
     String getOwnerName();
 
-    String getName();
+    String getPetName();
 
-    void setName(String name);
+    void setPetName(String name);
 
     void setTamed(boolean par1);
 
@@ -43,6 +45,8 @@ public interface IMoCTameable {
     boolean getIsTamed();
 
     float getPetHealth();
+
+    void spawnHeart();
 
     boolean readytoBreed();
 }

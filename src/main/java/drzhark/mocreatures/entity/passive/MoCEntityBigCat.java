@@ -3,6 +3,7 @@ package drzhark.mocreatures.entity.passive;
 import drzhark.mocreatures.MoCTools;
 import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityTameableAnimal;
+import drzhark.mocreatures.entity.ai.EntityAIFleeFromPlayer;
 import drzhark.mocreatures.entity.ai.EntityAIFollowAdult;
 import drzhark.mocreatures.entity.ai.EntityAIFollowOwnerPlayer;
 import drzhark.mocreatures.entity.ai.EntityAIHunt;
@@ -344,10 +345,9 @@ public class MoCEntityBigCat extends MoCEntityTameableAnimal {
     }
 
     public int checkNearBigKitties(double d) {
-        boolean flag = false;
-        List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(d, d, d));
+        List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(d, d, d));
         for (int j = 0; j < list.size(); j++) {
-            Entity entity = (Entity) list.get(j);
+            Entity entity = list.get(j);
             if ((entity != this) && (entity instanceof MoCEntityBigCat)) {
                 MoCEntityBigCat entitybigcat = (MoCEntityBigCat) entity;
                 return entitybigcat.getType();
@@ -597,7 +597,7 @@ public class MoCEntityBigCat extends MoCEntityTameableAnimal {
 
     @Override
     public boolean isReadyToHunt() {
-        return getIsAdult() && !this.isMovementCeased();
+            return getIsAdult() && !this.isMovementCeased();
     }
 
     @Override

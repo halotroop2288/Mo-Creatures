@@ -31,9 +31,6 @@ import net.minecraftforge.common.BiomeDictionary.Type;
 
 public class MoCEntityFox extends MoCEntityTameableAnimal {
 
-    private boolean isHungry;
-    private int hungryCounter;
-
     public MoCEntityFox(World world) {
         super(world);
         setSize(0.6F, 0.7F);

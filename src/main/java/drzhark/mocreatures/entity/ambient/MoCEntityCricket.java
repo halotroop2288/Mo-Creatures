@@ -81,8 +81,8 @@ public class MoCEntityCricket extends MoCEntityInsect
                     this.motionZ *= 5D;
                     this.jumpCounter = 1;
                 }
-            }
         }
+    }
 
     @Override
     public float getAIMoveSpeed() {

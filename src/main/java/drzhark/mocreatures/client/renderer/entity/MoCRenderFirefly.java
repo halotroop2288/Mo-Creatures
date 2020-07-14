@@ -2,15 +2,13 @@ package drzhark.mocreatures.client.renderer.entity;
 
 import drzhark.mocreatures.entity.ambient.MoCEntityFirefly;
 import net.minecraft.client.model.ModelBase;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 import org.lwjgl.opengl.GL11;
 
 @SideOnly(Side.CLIENT)
-public class MoCRenderFirefly extends MoCRenderInsect {
+public class MoCRenderFirefly extends MoCRenderInsect<MoCEntityFirefly> {
 
     public MoCRenderFirefly(ModelBase modelbase) {
         super(modelbase);
@@ -18,12 +16,11 @@ public class MoCRenderFirefly extends MoCRenderInsect {
     }
 
     @Override
-    protected void preRenderCallback(EntityLivingBase par1EntityLiving, float par2) {
-        MoCEntityFirefly firefly = (MoCEntityFirefly) par1EntityLiving;
-        if (firefly.getIsFlying()) {
-            rotateFirefly(firefly);
-        } else if (firefly.climbing()) {
-            rotateAnimal(firefly);
+    protected void preRenderCallback(MoCEntityFirefly entityfirefly, float par2) {
+        if (entityfirefly.getIsFlying()) {
+            rotateFirefly(entityfirefly);
+        } else if (entityfirefly.climbing()) {
+            rotateAnimal(entityfirefly);
         }
 
     }
@@ -34,8 +31,8 @@ public class MoCRenderFirefly extends MoCRenderInsect {
     }
 
     @Override
-    protected ResourceLocation getEntityTexture(Entity par1Entity) {
-        return ((MoCEntityFirefly) par1Entity).getTexture();
+    protected ResourceLocation getEntityTexture(MoCEntityFirefly entityfirefly) {
+        return ((MoCEntityFirefly) entityfirefly).getTexture();
     }
     /*
         private class LayerMoCFirefly implements LayerRenderer {
@@ -55,7 +52,7 @@ public class MoCRenderFirefly extends MoCRenderInsect {
                 this.mocModel.render(p_177162_1_, p_177162_2_, p_177162_3_, p_177162_5_, p_177162_6_, p_177162_7_, p_177162_8_);
             }
 
-
+            
             protected void setTailBrightness(MoCEntityFirefly entityliving, float par3) {
                 this.mocRenderer.bindTexture(MoCreatures.proxy.getTexture("fireflyglow.png"));
                 float var4 = 1.0F;

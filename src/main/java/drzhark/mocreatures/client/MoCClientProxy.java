@@ -4,6 +4,7 @@ import de.matthiasmann.twl.Button;
 import de.matthiasmann.twl.ListBox;
 import de.matthiasmann.twl.Widget;
 import de.matthiasmann.twl.model.SimpleButtonModel;
+import drzhark.guiapi.GuiAPI;
 import drzhark.guiapi.GuiApiHelper;
 import drzhark.guiapi.GuiModScreen;
 import drzhark.guiapi.ModAction;
@@ -24,7 +25,6 @@ import drzhark.mocreatures.client.gui.helpers.MoCSettingBoolean;
 import drzhark.mocreatures.client.gui.helpers.MoCSettingFloat;
 import drzhark.mocreatures.client.gui.helpers.MoCSettingInt;
 import drzhark.mocreatures.client.gui.helpers.MoCSettingList;
-import drzhark.mocreatures.client.gui.helpers.MoCSettingMulti;
 import drzhark.mocreatures.client.gui.helpers.MoCSettings;
 import drzhark.mocreatures.client.model.MoCModelAnt;
 import drzhark.mocreatures.client.model.MoCModelBear;
@@ -193,16 +193,19 @@ import drzhark.mocreatures.network.MoCMessageHandler;
 import drzhark.mocreatures.network.message.MoCMessageInstaSpawn;
 import drzhark.mocreatures.utils.MoCLog;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -234,6 +237,7 @@ public class MoCClientProxy extends MoCProxy {
         return mocTextures.getTexture(texture);
     }
 
+    @SuppressWarnings({"deprecation", "unchecked", "rawtypes"})
     @Override
     public void registerRenderInformation() {
         // Register your custom renderers
@@ -312,9 +316,7 @@ public class MoCClientProxy extends MoCProxy {
     }
 
     @Override
-    //public EntityClientPlayerMP getPlayer()
-            public
-            EntityPlayer getPlayer() {
+    public EntityPlayer getPlayer() {
         return MoCClientProxy.mc.thePlayer;
     }
 
@@ -326,7 +328,7 @@ public class MoCClientProxy extends MoCProxy {
      */
     @Override
     public void setName(EntityPlayer player, IMoCEntity mocanimal) {
-        mc.displayGuiScreen(new MoCGUIEntityNamer(mocanimal, mocanimal.getName()));
+        mc.displayGuiScreen(new MoCGUIEntityNamer(mocanimal, mocanimal.getPetName()));
 
     }
 
@@ -464,6 +466,7 @@ public class MoCClientProxy extends MoCProxy {
         }
     }
 
+    @SuppressWarnings("unused")
     @Override
     public void hammerFX(EntityPlayer entity) {
         int densityInt = (MoCreatures.proxy.getParticleFX());
@@ -625,7 +628,6 @@ public class MoCClientProxy extends MoCProxy {
 
     private WidgetSimplewindow instaSpawnerWindow;
     private MoCSettingInt settingNumberToSpawn;
-    private MoCSettingMulti settingClassToSpawn;
     public WidgetSimplewindow creatureOptionsWindow;
     public WidgetSimplewindow creatureSettingsWindow;
     public WidgetSimplewindow creatureSpawnSettingsWindow;
@@ -648,13 +650,13 @@ public class MoCClientProxy extends MoCProxy {
     private WidgetClassicTwocolumn widgetMobSpawnSettingsColumns;
     private WidgetClassicTwocolumn widgetWaterMobSettingsColumns;
     private WidgetClassicTwocolumn widgetWaterMobSpawnSettingsColumns;
+    @SuppressWarnings("unused")
     private WidgetClassicTwocolumn widgetAmbientSettingsColumns;
     private WidgetClassicTwocolumn widgetAmbientSpawnSettingsColumns;
     private WidgetClassicTwocolumn widgetGeneralSettingsColumns;
     private WidgetClassicTwocolumn widgetIDSettingsColumns;
     private WidgetClassicTwocolumn defaultChoices;
     private WidgetSinglecolumn widgetInstaSpawnerColumn;
-    private WidgetClassicTwocolumn spawnColumns;
     private WidgetClassicTwocolumn creatureOptions;
     private WidgetClassicTwocolumn mobOptions;
     private WidgetClassicTwocolumn waterOptions;
@@ -662,7 +664,6 @@ public class MoCClientProxy extends MoCProxy {
 
     private static final String BUTTON_GENERAL_SETTINGS = "General Settings";
     private static final String BUTTON_ID_SETTINGS = "ID Settings";
-    private static final String BUTTON_CREATURES = "Creatures";
     private static final String BUTTON_CREATURE_GENERAL_SETTINGS = "Creature General Settings";
     private static final String BUTTON_CREATURE_SPAWN_SETTINGS = "Creature Spawn Settings";
     private static final String BUTTON_MONSTER_GENERAL_SETTINGS = "Monster General Settings";
@@ -670,7 +671,9 @@ public class MoCClientProxy extends MoCProxy {
     private static final String BUTTON_WATERMOB_GENERAL_SETTINGS = "Water Mob General Settings";
     private static final String BUTTON_WATERMOB_SPAWN_SETTINGS = "Water Mob Spawn Settings";
     private static final String BUTTON_AMBIENT_SPAWN_SETTINGS = "Ambient Spawn Settings";
+    @SuppressWarnings("unused")
     private static final String BUTTON_OWNERSHIP_SETTINGS = "Ownership Settings";
+    @SuppressWarnings("unused")
     private static final String BUTTON_DEFAULTS = "Reset to Defaults";
     private static final String MOC_SCREEN_TITLE = "DrZhark's Mo'Creatures";
 
@@ -678,11 +681,30 @@ public class MoCClientProxy extends MoCProxy {
 
     public MoCEntityData currentSelectedEntity;
 
+    public GuiAPI gui = new GuiAPI();
+
     @Override
     public void ConfigInit(FMLPreInitializationEvent event) {
         super.ConfigInit(event);
+        try {
+            Field[] fields = GuiScreen.class.getDeclaredFields();
+            for (int i = 0; i < fields.length; i++) {
+                if (fields[i].getType() == List.class) {
+                    this.gui.controlListField = fields[i];
+                    this.gui.controlListField.setAccessible(true);
+                    break;
+                }
+            }
+            if (this.gui.controlListField == null) {
+                throw new Exception("No fields found on GuiScreen (" + GuiScreen.class.getSimpleName() + ") of type List! This should never happen!");
+            }
+        } catch (Throwable e) {
+            throw new RuntimeException("Unable to get Field reference for GuiScreen.controlList!", e);
+        }
+        MinecraftForge.EVENT_BUS.register(this.gui);
     }
 
+    @SuppressWarnings("unused")
     @Override
     public void initGUI() {
         MoCLog.logger.info("Initializing MoCreatures GUI API");
@@ -1140,11 +1162,10 @@ public class MoCClientProxy extends MoCProxy {
         GuiModScreen.show(this.instaSpawnerWindow);
     }
 
-    @SuppressWarnings("unused")
     public void instaSpawn(MoCSettingList setting, ArrayList<String> aList) {
         ListBox<String> listbox = ((WidgetList) setting.displayWidget).listBox;
         int selected = listbox.getSelected();
-        int numberToSpawn = this.settingNumberToSpawn.get();//guiapiSettings.getIntSettingValue("spawnN");
+        int numberToSpawn = this.settingNumberToSpawn.get();
         String entityName = aList.get(selected);
         for (Map.Entry<String, MoCEntityData> entityEntry : MoCreatures.mocEntityMap.entrySet()) {
             if (entityEntry.getValue().getEntityName().equalsIgnoreCase(entityName)) {

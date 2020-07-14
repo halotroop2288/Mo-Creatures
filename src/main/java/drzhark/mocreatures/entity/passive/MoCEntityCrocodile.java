@@ -26,7 +26,6 @@ public class MoCEntityCrocodile extends MoCEntityTameableAnimal {
     public float spin;
     public int spinInt;
     private boolean waterbound;
-    private int hunting;
 
     public MoCEntityCrocodile(World world) {
         super(world);
@@ -64,7 +63,6 @@ public class MoCEntityCrocodile extends MoCEntityTameableAnimal {
         return (this.dataWatcher.getWatchableObjectByte(25) == 1);
     }
 
-    @Override
     public boolean getIsSitting() {
         return (this.dataWatcher.getWatchableObjectByte(23) == 1);
     }
@@ -123,7 +121,6 @@ public class MoCEntityCrocodile extends MoCEntityTameableAnimal {
             {
                 setIsSitting(false);
                 this.biteProgress = 0;
-                this.hunting = 1;
             }
 
         } else {

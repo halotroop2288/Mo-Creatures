@@ -33,7 +33,6 @@ public class MoCEntityHorseMob extends MoCEntityMob {
         setSize(1.4F, 1.6F);
         this.tasks.addTask(0, new EntityAISwimming(this));
         this.tasks.addTask(2, new EntityAIAttackOnCollide(this, 1.0D, true));
-        this.tasks.addTask(2, this.aiAvoidExplodingCreepers);
         this.tasks.addTask(8, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
         this.targetTasks.addTask(1, new EntityAINearestAttackableTargetMoC(this, EntityPlayer.class, true));
 
@@ -67,15 +66,15 @@ public class MoCEntityHorseMob extends MoCEntityMob {
     }
 
     /**
-     * Overridden for the dynamic nightmare texture. *
-     * 23 Undead
-     * 24 Undead Unicorn
+     * Overridden for the dynamic nightmare texture. * 
+     * 23 Undead 
+     * 24 Undead Unicorn 
      * 25 Undead Pegasus
-     * 26 skeleton
-     * 27 skeleton unicorn
+     * 26 skeleton 
+     * 27 skeleton unicorn 
      * 28 skeleton pegasus
      * 30 bug horse
-     * 32 Bat Horse
+     * 32 Bat Horse 
      * 38 nightmare
      */
     @Override

@@ -54,15 +54,10 @@ public class MoCEntityBird extends MoCEntityTameableAnimal {
         this.stepHeight = 1.0F;
         ((PathNavigateGround) this.getNavigator()).setAvoidsWater(true);
         this.tasks.addTask(1, new EntityAISwimming(this));
-        this.tasks.addTask(2, new EntityAIFleeFromEntityMoC(this, new Predicate() {
+        this.tasks.addTask(2, new EntityAIFleeFromEntityMoC(this, new Predicate<Entity>() {
 
             public boolean apply(Entity entity) {
                 return !(entity instanceof MoCEntityBird) && (entity.height > 0.4F || entity.width > 0.4F);
-            }
-
-            @Override
-            public boolean apply(Object p_apply_1_) {
-                return this.apply((Entity) p_apply_1_);
             }
         }, 6.0F, 1.D, 1.3D));
         this.tasks.addTask(3, new EntityAIFollowOwnerPlayer(this, 0.8D, 2F, 10F));
@@ -122,7 +117,6 @@ public class MoCEntityBird extends MoCEntityTameableAnimal {
         this.dataWatcher.updateObject(23, Byte.valueOf(input));
     }
 
-    @Override
     public boolean getIsFlying() {
         return (this.dataWatcher.getWatchableObjectByte(24) == 1);
     }
@@ -205,6 +199,7 @@ public class MoCEntityBird extends MoCEntityTameableAnimal {
         }
     }
 
+    @SuppressWarnings("unused")
     private boolean FlyToNextTree() {
         int ai[] = ReturnNearestMaterialCoord(this, Material.leaves, Double.valueOf(20D));
         int ai1[] = FindTreeTop(ai[0], ai[1], ai[2]);
@@ -358,14 +353,14 @@ public class MoCEntityBird extends MoCEntityTameableAnimal {
                 setIsFlying(false);
             }
 
-            if (getIsFlying() && this.getNavigator().noPath() && !isMovementCeased() && this.getAttackTarget() == null && this.rand.nextInt(30) == 0) {
+            if (getIsFlying() && this.getNavigator().noPath() && !isMovementCeased() && this.getAttackTarget() == null && rand.nextInt(30) == 0) {
                 this.wander.makeUpdate();
             }
 
             if (!getIsFlying() && !getIsTamed() && this.rand.nextInt(10) == 0) {
-                List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(4D, 4D, 4D));
+                List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(4D, 4D, 4D));
                 for (int i = 0; i < list.size(); i++) {
-                    Entity entity1 = (Entity) list.get(i);
+                    Entity entity1 = list.get(i);
                     if (!(entity1 instanceof EntityLivingBase) || entity1 instanceof MoCEntityBird) {
                         continue;
                     }
@@ -382,11 +377,11 @@ public class MoCEntityBird extends MoCEntityTameableAnimal {
                 this.wander.makeUpdate();
             }
 
-            if (getIsFlying() && this.rand.nextInt(200) == 0) {
+            if (getIsFlying() && rand.nextInt(200) == 0) {
                 setIsFlying(false);
             }
 
-            if (this.fleeing && this.rand.nextInt(50) == 0) {
+            if (this.fleeing && rand.nextInt(50) == 0) {
                 this.fleeing = false;
             }
 
@@ -420,9 +415,8 @@ public class MoCEntityBird extends MoCEntityTameableAnimal {
             EntityPlayer entityplayer = (EntityPlayer) this.ridingEntity;
             this.rotationYaw = entityplayer.rotationYaw;
             entityplayer.fallDistance = 0.0F;
-            if (entityplayer.motionY < -0.1D) {
+            if (entityplayer.motionY < -0.1D)
                 entityplayer.motionY *= 0.60;
-            }
         }
 
         if (--this.jumpTimer <= 0 && this.onGround
@@ -522,9 +516,8 @@ public class MoCEntityBird extends MoCEntityTameableAnimal {
 
     @Override
     public int maxFlyingHeight() {
-        if (getIsTamed()) {
+        if (getIsTamed())
             return 4;
-        }
         return 6;
     }
 

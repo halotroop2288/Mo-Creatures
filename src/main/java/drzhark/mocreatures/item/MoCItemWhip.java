@@ -1,5 +1,16 @@
 package drzhark.mocreatures.item;
 
+import java.util.List;
+
+import net.minecraft.block.Block;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemStack;
+import net.minecraft.util.BlockPos;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.world.World;
 import drzhark.mocreatures.MoCTools;
 import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityAnimal;
@@ -11,17 +22,6 @@ import drzhark.mocreatures.entity.passive.MoCEntityNewBigCat;
 import drzhark.mocreatures.entity.passive.MoCEntityOstrich;
 import drzhark.mocreatures.entity.passive.MoCEntityPetScorpion;
 import drzhark.mocreatures.entity.passive.MoCEntityWyvern;
-import net.minecraft.block.Block;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.BlockPos;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumParticleTypes;
-import net.minecraft.world.World;
-
-import java.util.List;
 
 public class MoCItemWhip extends MoCItem {
 
@@ -50,14 +50,14 @@ public class MoCItemWhip extends MoCItem {
             whipFX(worldIn, pos);
             worldIn.playSoundAtEntity(playerIn, "mocreatures:whip", 0.5F, 0.4F / ((itemRand.nextFloat() * 0.4F) + 0.8F));
             stack.damageItem(1, playerIn);
-            List list = worldIn.getEntitiesWithinAABBExcludingEntity(playerIn, playerIn.getEntityBoundingBox().expand(12D, 12D, 12D));
+            List<Entity> list = worldIn.getEntitiesWithinAABBExcludingEntity(playerIn, playerIn.getEntityBoundingBox().expand(12D, 12D, 12D));
             for (int l1 = 0; l1 < list.size(); l1++) {
-                Entity entity = (Entity) list.get(l1);
+                Entity entity = list.get(l1);
 
                 if (entity instanceof MoCEntityAnimal) {
                     MoCEntityAnimal animal = (MoCEntityAnimal) entity;
                     if (MoCreatures.proxy.enableOwnership && animal.getOwnerName() != null && !animal.getOwnerName().equals("")
-                            && !playerIn.getCommandSenderName().equals(animal.getOwnerName()) && !MoCTools.isThisPlayerAnOP(playerIn)) {
+                            && !playerIn.getName().equals(animal.getOwnerName()) && !MoCTools.isThisPlayerAnOP(playerIn)) {
                         continue;
                     }
                 }

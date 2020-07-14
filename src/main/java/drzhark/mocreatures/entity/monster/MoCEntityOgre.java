@@ -39,7 +39,6 @@ public class MoCEntityOgre extends MoCEntityMob {
         this.isImmuneToFire = false;
         this.tasks.addTask(0, new EntityAISwimming(this));
         this.tasks.addTask(2, new EntityAIAttackOnCollide(this, 1.0D, true));
-        this.tasks.addTask(2, this.aiAvoidExplodingCreepers);
         this.tasks.addTask(8, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
         this.targetTasks.addTask(1, new EntityAINearestAttackableTargetMoC(this, EntityPlayer.class, true));
     }
@@ -64,7 +63,7 @@ public class MoCEntityOgre extends MoCEntityMob {
                 int cOgreChance = MoCreatures.proxy.caveOgreChance;
                 int j = this.rand.nextInt(100);
 
-                if (canCaveOgreSpawn() && (j >= (100 - cOgreChance))) { //System.out.println("can spawn cave o");
+                if (canCaveOgreSpawn() && (j >= (100 - cOgreChance))) {
                     setType(this.rand.nextInt(2) + 5);
                 } else if (j >= (100 - fOgreChance)) {
                     setType(this.rand.nextInt(2) + 3);

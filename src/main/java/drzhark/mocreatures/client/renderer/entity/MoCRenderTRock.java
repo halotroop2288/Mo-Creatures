@@ -14,9 +14,7 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 @SideOnly(Side.CLIENT)
-public class MoCRenderTRock extends Render {
-
-    private static final ResourceLocation TEXTURE_TERRAIN = new ResourceLocation("terrain.png");
+public class MoCRenderTRock extends Render<Entity> {
 
     public MoCRenderTRock() {
         super(MoCClientProxy.mc.getRenderManager());
@@ -33,7 +31,7 @@ public class MoCRenderTRock extends Render {
         int i = entitytrock.getBrightnessForRender(partialTicks);
         int j = i % 65536;
         int k = i / 65536;
-        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, j / 1.0F, k / 1.0F);
+        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (float) j / 1.0F, (float) k / 1.0F);
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         this.bindTexture(TextureMap.locationBlocksTexture);
         float lightLevel = entitytrock.getBrightness(partialTicks);

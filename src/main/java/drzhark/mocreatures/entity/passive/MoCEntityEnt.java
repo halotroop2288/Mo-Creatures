@@ -148,11 +148,11 @@ public class MoCEntityEnt extends MoCEntityAnimal {
      * Makes small creatures follow the Ent
      */
     private void atractCritter() {
-        List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(8D, 3D, 8D));
+        List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(8D, 3D, 8D));
         int n = this.rand.nextInt(3) + 1;
         int j = 0;
         for (int k = 0; k < list.size(); k++) {
-            Entity entity = (Entity) list.get(k);
+            Entity entity = list.get(k);
             if (entity instanceof EntityAnimal && entity.width < 0.6F && entity.height < 0.6F) {
                 EntityAnimal entityanimal = (EntityAnimal) entity;
                 if (entityanimal.getAttackTarget() == null && !MoCTools.isTamed(entityanimal)) {
@@ -298,10 +298,10 @@ public class MoCEntityEnt extends MoCEntityAnimal {
     }*/
 
     @Override
-    protected void func_174815_a(EntityLivingBase entityLivingBaseIn, Entity entityIn) {
+    protected void applyEnchantments(EntityLivingBase entityLivingBaseIn, Entity entityIn) {
         this.worldObj.playSoundAtEntity(this, "mocreatures:goatsmack", 1.0F, 1.0F + ((this.rand.nextFloat() - this.rand.nextFloat()) * 0.2F));
         MoCTools.bigsmack(this, entityIn, 1F);
-        super.func_174815_a(entityLivingBaseIn, entityIn);
+        super.applyEnchantments(entityLivingBaseIn, entityIn);
     }
 
     @Override

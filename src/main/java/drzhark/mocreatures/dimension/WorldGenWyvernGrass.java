@@ -17,7 +17,7 @@ public class WorldGenWyvernGrass extends WorldGenerator {
 
     public WorldGenWyvernGrass(IBlockState iblockstategrass) {
         this.iBlockStateGrass = iblockstategrass;
-        this.grass = (MoCBlockTallGrass) this.iBlockStateGrass.getBlock();
+        this.grass = (MoCBlockTallGrass) iBlockStateGrass.getBlock();
     }
 
     @Override
@@ -26,16 +26,15 @@ public class WorldGenWyvernGrass extends WorldGenerator {
 
         do {
             block = worldIn.getBlockState(position).getBlock();
-            if (!block.isAir(worldIn, position) && !block.isLeaves(worldIn, position)) {
+            if (!block.isAir(worldIn, position) && !block.isLeaves(worldIn, position))
                 break;
-            }
             position = position.down();
         } while (position.getY() > 0);
 
         for (int i = 0; i < 128; ++i) {
             BlockPos blockpos1 =
                     position.add(rand.nextInt(8) - rand.nextInt(8), rand.nextInt(4) - rand.nextInt(4), rand.nextInt(8) - rand.nextInt(8));
-            if (worldIn.isAirBlock(blockpos1) && this.grass.canBlockStay(worldIn, blockpos1, this.iBlockStateGrass)) {
+            if (worldIn.isAirBlock(blockpos1) && grass.canBlockStay(worldIn, blockpos1, iBlockStateGrass)) {
                 worldIn.setBlockState(blockpos1, this.iBlockStateGrass, 2);
             }
         }

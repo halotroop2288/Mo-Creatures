@@ -4,26 +4,26 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import drzhark.mocreatures.entity.IMoCEntity;
 import drzhark.mocreatures.entity.MoCEntityAquatic;
-import net.minecraft.command.IEntitySelector;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.entity.ai.RandomPositionGenerator;
+import net.minecraft.util.EntitySelectors;
 import net.minecraft.util.Vec3;
 
 import java.util.List;
 
 public class EntityAIFleeFromEntityMoC extends EntityAIBase {
 
-    public final Predicate canBeSeenSelector = new Predicate() {
+    public final Predicate<Entity> canBeSeenSelector = new Predicate<Entity>() {
 
         public boolean isApplicable(Entity entityIn) {
             return entityIn.isEntityAlive() && EntityAIFleeFromEntityMoC.this.theEntity.getEntitySenses().canSee(entityIn);
         }
 
         @Override
-        public boolean apply(Object p_apply_1_) {
-            return this.isApplicable((Entity) p_apply_1_);
+        public boolean apply(Entity p_apply_1_) {
+            return this.isApplicable(p_apply_1_);
         }
     };
     /** The entity we are attached to */
@@ -32,13 +32,13 @@ public class EntityAIFleeFromEntityMoC extends EntityAIBase {
     private double nearSpeed;
     protected Entity closestLivingEntity;
     private float avoidDistance;
-    private Predicate avoidTargetSelector;
+    private Predicate<Entity> avoidTargetSelector;
 
     private double randPosX;
     private double randPosY;
     private double randPosZ;
 
-    public EntityAIFleeFromEntityMoC(EntityCreature creature, Predicate targetSelector, float searchDistance, double farSpeedIn, double nearSpeedIn) {
+    public EntityAIFleeFromEntityMoC(EntityCreature creature, Predicate<Entity> targetSelector, float searchDistance, double farSpeedIn, double nearSpeedIn) {
         this.theEntity = creature;
         this.avoidTargetSelector = targetSelector;
         this.avoidDistance = searchDistance;
@@ -50,6 +50,7 @@ public class EntityAIFleeFromEntityMoC extends EntityAIBase {
     /**
      * Returns whether the EntityAIBase should begin execution.
      */
+    @SuppressWarnings("unchecked")
     @Override
     public boolean shouldExecute() {
         if (this.theEntity instanceof IMoCEntity && ((IMoCEntity) this.theEntity).isNotScared()) {
@@ -59,15 +60,16 @@ public class EntityAIFleeFromEntityMoC extends EntityAIBase {
         if (this.theEntity instanceof MoCEntityAquatic && !this.theEntity.isInWater()) {
             return false;
         }
-        List list =
+
+        List<Entity> list =
                 this.theEntity.worldObj.getEntitiesInAABBexcluding(this.theEntity,
-                        this.theEntity.getEntityBoundingBox().expand(this.avoidDistance, 3.0D, this.avoidDistance),
-                        Predicates.and(new Predicate[] {IEntitySelector.NOT_SPECTATING, this.canBeSeenSelector, this.avoidTargetSelector}));
+                        this.theEntity.getEntityBoundingBox().expand((double) this.avoidDistance, 3.0D, (double) this.avoidDistance),
+                        Predicates.and(new Predicate[] {EntitySelectors.NOT_SPECTATING, this.canBeSeenSelector, this.avoidTargetSelector}));
 
         if (list.isEmpty()) {
             return false;
         } else {
-            this.closestLivingEntity = (Entity) list.get(0);
+            this.closestLivingEntity = list.get(0);
             Vec3 vec3 =
                     RandomPositionGenerator.findRandomTargetBlockAwayFrom(this.theEntity, 16, 7, new Vec3(this.closestLivingEntity.posX,
                             this.closestLivingEntity.posY, this.closestLivingEntity.posZ));

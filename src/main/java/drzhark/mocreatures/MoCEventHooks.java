@@ -16,8 +16,6 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
@@ -136,25 +134,12 @@ public class MoCEventHooks {
             blockLightLevel = CMSUtils.getLightFromNeighbors(worldObj.getChunkFromChunkCoords(x >> 4, z >> 4), x & 15, y, z & 15);
         }
         if (blockLightLevel < minDespawnLightLevel && maxDespawnLightLevel != -1) {
-            //if (debug) CMSUtils.getEnvironment(worldObj).envLog.logger.info("Denied spawn! for " + entity.getCommandSenderName() + blockLightLevel + " under minimum threshold of " + minDespawnLightLevel + " in dimension " + worldObj.provider.getDimensionId() + " at coords " + x + ", " + y + ", " + z);
+            //if (debug) CMSUtils.getEnvironment(worldObj).envLog.logger.info("Denied spawn! for " + entity.getName() + blockLightLevel + " under minimum threshold of " + minDespawnLightLevel + " in dimension " + worldObj.provider.getDimensionId() + " at coords " + x + ", " + y + ", " + z);
             return false;
         } else if (blockLightLevel > maxDespawnLightLevel && maxDespawnLightLevel != -1) {
-            //if (debug) CMSUtils.getEnvironment(worldObj).envLog.logger.info("Denied spawn! for " + entity.getCommandSenderName() + blockLightLevel + " over maximum threshold of " + maxDespawnLightLevel + " in dimension " + worldObj.provider.getDimensionId() + " at coords " + x + ", " + y + ", " + z);
+            //if (debug) CMSUtils.getEnvironment(worldObj).envLog.logger.info("Denied spawn! for " + entity.getName() + blockLightLevel + " over maximum threshold of " + maxDespawnLightLevel + " in dimension " + worldObj.provider.getDimensionId() + " at coords " + x + ", " + y + ", " + z);
             return false;
         }
         return true;
-    }
-
-    /**
-     * Gets the amount of light on a block without taking into account sunlight
-     */
-    private int getLightFromNeighbors(Chunk chunk, int x, int y, int z) {
-        ExtendedBlockStorage extendedblockstorage = chunk.getBlockStorageArray()[y >> 4];
-
-        if (extendedblockstorage == null) {
-            return 0;
-        } else {
-            return extendedblockstorage.getExtBlocklightValue(x, y & 15, z);
-        }
     }
 }

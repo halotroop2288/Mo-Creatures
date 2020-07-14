@@ -25,10 +25,9 @@ public class MoCItemSword extends ItemSword {
         GameRegistry.registerItem(this, name);
         this.setCreativeTab(MoCreatures.tabMoC);
         this.setUnlocalizedName(name);
-        if (!MoCreatures.isServer()) {
+        if (!MoCreatures.isServer())
             Minecraft.getMinecraft().getRenderItem().getItemModelMesher()
                     .register(this, meta, new ModelResourceLocation("mocreatures:" + name, "inventory"));
-        }
     }
 
     public MoCItemSword(String name, Item.ToolMaterial material, int damageType, boolean fragile) {
@@ -40,7 +39,7 @@ public class MoCItemSword extends ItemSword {
     /**
      * Current implementations of this method in child classes do not use the entry argument beside ev. They just raise
      * the damage on the stack.
-     *
+     *  
      * @param target The Entity being hit
      * @param attacker the attacking entity
      */

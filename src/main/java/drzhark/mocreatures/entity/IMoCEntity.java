@@ -5,15 +5,11 @@ import net.minecraft.util.ResourceLocation;
 
 public interface IMoCEntity {
 
-    public void riderIsDisconnecting(boolean flag);// = false;
-
-    //public boolean forceUpdates();
-
     public void selectType();
 
-    public String getName();
+    public String getPetName();
 
-    public void setName(String name);
+    public void setPetName(String name);
 
     public boolean getIsTamed();
 

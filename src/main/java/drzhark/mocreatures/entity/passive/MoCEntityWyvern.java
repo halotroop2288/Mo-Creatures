@@ -31,9 +31,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.pathfinding.PathNavigateGround;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
-import net.minecraft.util.BlockPos;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.network.NetworkRegistry.TargetPoint;
@@ -96,7 +94,6 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
         this.dataWatcher.addObject(28, Byte.valueOf((byte) 0)); // isGhost - 0 false 1 true
     }
 
-    @Override
     public boolean getIsFlying() {
         return (this.dataWatcher.getWatchableObjectByte(25) == 1);
     }
@@ -390,9 +387,8 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
 
     @Override
     public int maxFlyingHeight() {
-        if (getIsTamed()) {
+        if (getIsTamed())
             return 5;
-        }
         return 18;
     }
 
@@ -671,13 +667,13 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
     }
 
     @Override
-    protected void func_174815_a(EntityLivingBase entityLivingBaseIn, Entity entityIn) {
+    protected void applyEnchantments(EntityLivingBase entityLivingBaseIn, Entity entityIn) {
         if (entityIn instanceof EntityPlayer && this.rand.nextInt(3) == 0) {
             MoCreatures.poisonPlayer((EntityPlayer) entityIn);
             ((EntityLivingBase) entityIn).addPotionEffect(new PotionEffect(Potion.poison.id, 200, 0));
         }
 
-        super.func_174815_a(entityLivingBaseIn, entityIn);
+        super.applyEnchantments(entityLivingBaseIn, entityIn);
     }
 
     @Override
@@ -754,9 +750,8 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
         if (yOff < -120) {
             yOff = -120;
         }
-        if (getIsSitting()) {
+        if (getIsSitting())
             yOff += 25;
-        }
         return yOff;
     }
 
@@ -906,6 +901,11 @@ public class MoCEntityWyvern extends MoCEntityTameableAnimal {
     public void makeEntityJump() {
         wingFlap();
         super.makeEntityJump();
+    }
+
+    @Override
+    public boolean shouldAttackPlayers() {
+        return !getIsTamed() && super.shouldAttackPlayers();
     }
 
     @Override

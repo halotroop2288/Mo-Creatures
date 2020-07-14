@@ -5,8 +5,8 @@ import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.MoCEntityMob;
 import drzhark.mocreatures.entity.ai.EntityAINearestAttackableTargetMoC;
 import drzhark.mocreatures.entity.passive.MoCEntityBear;
+import drzhark.mocreatures.entity.passive.MoCEntityBigCat;
 import drzhark.mocreatures.entity.passive.MoCEntityHorse;
-import drzhark.mocreatures.entity.passive.MoCEntityNewBigCat;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -40,7 +40,6 @@ public class MoCEntityWWolf extends MoCEntityMob {
         setSize(0.9F, 1.3F);
         this.tasks.addTask(0, new EntityAISwimming(this));
         this.tasks.addTask(2, new EntityAIAttackOnCollide(this, 1.0D, true));
-        this.tasks.addTask(2, this.aiAvoidExplodingCreepers);
         this.tasks.addTask(8, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
         this.targetTasks.addTask(1, new EntityAINearestAttackableTargetMoC(this, EntityPlayer.class, true));
     }
@@ -111,8 +110,6 @@ public class MoCEntityWWolf extends MoCEntityMob {
         int k = MathHelper.floor_double(this.posZ);
 
         BiomeGenBase biome = MoCTools.Biomekind(this.worldObj, new BlockPos(i, j, k));
-        int l = this.rand.nextInt(10);
-
         if (BiomeDictionary.isBiomeOfType(biome, Type.SNOWY)) {
             setType(3);
         }
@@ -146,12 +143,12 @@ public class MoCEntityWWolf extends MoCEntityMob {
     public EntityLivingBase getClosestTarget(Entity entity, double d) {
         double d1 = -1D;
         EntityLivingBase entityliving = null;
-        List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(d, d, d));
+        List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(d, d, d));
         for (int i = 0; i < list.size(); i++) {
-            Entity entity1 = (Entity) list.get(i);
+            Entity entity1 = list.get(i);
             if (!(entity1 instanceof EntityLivingBase) || (entity1 == entity) || (entity1 == entity.riddenByEntity)
                     || (entity1 == entity.ridingEntity) || (entity1 instanceof EntityPlayer) || (entity1 instanceof EntityMob)
-                    || (entity1 instanceof MoCEntityNewBigCat) || (entity1 instanceof MoCEntityBear) || (entity1 instanceof EntityCow)
+                    || (entity1 instanceof MoCEntityBigCat) || (entity1 instanceof MoCEntityBear) || (entity1 instanceof EntityCow)
                     || ((entity1 instanceof EntityWolf) && !(MoCreatures.proxy.attackWolves))
                     || ((entity1 instanceof MoCEntityHorse) && !(MoCreatures.proxy.attackHorses))) {
                 continue;
@@ -206,9 +203,9 @@ public class MoCEntityWWolf extends MoCEntityMob {
     public void onLivingUpdate() {
         super.onLivingUpdate();
         if (MoCreatures.isServer() && this.riddenByEntity == null && this.rand.nextInt(100) == 0) {
-            List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(4D, 2D, 4D));
+            List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(4D, 2D, 4D));
             for (int i = 0; i < list.size(); i++) {
-                Entity entity = (Entity) list.get(i);
+                Entity entity = list.get(i);
                 if (!(entity instanceof EntityMob)) {
                     continue;
                 }

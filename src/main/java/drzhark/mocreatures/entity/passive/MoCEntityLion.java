@@ -18,14 +18,14 @@ public class MoCEntityLion extends MoCEntityNewBigCat {
 
     @Override
     public void selectType() {
-        if (getType() == 0) {
+    	if (getType() == 0) {
             if (rand.nextInt(20) == 0)
             {
                 setType(rand.nextInt(2)+6);//white lions
             }else
             {
-                setType(this.rand.nextInt(2) + 1);
-            }
+            setType(this.rand.nextInt(2) + 1);
+        }
         }
         super.selectType();
     }
@@ -101,7 +101,7 @@ public class MoCEntityLion extends MoCEntityNewBigCat {
     	if (mate instanceof MoCEntityPanther && ((MoCEntityPanther) mate).getType() == 1) {
             return "Panther";
         }
-        return "Lion";
+    	return "Lion";
     }
 
     @Override

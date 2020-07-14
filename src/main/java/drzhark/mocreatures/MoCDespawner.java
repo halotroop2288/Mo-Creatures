@@ -32,7 +32,7 @@ public class MoCDespawner {
     public static int despawnLightLevel = 7;
     public static int despawnTickRate = 111;
     public List<BiomeGenBase> biomeList = new ArrayList<BiomeGenBase>();
-    private List<Class> vanillaClassList;
+    private List<Class<? extends EntityLiving>> vanillaClassList;
 
     public MoCDespawner() {
         this.biomeList = new ArrayList<BiomeGenBase>();
@@ -45,7 +45,7 @@ public class MoCDespawner {
                 this.biomeList.add(biomegenbase);
             }
 
-            this.vanillaClassList = new ArrayList<Class>();
+            this.vanillaClassList = new ArrayList<Class<? extends EntityLiving>>();
             this.vanillaClassList.add(EntityChicken.class);
             this.vanillaClassList.add(EntityCow.class);
             this.vanillaClassList.add(EntityPig.class);
@@ -112,10 +112,10 @@ public class MoCDespawner {
         return count;
     }
 
-    public final int countEntities(Class class1, World worldObj) {
+    public final int countEntities(Class<? extends EntityLiving> class1, World worldObj) {
         int i = 0;
         for (int j = 0; j < worldObj.loadedEntityList.size(); j++) {
-            Entity entity = (Entity) worldObj.loadedEntityList.get(j);
+            Entity entity = worldObj.loadedEntityList.get(j);
             if (class1.isAssignableFrom(entity.getClass())) {
                 i++;
             }
@@ -144,7 +144,7 @@ public class MoCDespawner {
         }
         if (i > lightLevel) {
             if (debug) {
-                MoCLog.logger.info("Denied spawn! for " + entity.getCommandSenderName() + ". LightLevel over threshold of " + lightLevel
+                MoCLog.logger.info("Denied spawn! for " + entity.getName() + ". LightLevel over threshold of " + lightLevel
                         + " in dimension " + worldObj.provider.getDimensionId() + " at coords " + x + ", " + y + ", " + z);
             }
         }
@@ -163,10 +163,10 @@ public class MoCDespawner {
             blockLightLevel = CMSUtils.getLightFromNeighbors(worldObj.getChunkFromChunkCoords(x >> 4, z >> 4), x & 15, y, z & 15);
         }
         if (blockLightLevel < minDespawnLightLevel && maxDespawnLightLevel != -1) {
-            //if (debug) CMSUtils.getEnvironment(worldObj).envLog.logger.info("Denied spawn! for " + entity.getCommandSenderName() + blockLightLevel + " under minimum threshold of " + minDespawnLightLevel + " in dimension " + worldObj.provider.getDimensionId() + " at coords " + x + ", " + y + ", " + z);
+            //if (debug) CMSUtils.getEnvironment(worldObj).envLog.logger.info("Denied spawn! for " + entity.getName() + blockLightLevel + " under minimum threshold of " + minDespawnLightLevel + " in dimension " + worldObj.provider.getDimensionId() + " at coords " + x + ", " + y + ", " + z);
             return false;
         } else if (blockLightLevel > maxDespawnLightLevel && maxDespawnLightLevel != -1) {
-            //if (debug) CMSUtils.getEnvironment(worldObj).envLog.logger.info("Denied spawn! for " + entity.getCommandSenderName() + blockLightLevel + " over maximum threshold of " + maxDespawnLightLevel + " in dimension " + worldObj.provider.getDimensionId() + " at coords " + x + ", " + y + ", " + z);
+            //if (debug) CMSUtils.getEnvironment(worldObj).envLog.logger.info("Denied spawn! for " + entity.getName() + blockLightLevel + " over maximum threshold of " + maxDespawnLightLevel + " in dimension " + worldObj.provider.getDimensionId() + " at coords " + x + ", " + y + ", " + z);
             return false;
         }
         return true;

@@ -52,7 +52,7 @@ public class MoCBlockTallGrass extends MoCBlockBush implements IShearable {
 
     @SideOnly(Side.CLIENT)
     @Override
-    public void getSubBlocks(Item par1, CreativeTabs tab, List subItems) {
+    public void getSubBlocks(Item par1, CreativeTabs tab, List<ItemStack> subItems) {
         for (int ix = 0; ix < MoCreatures.multiBlockNames.size(); ix++) {
             subItems.add(new ItemStack(this, 1, ix));
         }

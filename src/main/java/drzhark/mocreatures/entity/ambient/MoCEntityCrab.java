@@ -26,15 +26,10 @@ public class MoCEntityCrab extends MoCEntityTameableAmbient
         setSize(0.3F, 0.3F);
         setEdad(50 + this.rand.nextInt(50));
         this.tasks.addTask(2, new EntityAIPanicMoC(this, 1.0D));
-        this.tasks.addTask(1, new EntityAIFleeFromEntityMoC(this, new Predicate() {
+        this.tasks.addTask(1, new EntityAIFleeFromEntityMoC(this, new Predicate<Entity>() {
 
             public boolean apply(Entity entity) {
                 return !(entity instanceof MoCEntityCrab) && (entity.height > 0.3F || entity.width > 0.3F);
-            }
-
-            @Override
-            public boolean apply(Object p_apply_1_) {
-                return this.apply((Entity) p_apply_1_);
             }
         }, 6.0F, 0.6D, 1D));
         this.tasks.addTask(3, new EntityAIFollowOwnerPlayer(this, 0.8D, 6F, 5F));

@@ -21,7 +21,7 @@ import java.util.List;
 public class CommandMoCSpawn extends CommandBase {
 
     private static List<String> commands = new ArrayList<String>();
-    private static List aliases = new ArrayList<String>();
+    private static List<String> aliases = new ArrayList<String>();
 
     static {
         commands.add("/mocspawn <horse|wyvern> <int>");
@@ -35,7 +35,7 @@ public class CommandMoCSpawn extends CommandBase {
     }
 
     @Override
-    public List getCommandAliases() {
+    public List<String> getCommandAliases() {
         return aliases;
     }
 
@@ -65,7 +65,7 @@ public class CommandMoCSpawn extends CommandBase {
                 return;
             }
 
-            String playername = par1ICommandSender.getCommandSenderName();
+            String playername = par1ICommandSender.getName();
             EntityPlayerMP player =
                     FMLCommonHandler.instance().getMinecraftServerInstance().getConfigurationManager().getPlayerByUsername(playername);
             MoCEntityTameableAnimal specialEntity = null;
@@ -75,6 +75,10 @@ public class CommandMoCSpawn extends CommandBase {
             } else if (entityType.equalsIgnoreCase("wyvern")) {
                 specialEntity = new MoCEntityWyvern(player.worldObj);
                 specialEntity.setAdult(false);
+            } else if (entityType.equalsIgnoreCase("wyvernghost")) {
+                specialEntity = new MoCEntityWyvern(player.worldObj);
+                specialEntity.setAdult(false);
+                ((MoCEntityWyvern)specialEntity).setIsGhost(true);
             } else {
                 par1ICommandSender.addChatMessage(new ChatComponentTranslation(EnumChatFormatting.RED + "ERROR:" + EnumChatFormatting.WHITE
                         + "The entity spawn type " + entityType + " is not a valid type."));
@@ -87,7 +91,7 @@ public class CommandMoCSpawn extends CommandBase {
             specialEntity.setPosition(newPosX, newPosY, newPosZ);
             specialEntity.setTamed(true);
             specialEntity.setOwner("NoOwner");
-            specialEntity.setName("Rename_Me");
+            specialEntity.setPetName("Rename_Me");
             specialEntity.setType(type);
 
             if ((entityType.equalsIgnoreCase("horse") && (type < 1 || type > 67))
@@ -110,7 +114,7 @@ public class CommandMoCSpawn extends CommandBase {
      * Returns a sorted list of all possible commands for the given
      * ICommandSender.
      */
-    protected List getSortedPossibleCommands(ICommandSender par1ICommandSender) {
+    protected List<String> getSortedPossibleCommands(ICommandSender par1ICommandSender) {
         Collections.sort(CommandMoCSpawn.commands);
         return CommandMoCSpawn.commands;
     }

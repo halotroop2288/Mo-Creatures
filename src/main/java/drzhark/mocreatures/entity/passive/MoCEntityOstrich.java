@@ -510,9 +510,9 @@ public class MoCEntityOstrich extends MoCEntityTameableAnimal {
     protected MoCEntityOstrich getClosestMaleOstrich(Entity entity, double d) {
         double d1 = -1D;
         MoCEntityOstrich entityliving = null;
-        List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(entity, entity.getEntityBoundingBox().expand(d, d, d));
+        List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(entity, entity.getEntityBoundingBox().expand(d, d, d));
         for (int i = 0; i < list.size(); i++) {
-            Entity entity1 = (Entity) list.get(i);
+            Entity entity1 = list.get(i);
             if (!(entity1 instanceof MoCEntityOstrich) || ((entity1 instanceof MoCEntityOstrich) && ((MoCEntityOstrich) entity1).getType() < 3)) {
                 continue;
             }
@@ -1000,7 +1000,7 @@ public class MoCEntityOstrich extends MoCEntityTameableAnimal {
         return 1;
     }
 
-    //TODO
+    //TODO 
     //improve fall flapping wing animation
     //IMPROVE DIVE CODE
     //ATTACK!

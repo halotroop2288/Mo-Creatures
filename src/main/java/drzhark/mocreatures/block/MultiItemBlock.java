@@ -10,16 +10,12 @@ import net.minecraft.item.ItemStack;
 
 public class MultiItemBlock extends ItemMultiTexture {
 
+    @SuppressWarnings("deprecation")
     public MultiItemBlock(Block block) {
-        super(block, block, new Function() {
+        super(block, block, new Function<ItemStack, String>() {
 
             public String apply(ItemStack stack) {
                 return MoCBlock.EnumType.byMetadata(stack.getMetadata()).getUnlocalizedName();
-            }
-
-            @Override
-            public Object apply(Object p_apply_1_) {
-                return this.apply((ItemStack) p_apply_1_);
             }
         });
         setHasSubtypes(true);
@@ -28,7 +24,7 @@ public class MultiItemBlock extends ItemMultiTexture {
         if (net.minecraftforge.fml.common.FMLCommonHandler.instance().getEffectiveSide() == net.minecraftforge.fml.relauncher.Side.CLIENT) {
             ModelBakery.addVariantName(this, "mocreatures:wyvern_" + name);
             ModelBakery.addVariantName(this, "mocreatures:ogre_" + name);
-
+    
             Minecraft.getMinecraft().getRenderItem().getItemModelMesher()
                     .register(this, 0, new ModelResourceLocation("mocreatures:wyvern_" + name, "inventory"));
             Minecraft.getMinecraft().getRenderItem().getItemModelMesher()

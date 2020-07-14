@@ -20,7 +20,6 @@ public class EntityAIFollowOwnerPlayer extends EntityAIBase {
     private int delayCounter;
     float maxDist;
     float minDist;
-    private boolean flag;
 
     public EntityAIFollowOwnerPlayer(EntityLiving thePetIn, double speedIn, float minDistIn, float maxDistIn) {
         this.thePet = thePetIn;
@@ -42,7 +41,7 @@ public class EntityAIFollowOwnerPlayer extends EntityAIBase {
      */
     @Override
     public boolean shouldExecute() {
-        if (((IMoCEntity) this.thePet).isMovementCeased()) {
+        if (((IMoCEntity) this.thePet).getIsSitting()) {
             return false;
         }
         //if (!(this.thePet.getNavigator() instanceof PathNavigateGround)) {

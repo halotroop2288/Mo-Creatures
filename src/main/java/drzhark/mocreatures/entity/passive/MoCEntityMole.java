@@ -62,6 +62,7 @@ public class MoCEntityMole extends MoCEntityTameableAnimal {
     /**
      * Moves entity forward underground
      */
+    @SuppressWarnings("unused")
     private void digForward() {
         double coordY = this.posY;
         double coordZ = this.posZ;

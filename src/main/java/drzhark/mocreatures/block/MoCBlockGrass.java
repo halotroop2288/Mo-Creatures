@@ -22,7 +22,6 @@ public class MoCBlockGrass extends MoCBlock {
         setTickRandomly(true);
     }
 
-    @Override
     public void updateTick(World worldIn, BlockPos pos, IBlockState state, Random rand) {
         if (!worldIn.isRemote) {
             if (worldIn.getLightFromNeighbors(pos.up()) < 4 && worldIn.getBlockState(pos.up()).getBlock().getLightOpacity(worldIn, pos.up()) > 2) {
@@ -46,7 +45,7 @@ public class MoCBlockGrass extends MoCBlock {
 
     @Override
     @SideOnly(Side.CLIENT)
-    public void getSubBlocks(Item item, CreativeTabs tab, List subItems) {
+    public void getSubBlocks(Item item, CreativeTabs tab, List<ItemStack> subItems) {
         for (int ix = 0; ix < MoCreatures.multiBlockNames.size(); ix++) {
             subItems.add(new ItemStack(item, 1, ix));
         }

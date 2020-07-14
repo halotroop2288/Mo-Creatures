@@ -338,11 +338,9 @@ public class MoCreatures {
     public static Item crabraw;
     public static Item crabcooked;
 
-    public static MoCPlayerTracker tracker;
     public static Map<String, MoCEntityData> mocEntityMap = new TreeMap<String, MoCEntityData>(String.CASE_INSENSITIVE_ORDER);
     public static Map<Class<? extends EntityLiving>, MoCEntityData> entityMap = new HashMap<Class<? extends EntityLiving>, MoCEntityData>();
     public static Map<Integer, Class<? extends EntityLiving>> instaSpawnerMap = new HashMap<Integer, Class<? extends EntityLiving>>();
-    public static List<String> defaultBiomeSupport = new ArrayList<String>();
     public static final String CATEGORY_ITEM_IDS = "item-ids";
 
     @EventHandler
@@ -352,10 +350,9 @@ public class MoCreatures {
         proxy.ConfigInit(event);
         proxy.initTextures();
         if (!isServer()) {
-            FMLCommonHandler.instance().bus().register(new MoCClientTickHandler());
-            FMLCommonHandler.instance().bus().register(new MoCKeyHandler());
+            MinecraftForge.EVENT_BUS.register(new MoCClientTickHandler());
+            MinecraftForge.EVENT_BUS.register(new MoCKeyHandler());
         }
-        FMLCommonHandler.instance().bus().register(new MoCPlayerTracker());
     }
 
     //how to check for client: if(FMLCommonHandler.instance().getSide().isRemote())

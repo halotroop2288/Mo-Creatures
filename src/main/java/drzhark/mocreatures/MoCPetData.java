@@ -15,13 +15,13 @@ public class MoCPetData {
     private NBTTagCompound ownerData = new NBTTagCompound();
     private NBTTagList tamedList = new NBTTagList();
     private BitSet IDMap = new BitSet(Long.SIZE << 4);
+    @SuppressWarnings("unused")
     private final String ownerName;
-    private ArrayList<Integer> usedPetIds = new ArrayList();
+    private ArrayList<Integer> usedPetIds = new ArrayList<Integer>();
 
     public MoCPetData(IMoCTameable pet) {
         this.ownerData.setTag("TamedList", this.tamedList);
-        this.ownerName = MoCreatures.isServer() ? pet.getOwnerName() : Minecraft.getMinecraft().thePlayer.getCommandSenderName();
-        //ownerData.setName("PetData");
+        this.ownerName = MoCreatures.isServer() ? pet.getOwnerName() : Minecraft.getMinecraft().thePlayer.getName();
     }
 
     public MoCPetData(NBTTagCompound nbt, String owner) {
@@ -31,8 +31,9 @@ public class MoCPetData {
         this.loadPetDataMap(nbt.getCompoundTag("PetIdData"));
     }
 
-    public int addPet(IMoCTameable pet, NBTTagCompound petNBT) {
+    public int addPet(IMoCTameable pet) {
         BlockPos coords = new BlockPos(((Entity) pet).chunkCoordX, ((Entity) pet).chunkCoordY, ((Entity) pet).chunkCoordZ);
+        NBTTagCompound petNBT = MoCTools.getEntityData((Entity) pet);
         if (this.tamedList != null) {
             int id = getNextFreePetId();
             petNBT.setInteger("PetId", id);

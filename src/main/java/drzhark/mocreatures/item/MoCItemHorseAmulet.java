@@ -91,21 +91,21 @@ public class MoCItemHorseAmulet extends MoCItem {
                     storedCreature.setTamed(true);
                     storedCreature.setRideable(this.rideable);
                     storedCreature.setEdad(this.edad);
-                    storedCreature.setName(this.name);
+                    storedCreature.setPetName(this.name);
                     storedCreature.setHealth(this.health);
                     storedCreature.setAdult(this.adult);
                     storedCreature.setArmorType(this.armor);
                     storedCreature.setOwnerPetId(this.PetId);
-                    storedCreature.setOwner(entityplayer.getCommandSenderName());
+                    storedCreature.setOwner(entityplayer.getName());
                     if (this.spawnClass == 100) {
                         ((MoCEntityWyvern) storedCreature).setIsGhost(true);
                     }
 
                     //if the player using the amulet is different than the original owner
-                    if (this.ownerName != "" && !(this.ownerName.equals(entityplayer.getCommandSenderName())) && MoCreatures.instance.mapData != null) {
+                    if (this.ownerName != "" && !(this.ownerName.equals(entityplayer.getName())) && MoCreatures.instance.mapData != null) {
                         MoCPetData oldOwner = MoCreatures.instance.mapData.getPetData(this.ownerName);
-                        MoCPetData newOwner = MoCreatures.instance.mapData.getPetData(entityplayer.getCommandSenderName());
-                        EntityPlayer epOwner = worldObj.getPlayerEntityByName(entityplayer.getCommandSenderName());
+                        MoCPetData newOwner = MoCreatures.instance.mapData.getPetData(entityplayer.getName());
+                        EntityPlayer epOwner = worldObj.getPlayerEntityByName(entityplayer.getName());
                         int maxCount = MoCreatures.proxy.maxTamed;
                         if (MoCTools.isThisPlayerAnOP(epOwner)) {
                             maxCount = MoCreatures.proxy.maxOPTamed;
@@ -113,16 +113,12 @@ public class MoCItemHorseAmulet extends MoCItem {
                         if (newOwner == null) {
                             if (maxCount > 0 || !MoCreatures.proxy.enableOwnership) {
                                 // create new PetData for new owner
-                                NBTTagCompound petNBT = new NBTTagCompound();
-                                storedCreature.writeEntityToNBT(petNBT);
-                                MoCreatures.instance.mapData.updateOwnerPet(storedCreature, petNBT);
+                                MoCreatures.instance.mapData.updateOwnerPet(storedCreature);
                             }
                         } else // add pet to existing pet data
                         {
                             if (newOwner.getTamedList().tagCount() < maxCount || !MoCreatures.proxy.enableOwnership) {
-                                NBTTagCompound petNBT = new NBTTagCompound();
-                                storedCreature.writeEntityToNBT(petNBT);
-                                MoCreatures.instance.mapData.updateOwnerPet(storedCreature, petNBT);
+                                MoCreatures.instance.mapData.updateOwnerPet(storedCreature);
                             }
                         }
                         // remove pet entry from old owner
@@ -201,7 +197,7 @@ public class MoCItemHorseAmulet extends MoCItem {
      * allows items to add custom lines of information to the mouseover description
      */
     @Override
-    public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List par3List, boolean par4) {
+    public void addInformation(ItemStack par1ItemStack, EntityPlayer par2EntityPlayer, List<String> par3List, boolean par4) {
         initAndReadNBT(par1ItemStack);
         if (this.spawnClass == 100) {
             par3List.add(EnumChatFormatting.AQUA + "Wyvern");

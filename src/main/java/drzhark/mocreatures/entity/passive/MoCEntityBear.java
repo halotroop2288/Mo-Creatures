@@ -45,7 +45,6 @@ public class MoCEntityBear extends MoCEntityTameableAnimal {
         setEdad(55);
         if (this.rand.nextInt(4) == 0) {
             setAdult(false);
-
         } else {
             setAdult(true);
         }
@@ -414,10 +413,9 @@ public class MoCEntityBear extends MoCEntityTameableAnimal {
     public float getAttackSwing() {
         //TODO FIX!
         //return 0;
-        if (this.attackCounter == 0) {
+        if (attackCounter == 0)
             return 0;
-        }
-        return 1.5F + (this.attackCounter / 10F - 10F) * 5F;
+        return 1.5F + ((float) (attackCounter / 10F) - 10F) * 5F;
     }
 
     private void startAttack() {

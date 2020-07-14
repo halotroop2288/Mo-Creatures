@@ -1,5 +1,6 @@
 package drzhark.mocreatures.entity;
 
+import drzhark.mocreatures.MoCConstants;
 import drzhark.mocreatures.MoCTools;
 import drzhark.mocreatures.MoCreatures;
 import drzhark.mocreatures.entity.ai.EntityAIMoverHelperMoC;
@@ -8,6 +9,7 @@ import net.minecraft.block.material.Material;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityCreature;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.item.EntityItem;
@@ -17,7 +19,6 @@ import net.minecraft.entity.projectile.EntityFishHook;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.pathfinding.PathEntity;
 import net.minecraft.pathfinding.PathNavigate;
 import net.minecraft.pathfinding.PathNavigateSwimmer;
 import net.minecraft.util.BlockPos;
@@ -38,9 +39,7 @@ public abstract class MoCEntityAquatic extends EntityCreature implements IMoCEnt
     protected boolean divePending;
     protected boolean jumpPending;
     protected boolean isEntityJumping;
-    private PathEntity pathEntity;
     private int outOfWater;
-    private int maxHealth;
     private boolean diving;
     private int divingCount;
     private int mountCount;
@@ -77,9 +76,9 @@ public abstract class MoCEntityAquatic extends EntityCreature implements IMoCEnt
     }
 
     @Override
-    public IEntityLivingData onSpawnFirstTime(DifficultyInstance difficulty, IEntityLivingData par1EntityLivingData) {
+    public IEntityLivingData onInitialSpawn(DifficultyInstance difficulty, IEntityLivingData par1EntityLivingData) {
         selectType();
-        return super.onSpawnFirstTime(difficulty, par1EntityLivingData);
+        return super.onInitialSpawn(difficulty, par1EntityLivingData);
     }
 
     /**
@@ -113,7 +112,7 @@ public abstract class MoCEntityAquatic extends EntityCreature implements IMoCEnt
     }
 
     @Override
-    public String getName() {
+    public String getPetName() {
         return this.dataWatcher.getWatchableObjectString(17);
     }
 
@@ -147,7 +146,7 @@ public abstract class MoCEntityAquatic extends EntityCreature implements IMoCEnt
     }
 
     @Override
-    public void setName(String name) {
+    public void setPetName(String name) {
         this.dataWatcher.updateObject(17, String.valueOf(name));
     }
 
@@ -226,9 +225,9 @@ public abstract class MoCEntityAquatic extends EntityCreature implements IMoCEnt
     public EntityItem getClosestFish(Entity entity, double d) {
         double d1 = -1D;
         EntityItem entityitem = null;
-        List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(d, d, d));
+        List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(d, d, d));
         for (int i = 0; i < list.size(); i++) {
-            Entity entity1 = (Entity) list.get(i);
+            Entity entity1 = list.get(i);
             if (!(entity1 instanceof EntityItem)) {
                 continue;
             }
@@ -373,10 +372,10 @@ public abstract class MoCEntityAquatic extends EntityCreature implements IMoCEnt
     public void Riding() {
         if ((this.riddenByEntity != null) && (this.riddenByEntity instanceof EntityPlayer)) {
             EntityPlayer entityplayer = (EntityPlayer) this.riddenByEntity;
-            List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(1.0D, 0.0D, 1.0D));
+            List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(1.0D, 0.0D, 1.0D));
             if (list != null) {
                 for (int i = 0; i < list.size(); i++) {
-                    Entity entity = (Entity) list.get(i);
+                    Entity entity = list.get(i);
                     if (entity.isDead) {
                         continue;
                     }
@@ -467,9 +466,9 @@ public abstract class MoCEntityAquatic extends EntityCreature implements IMoCEnt
             if (this.fishHooked && this.rand.nextInt(200) == 0) {
                 this.fishHooked = false;
 
-                List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(2, 2, 2));
+                List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(2, 2, 2));
                 for (int i = 0; i < list.size(); i++) {
-                    Entity entity1 = (Entity) list.get(i);
+                    Entity entity1 = list.get(i);
 
                     if (entity1 instanceof EntityFishHook) {
                         if (((EntityFishHook) entity1).caughtEntity == this) {
@@ -537,10 +536,11 @@ public abstract class MoCEntityAquatic extends EntityCreature implements IMoCEnt
     @Override
     public void writeEntityToNBT(NBTTagCompound nbttagcompound) {
         super.writeEntityToNBT(nbttagcompound);
+        nbttagcompound = MoCTools.getEntityData(this);
         nbttagcompound.setBoolean("Tamed", getIsTamed());
         nbttagcompound.setBoolean("Adult", getIsAdult());
         nbttagcompound.setInteger("Edad", getEdad());
-        nbttagcompound.setString("Name", getName());
+        nbttagcompound.setString("Name", getPetName());
         nbttagcompound.setInteger("TypeInt", getType());
         nbttagcompound.setString("Owner", getOwnerName());
     }
@@ -548,10 +548,11 @@ public abstract class MoCEntityAquatic extends EntityCreature implements IMoCEnt
     @Override
     public void readEntityFromNBT(NBTTagCompound nbttagcompound) {
         super.readEntityFromNBT(nbttagcompound);
+        nbttagcompound = MoCTools.getEntityData(this);
         setTamed(nbttagcompound.getBoolean("Tamed"));
         setAdult(nbttagcompound.getBoolean("Adult"));
         setEdad(nbttagcompound.getInteger("Edad"));
-        setName(nbttagcompound.getString("Name"));
+        setPetName(nbttagcompound.getString("Name"));
         setType(nbttagcompound.getInteger("TypeInt"));
         setOwner(nbttagcompound.getString("Owner"));
     }
@@ -622,7 +623,7 @@ public abstract class MoCEntityAquatic extends EntityCreature implements IMoCEnt
     @Override
     public boolean renderName() {
         return MoCreatures.proxy.getDisplayPetName()
-                && (getName() != null && !getName().equals("") && (this.riddenByEntity == null) && (this.ridingEntity == null));
+                && (getPetName() != null && !getPetName().equals("") && (this.riddenByEntity == null) && (this.ridingEntity == null));
     }
 
     /*@Override
@@ -681,7 +682,7 @@ public abstract class MoCEntityAquatic extends EntityCreature implements IMoCEnt
 
         //this avoids damage done by Players to a tamed creature that is not theirs
         if (MoCreatures.proxy.enableOwnership && getOwnerName() != null && !getOwnerName().equals("") && entity != null
-                && entity instanceof EntityPlayer && !((EntityPlayer) entity).getCommandSenderName().equals(getOwnerName())
+                && entity instanceof EntityPlayer && !((EntityPlayer) entity).getName().equals(getOwnerName())
                 && !MoCTools.isThisPlayerAnOP((EntityPlayer) entity)) {
             return false;
         }
@@ -786,11 +787,10 @@ public abstract class MoCEntityAquatic extends EntityCreature implements IMoCEnt
      * @return
      */
     protected EntityLivingBase getBoogey(double d) {
-        double d1 = -1D;
         EntityLivingBase entityliving = null;
-        List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(d, 4D, d));
+        List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(d, 4D, d));
         for (int i = 0; i < list.size(); i++) {
-            Entity entity = (Entity) list.get(i);
+            Entity entity = list.get(i);
             if (entitiesToInclude(entity)) {
                 entityliving = (EntityLivingBase) entity;
             }
@@ -811,11 +811,6 @@ public abstract class MoCEntityAquatic extends EntityCreature implements IMoCEnt
     @Override
     public boolean isNotScared() {
         return false;
-    }
-
-    @Override
-    public void riderIsDisconnecting(boolean flag) {
-        this.riderIsDisconnecting = true;
     }
 
     @Override
@@ -960,7 +955,7 @@ public abstract class MoCEntityAquatic extends EntityCreature implements IMoCEnt
      * Whether or not the current entity is in lava
      */
     @Override
-    public boolean handleLavaMovement() {
+    public boolean isNotColliding() {
         return this.worldObj.checkNoEntityCollision(this.getEntityBoundingBox(), this);
     }
 
@@ -1088,7 +1083,7 @@ public abstract class MoCEntityAquatic extends EntityCreature implements IMoCEnt
                 entityIn.attackEntityFrom(DamageSource.causeMobDamage(this), ((int) this.getEntityAttribute(SharedMonsterAttributes.attackDamage)
                         .getAttributeValue()));
         if (flag) {
-            this.func_174815_a(this, entityIn);
+            this.applyEnchantments(this, entityIn);
         }
         return flag;
     }
@@ -1106,7 +1101,6 @@ public abstract class MoCEntityAquatic extends EntityCreature implements IMoCEnt
     /**
      * Boolean used for flying mounts
      */
-    @Override
     public boolean isFlyer() {
         return false;
     }
@@ -1114,5 +1108,21 @@ public abstract class MoCEntityAquatic extends EntityCreature implements IMoCEnt
     @Override
     public boolean getIsFlying() {
         return false;
+    }
+
+    /**
+     * Returns true if the entity is of the @link{EnumCreatureType} provided
+     *
+     * @param type The EnumCreatureType type this entity is evaluating
+     * @param forSpawnCount If this is being invoked to check spawn count caps.
+     * @return If the creature is of the type provided
+     */
+    @Override
+    public boolean isCreatureType(EnumCreatureType type, boolean forSpawnCount) {
+        if (type == EnumCreatureType.WATER_CREATURE) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

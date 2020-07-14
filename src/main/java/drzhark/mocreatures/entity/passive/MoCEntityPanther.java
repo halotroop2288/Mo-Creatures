@@ -121,7 +121,7 @@ public class MoCEntityPanther extends MoCEntityNewBigCat {
     @Override
     public int getMaxEdad() {
         if (getType() >= 4) return 110;
-        return 100;
+    	return 100;
     }
 
     @Override

@@ -14,6 +14,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityAgeable;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.item.EntityItem;
@@ -29,7 +30,6 @@ import net.minecraft.pathfinding.PathNavigate;
 import net.minecraft.pathfinding.PathNavigateSwimmer;
 import net.minecraft.util.BlockPos;
 import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumParticleTypes;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.DifficultyInstance;
@@ -44,10 +44,8 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
     protected boolean jumpPending;
     protected int temper;
     protected boolean isEntityJumping;
-    private PathEntity entitypath;
     // used by MoCPlayerTracker to prevent dupes when a player disconnects on animal from server
     protected boolean riderIsDisconnecting;
-    private int petDataId = -1;
     public float moveSpeed;
     protected String texture;
     private int huntingCounter;
@@ -55,7 +53,7 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
     protected PathNavigate navigatorFlyer;
 
     private double divingDepth;
-    private boolean randomAttributesUpdated; //used to update divingDepth on world load
+    private boolean randomAttributesUpdated; //used to update divingDepth on world load 
 
     public MoCEntityAnimal(World world) {
         super(world);
@@ -81,9 +79,9 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
     }
 
     @Override
-    public IEntityLivingData onSpawnFirstTime(DifficultyInstance difficulty, IEntityLivingData par1EntityLivingData) {
+    public IEntityLivingData onInitialSpawn(DifficultyInstance difficulty, IEntityLivingData par1EntityLivingData) {
         selectType();
-        return super.onSpawnFirstTime(difficulty, par1EntityLivingData);
+        return super.onInitialSpawn(difficulty, par1EntityLivingData);
     }
 
     /**
@@ -127,7 +125,7 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
     @Override
     public boolean renderName() {
         return MoCreatures.proxy.getDisplayPetName()
-                && (getName() != null && !getName().equals("") && (this.riddenByEntity == null) && (this.ridingEntity == null));
+                && (getPetName() != null && !getPetName().equals("") && (this.riddenByEntity == null) && (this.ridingEntity == null));
     }
 
     @Override
@@ -141,7 +139,7 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
     }
 
     @Override
-    public String getName() {
+    public String getPetName() {
         return this.dataWatcher.getWatchableObjectString(17);
     }
 
@@ -166,12 +164,13 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
 
     @Override
     public void setAdult(boolean flag) {
+
         byte input = (byte) (flag ? 1 : 0);
         this.dataWatcher.updateObject(21, Byte.valueOf(input));
     }
 
     @Override
-    public void setName(String name) {
+    public void setPetName(String name) {
         this.dataWatcher.updateObject(17, String.valueOf(name));
     }
 
@@ -207,9 +206,9 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
     protected EntityLivingBase getClosestEntityLiving(Entity entity, double d) {
         double d1 = -1D;
         EntityLivingBase entityliving = null;
-        List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(d, d, d));
+        List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(d, d, d));
         for (int i = 0; i < list.size(); i++) {
-            Entity entity1 = (Entity) list.get(i);
+            Entity entity1 = list.get(i);
 
             if (entitiesToIgnore(entity1)) {
                 continue;
@@ -227,9 +226,9 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
     public EntityLivingBase getClosestTarget(Entity entity, double d) {
         double d1 = -1D;
         EntityLivingBase entityliving = null;
-        List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(d, d, d));
+        List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(d, d, d));
         for (int i = 0; i < list.size(); i++) {
-            Entity entity1 = (Entity) list.get(i);
+            Entity entity1 = list.get(i);
             if (!(entity1 instanceof EntityLivingBase) || (entity1 == entity) || (entity1 == entity.riddenByEntity)
                     || (entity1 == entity.ridingEntity) || (entity1 instanceof EntityPlayer) || (entity1 instanceof EntityMob)
                     || (this.height <= entity1.height) || (this.width <= entity1.width)) {
@@ -245,12 +244,12 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
         return entityliving;
     }
 
-    protected EntityLivingBase getClosestSpecificEntity(Entity entity, Class myClass, double d) {
+    protected EntityLivingBase getClosestSpecificEntity(Entity entity, Class<? extends EntityLiving> myClass, double d) {
         double d1 = -1D;
         EntityLivingBase entityliving = null;
-        List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(entity, entity.getEntityBoundingBox().expand(d, d, d));
+        List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(entity, entity.getEntityBoundingBox().expand(d, d, d));
         for (int i = 0; i < list.size(); i++) {
-            Entity entity1 = (Entity) list.get(i);
+            Entity entity1 = list.get(i);
             if (!myClass.isAssignableFrom(entity1.getClass())) {
                 continue;
             }
@@ -283,11 +282,10 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
      * @return
      */
     protected EntityLivingBase getBoogey(double d) {
-        double d1 = -1D;
         EntityLivingBase entityliving = null;
-        List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(d, 4D, d));
+        List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(d, 4D, d));
         for (int i = 0; i < list.size(); i++) {
-            Entity entity = (Entity) list.get(i);
+            Entity entity = list.get(i);
             if (entitiesToInclude(entity)) {
                 entityliving = (EntityLivingBase) entity;
             }
@@ -407,9 +405,9 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
     public EntityItem getClosestItem(Entity entity, double d, Item item, Item item1) {
         double d1 = -1D;
         EntityItem entityitem = null;
-        List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(d, d, d));
+        List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(d, d, d));
         for (int k = 0; k < list.size(); k++) {
-            Entity entity1 = (Entity) list.get(k);
+            Entity entity1 = list.get(k);
             if (!(entity1 instanceof EntityItem)) {
                 continue;
             }
@@ -430,9 +428,9 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
     public EntityItem getClosestEntityItem(Entity entity, double d) {
         double d1 = -1D;
         EntityItem entityitem = null;
-        List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(d, d, d));
+        List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(d, d, d));
         for (int k = 0; k < list.size(); k++) {
-            Entity entity1 = (Entity) list.get(k);
+            Entity entity1 = list.get(k);
             if (!(entity1 instanceof EntityItem)) {
                 continue;
             }
@@ -450,9 +448,9 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
     public EntityItem getClosestFood(Entity entity, double d) {
         double d1 = -1D;
         EntityItem entityitem = null;
-        List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(d, d, d));
+        List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(d, d, d));
         for (int k = 0; k < list.size(); k++) {
-            Entity entity1 = (Entity) list.get(k);
+            Entity entity1 = list.get(k);
             if (!(entity1 instanceof EntityItem)) {
                 continue;
             }
@@ -519,10 +517,10 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
     public void Riding() {
         if ((this.riddenByEntity != null) && (this.riddenByEntity instanceof EntityPlayer)) {
             EntityPlayer entityplayer = (EntityPlayer) this.riddenByEntity;
-            List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(1.0D, 0.0D, 1.0D));
+            List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(1.0D, 0.0D, 1.0D));
             if (list != null) {
                 for (int i = 0; i < list.size(); i++) {
-                    Entity entity = (Entity) list.get(i);
+                    Entity entity = list.get(i);
                     if (entity.isDead) {
                         continue;
                     }
@@ -582,14 +580,6 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
                 && !this.worldObj.isAnyLiquid(this.getEntityBoundingBox());
     }
 
-    public boolean getCanSpawnHereAquatic() {
-        return this.worldObj.checkNoEntityCollision(this.getEntityBoundingBox());
-    }
-
-    public boolean getCanSpawnHere2() {
-        return getCanSpawnHereCreature() && getCanSpawnHereLiving();
-    }
-
     @Override
     public boolean getCanSpawnHere() {
         if (MoCreatures.entityMap.get(this.getClass()).getFrequency() <= 0) {
@@ -644,10 +634,11 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
     @Override
     public void writeEntityToNBT(NBTTagCompound nbttagcompound) {
         super.writeEntityToNBT(nbttagcompound);
+        nbttagcompound = MoCTools.getEntityData(this);
         nbttagcompound.setBoolean("Tamed", getIsTamed());
         nbttagcompound.setBoolean("Adult", getIsAdult());
         nbttagcompound.setInteger("Edad", getEdad());
-        nbttagcompound.setString("Name", getName());
+        nbttagcompound.setString("Name", getPetName());
         nbttagcompound.setInteger("TypeInt", getType());
         nbttagcompound.setString("Owner", getOwnerName());
     }
@@ -655,10 +646,11 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
     @Override
     public void readEntityFromNBT(NBTTagCompound nbttagcompound) {
         super.readEntityFromNBT(nbttagcompound);
+        nbttagcompound = MoCTools.getEntityData(this);
         setTamed(nbttagcompound.getBoolean("Tamed"));
         setAdult(nbttagcompound.getBoolean("Adult"));
         setEdad(nbttagcompound.getInteger("Edad"));
-        setName(nbttagcompound.getString("Name"));
+        setPetName(nbttagcompound.getString("Name"));
         setType(nbttagcompound.getInteger("TypeInt"));
         setOwner(nbttagcompound.getString("Owner"));
     }
@@ -804,7 +796,6 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
      *
      * @return
      */
-    @Override
     public int maxFlyingHeight() {
         return 5;
     }
@@ -858,7 +849,6 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
     /**
      * Boolean used for flying mounts
      */
-    @Override
     public boolean isFlyer() {
         return false;
     }
@@ -1049,9 +1039,9 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
     }
 
     public void repelMobs(Entity entity1, Double dist, World worldObj) {
-        List list = worldObj.getEntitiesWithinAABBExcludingEntity(entity1, entity1.getEntityBoundingBox().expand(dist, 4D, dist));
+        List<Entity> list = worldObj.getEntitiesWithinAABBExcludingEntity(entity1, entity1.getEntityBoundingBox().expand(dist, 4D, dist));
         for (int i = 0; i < list.size(); i++) {
-            Entity entity = (Entity) list.get(i);
+            Entity entity = list.get(i);
             if (!(entity instanceof EntityMob)) {
                 continue;
             }
@@ -1092,19 +1082,6 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
     }
 
     /**
-     * Used to spawn hearts at this location
-     */
-    public void SpawnHeart() {
-        double var2 = this.rand.nextGaussian() * 0.02D;
-        double var4 = this.rand.nextGaussian() * 0.02D;
-        double var6 = this.rand.nextGaussian() * 0.02D;
-
-        this.worldObj.spawnParticle(EnumParticleTypes.HEART, this.posX + this.rand.nextFloat() * this.width * 2.0F - this.width, this.posY + 0.5D
-                + this.rand.nextFloat() * this.height, this.posZ + this.rand.nextFloat() * this.width * 2.0F - this.width, var2, var4, var6);
-
-    }
-
-    /**
      * Used to synchronize animations between server and client
      *
      * @param attackType
@@ -1124,6 +1101,7 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
     }
 
     //TODO MOVE TO NEW AI
+    @SuppressWarnings("unused")
     private void followPlayer() {
         EntityPlayer entityplayer1 = this.worldObj.getClosestPlayerToEntity(this, 24D);
         if (entityplayer1 == null) {
@@ -1158,16 +1136,6 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
         } else {
             super.mountEntity(par1Entity);
         }
-    }*/
-
-    /*@Override
-    public boolean updateMount() {
-        return false;
-    }*/
-
-    /*@Override
-    public boolean forceUpdates() {
-        return false;
     }*/
 
     @Override
@@ -1219,7 +1187,7 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
 
         //this avoids damage done by Players to a tamed creature that is not theirs
         if (MoCreatures.proxy.enableOwnership && getOwnerName() != null && !getOwnerName().equals("") && entity != null
-                && entity instanceof EntityPlayer && !((EntityPlayer) entity).getCommandSenderName().equals(getOwnerName())
+                && entity instanceof EntityPlayer && !((EntityPlayer) entity).getName().equals(getOwnerName())
                 && !MoCTools.isThisPlayerAnOP((EntityPlayer) entity)) {
             return false;
         }
@@ -1298,11 +1266,6 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
         return (this instanceof IMoCTameable) && getIsTamed();
     }
 
-    @Override
-    public void riderIsDisconnecting(boolean flag) {
-        this.riderIsDisconnecting = true;
-    }
-
     /**
      * used to select which entities run the new AI
      * @return
@@ -1322,7 +1285,7 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
                 entityIn.attackEntityFrom(DamageSource.causeMobDamage(this), ((int) this.getEntityAttribute(SharedMonsterAttributes.attackDamage)
                         .getAttributeValue()));
         if (flag) {
-            this.func_174815_a(this, entityIn);
+            this.applyEnchantments(this, entityIn);
         }
 
         return flag;
@@ -1445,5 +1408,21 @@ public abstract class MoCEntityAnimal extends EntityAnimal implements IMoCEntity
     @Override
     public boolean getIsFlying() {
         return false;
+    }
+
+    /**
+     * Returns true if the entity is of the @link{EnumCreatureType} provided
+     *
+     * @param type The EnumCreatureType type this entity is evaluating
+     * @param forSpawnCount If this is being invoked to check spawn count caps.
+     * @return If the creature is of the type provided
+     */
+    @Override
+    public boolean isCreatureType(EnumCreatureType type, boolean forSpawnCount) {
+        if (type == EnumCreatureType.CREATURE) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

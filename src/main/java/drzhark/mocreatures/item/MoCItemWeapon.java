@@ -54,7 +54,6 @@ public class MoCItemWeapon extends MoCItem {
         return this.material.getDamageVsEntity();
     }
 
-    @Override
     public float getStrVsBlock(ItemStack stack, Block block) {
         if (block == Blocks.web) {
             return 15.0F;
@@ -68,7 +67,7 @@ public class MoCItemWeapon extends MoCItem {
     /**
      * Current implementations of this method in child classes do not use the entry argument beside ev. They just raise
      * the damage on the stack.
-     *
+     *  
      * @param target The Entity being hit
      * @param attacker the attacking entity
      */
@@ -164,9 +163,8 @@ public class MoCItemWeapon extends MoCItem {
     /**
      * Called when a Block is destroyed using this Item. Return true to trigger the "Use Item" statistic.
      */
-    @Override
     public boolean onBlockDestroyed(ItemStack stack, World worldIn, Block blockIn, BlockPos pos, EntityLivingBase playerIn) {
-        if (blockIn.getBlockHardness(worldIn, pos) != 0.0D) {
+        if ((double) blockIn.getBlockHardness(worldIn, pos) != 0.0D) {
             stack.damageItem(2, playerIn);
         }
 
@@ -182,27 +180,25 @@ public class MoCItemWeapon extends MoCItem {
 
     /**
      * Return whether this item is repairable in an anvil.
-     *
+     *  
      * @param toRepair The ItemStack to be repaired
      * @param repair The ItemStack that should repair this Item (leather for leather armor, etc.)
      */
-    @Override
     public boolean getIsRepairable(ItemStack toRepair, ItemStack repair) {
         ItemStack mat = this.material.getRepairItemStack();
-        if (mat != null && net.minecraftforge.oredict.OreDictionary.itemMatches(mat, repair, false)) {
+        if (mat != null && net.minecraftforge.oredict.OreDictionary.itemMatches(mat, repair, false))
             return true;
-        }
         return super.getIsRepairable(toRepair, repair);
     }
 
     /**
      * Gets a map of item attribute modifiers, used by ItemSword to increase hit damage.
      */
-    @Override
-    public Multimap getItemAttributeModifiers() {
-        Multimap multimap = super.getItemAttributeModifiers();
+    @SuppressWarnings("deprecation")
+    public Multimap<String, AttributeModifier> getItemAttributeModifiers() {
+        Multimap<String, AttributeModifier> multimap = super.getItemAttributeModifiers();
         multimap.put(SharedMonsterAttributes.attackDamage.getAttributeUnlocalizedName(), new AttributeModifier(itemModifierUUID, "Weapon modifier",
-                this.attackDamage, 0));
+                (double) this.attackDamage, 0));
         return multimap;
     }
 }

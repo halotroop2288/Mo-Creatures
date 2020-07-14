@@ -2197,9 +2197,9 @@ public class MoCEntityHorse extends MoCEntityTameableAnimal {
 
             int i = 0;
 
-            List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(8D, 3D, 8D));
+            List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(8D, 3D, 8D));
             for (int j = 0; j < list.size(); j++) {
-                Entity entity = (Entity) list.get(j);
+                Entity entity = list.get(j);
                 if (entity instanceof MoCEntityHorse || entity instanceof EntityHorse) {
                     i++;
                 }
@@ -2208,9 +2208,9 @@ public class MoCEntityHorse extends MoCEntityTameableAnimal {
             if (i > 1) {
                 return;
             }
-            List list1 = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(4D, 2D, 4D));
+            List<Entity> list1 = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(4D, 2D, 4D));
             for (int k = 0; k < list1.size(); k++) {
-                Entity horsemate = (Entity) list1.get(k);
+                Entity horsemate = list1.get(k);
                 boolean flag = (horsemate instanceof EntityHorse);
                 if (!(horsemate instanceof MoCEntityHorse || flag) || (horsemate == this)) {
                     continue;
@@ -2674,7 +2674,7 @@ public class MoCEntityHorse extends MoCEntityTameableAnimal {
             this.transformType = animationType;
             this.transformCounter = 1;
         }
-        if (animationType == 3) //wing flap
+        if (animationType == 3) //wing flap 
         {
             this.wingFlapCounter = 1;
         }
@@ -2717,11 +2717,11 @@ public class MoCEntityHorse extends MoCEntityTameableAnimal {
     }
 
     @Override
-    public IEntityLivingData onSpawnFirstTime(DifficultyInstance difficulty, IEntityLivingData livingdata) {
+    public IEntityLivingData onInitialSpawn(DifficultyInstance difficulty, IEntityLivingData livingdata) {
         if (getType() == 38 || getType() == 40) {
             this.isImmuneToFire = true;
         }
-        return super.onSpawnFirstTime(difficulty, livingdata);
+        return super.onInitialSpawn(difficulty, livingdata);
     }
 
     @Override

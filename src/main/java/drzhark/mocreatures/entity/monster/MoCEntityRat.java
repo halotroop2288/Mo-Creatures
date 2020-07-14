@@ -26,7 +26,6 @@ public class MoCEntityRat extends MoCEntityMob {
         setSize(0.5F, 0.5F);
         this.tasks.addTask(0, new EntityAISwimming(this));
         this.tasks.addTask(2, new EntityAIAttackOnCollide(this, 1.0D, true));
-        this.tasks.addTask(2, this.aiAvoidExplodingCreepers);
         this.tasks.addTask(8, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
         this.targetTasks.addTask(1, new EntityAINearestAttackableTargetMoC(this, EntityPlayer.class, true));
     }
@@ -80,17 +79,16 @@ public class MoCEntityRat extends MoCEntityMob {
         if (entity != null && entity instanceof EntityLivingBase) {
             setAttackTarget((EntityLivingBase) entity);
             if (MoCreatures.isServer()) {
-                List list =
+                List<MoCEntityRat> list =
                         this.worldObj.getEntitiesWithinAABB(MoCEntityRat.class,
                                 AxisAlignedBB.fromBounds(this.posX, this.posY, this.posZ, this.posX + 1.0D, this.posY + 1.0D, this.posZ + 1.0D)
                                         .expand(16D, 4D, 16D));
-                Iterator iterator = list.iterator();
+                Iterator<MoCEntityRat> iterator = list.iterator();
                 do {
                     if (!iterator.hasNext()) {
                         break;
                     }
-                    Entity entity1 = (Entity) iterator.next();
-                    MoCEntityRat entityrat = (MoCEntityRat) entity1;
+                    MoCEntityRat entityrat = (MoCEntityRat) iterator.next();
                     if ((entityrat != null) && (entityrat.getAttackTarget() == null)) {
                         entityrat.setAttackTarget((EntityLivingBase) entity);
                     }

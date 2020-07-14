@@ -132,7 +132,7 @@ public class MoCEntityLitterBox extends EntityLiving {
     }
 
     @Override
-    public void handleHealthUpdate(byte byte0) {
+    public void handleStatusUpdate(byte byte0) {
     }
 
     @Override
@@ -189,9 +189,9 @@ public class MoCEntityLitterBox extends EntityLiving {
         if (getUsedLitter() && MoCreatures.isServer()) {
             this.littertime++;
             this.worldObj.spawnParticle(EnumParticleTypes.SMOKE_NORMAL, this.posX, this.posY, this.posZ, 0.0D, 0.0D, 0.0D);
-            List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(12D, 4D, 12D));
+            List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(12D, 4D, 12D));
             for (int i = 0; i < list.size(); i++) {
-                Entity entity = (Entity) list.get(i);
+                Entity entity = list.get(i);
                 if (!(entity instanceof EntityMob)) {
                     continue;
                 }
@@ -214,11 +214,13 @@ public class MoCEntityLitterBox extends EntityLiving {
 
     @Override
     public void writeEntityToNBT(NBTTagCompound nbttagcompound) {
+        nbttagcompound = MoCTools.getEntityData(this);
         nbttagcompound.setBoolean("UsedLitter", getUsedLitter());
     }
 
     @Override
     public void readEntityFromNBT(NBTTagCompound nbttagcompound) {
+        nbttagcompound = MoCTools.getEntityData(this);
         setUsedLitter(nbttagcompound.getBoolean("UsedLitter"));
     }
 

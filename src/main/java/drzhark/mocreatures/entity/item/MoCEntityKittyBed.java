@@ -1,11 +1,13 @@
 package drzhark.mocreatures.entity.item;
 
+import drzhark.mocreatures.MoCTools;
 import drzhark.mocreatures.MoCreatures;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Items;
+import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.DamageSource;
@@ -155,7 +157,7 @@ public class MoCEntityKittyBed extends EntityLiving {
     }
 
     @Override
-    public void handleHealthUpdate(byte byte0) {
+    public void handleStatusUpdate(byte byte0) {
     }
 
     @Override
@@ -228,6 +230,7 @@ public class MoCEntityKittyBed extends EntityLiving {
 
     @Override
     public void readEntityFromNBT(NBTTagCompound nbttagcompound) {
+        nbttagcompound = MoCTools.getEntityData(this);
         setHasMilk(nbttagcompound.getBoolean("HasMilk"));
         setSheetColor(nbttagcompound.getInteger("SheetColour"));
         setHasFood(nbttagcompound.getBoolean("HasFood"));
@@ -236,6 +239,7 @@ public class MoCEntityKittyBed extends EntityLiving {
 
     @Override
     public void writeEntityToNBT(NBTTagCompound nbttagcompound) {
+        nbttagcompound = MoCTools.getEntityData(this);
         nbttagcompound.setBoolean("HasMilk", getHasMilk());
         nbttagcompound.setInteger("SheetColour", getSheetColor());
         nbttagcompound.setBoolean("HasFood", getHasFood());

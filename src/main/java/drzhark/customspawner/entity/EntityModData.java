@@ -10,21 +10,12 @@ import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 public class EntityModData {
 
     private CMSConfiguration config;
-    /*
-     * private Map<String, EntityData> creatureMap = new TreeMap<String,
-     * EntityData>(); private Map<String, EntityData> monsterMap = new
-     * TreeMap<String, EntityData>(); private Map<String, EntityData>
-     * waterCreatureMap = new TreeMap<String, EntityData>(); private Map<String,
-     * EntityData> ambientMap = new TreeMap<String, EntityData>(); private
-     * Map<String, EntityData> undefinedMap = new TreeMap<String, EntityData>();
-     */
     private Map<EntitySpawnType, Map<String, EntityData>> livingSpawnMap = new HashMap<EntitySpawnType, Map<String, EntityData>>();
 
     private Map<String, MapGenBase> structureMap = new TreeMap<String, MapGenBase>();
@@ -48,17 +39,21 @@ public class EntityModData {
     }
 
     public boolean addCreature(EntityData entityData) {
-        boolean result = true;
-        if (entityData != null) {
-            if (this.livingSpawnMap.get(entityData.getLivingSpawnType()) == null) {
-                this.livingSpawnMap.put(entityData.getLivingSpawnType(), new HashMap<String, EntityData>());
-                this.livingSpawnMap.get(entityData.getLivingSpawnType()).put(entityData.getEntityName(), entityData);
-            } else if (!this.livingSpawnMap.get(entityData.getLivingSpawnType()).containsKey(entityData.getEntityName())) {
-                this.livingSpawnMap.get(entityData.getLivingSpawnType()).put(entityData.getEntityName(), entityData);
-            } else {
-                result = false;
-            }
+        if (entityData == null) {
+            return false;
         }
+
+        boolean result = true;
+        if (!this.livingSpawnMap.containsKey(entityData.getLivingSpawnType())) {
+            this.livingSpawnMap.put(entityData.getLivingSpawnType(), new HashMap<String, EntityData>());
+        }
+
+        if (!this.livingSpawnMap.get(entityData.getLivingSpawnType()).containsKey(entityData.getEntityName())) {
+            this.livingSpawnMap.get(entityData.getLivingSpawnType()).put(entityData.getEntityName(), entityData);
+        } else {
+            result = false;
+        }
+
         return result;
     }
 
@@ -98,13 +93,6 @@ public class EntityModData {
 
     public MapGenBase getStructure(String type) {
         return this.structureMap.get(type);
-    }
-
-    public List getStructureSpawnList(String type) {
-        /*
-         * if (this.getStructure(type) != null) { MapGenBase structureBase = }
-         */
-        return null;
     }
 
     @SideOnly(Side.CLIENT)

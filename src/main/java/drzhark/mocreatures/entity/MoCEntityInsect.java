@@ -50,7 +50,6 @@ public class MoCEntityInsect extends MoCEntityAmbient {
         return getIsFlying();
     }
 
-    @Override
     public boolean getIsFlying() {
         return (this.dataWatcher.getWatchableObjectByte(22) == 1);
     }
@@ -71,9 +70,9 @@ public class MoCEntityInsect extends MoCEntityAmbient {
             }
 
             if (isFlyer() && !getIsFlying() && this.rand.nextInt(getFlyingFreq()) == 0) {
-                List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(4D, 4D, 4D));
+                List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(4D, 4D, 4D));
                 for (int i = 0; i < list.size(); i++) {
-                    Entity entity1 = (Entity) list.get(i);
+                    Entity entity1 = list.get(i);
                     if (!(entity1 instanceof EntityLivingBase)) {
                         continue;
                     }

@@ -61,7 +61,7 @@ public class MoCEntityElephant extends MoCEntityTameableAnimal {
         setAdult(true);
         setTamed(false);
         setEdad(50);
-        setSize(1.1F, 3F); //TODO
+        setSize(1.1F, 3F); //TODO 
         this.stepHeight = 1.0F;
 
         if (MoCreatures.isServer()) {
@@ -212,7 +212,7 @@ public class MoCEntityElephant extends MoCEntityTameableAnimal {
 
             if (getIsTamed() && (this.riddenByEntity == null) && getArmorType() >= 1 && this.rand.nextInt(20) == 0) {
                 EntityPlayer ep = this.worldObj.getClosestPlayerToEntity(this, 3D);
-                if (ep != null && (!MoCreatures.proxy.enableOwnership || ep.getCommandSenderName().equals(getOwnerName())) && ep.isSneaking()) {
+                if (ep != null && (!MoCreatures.proxy.enableOwnership || ep.getName().equals(getOwnerName())) && ep.isSneaking()) {
                     sit();
                 }
             }
@@ -232,9 +232,9 @@ public class MoCEntityElephant extends MoCEntityTameableAnimal {
 
             if (this.riddenByEntity != null && this.riddenByEntity instanceof EntityPlayer) {
                 if (this.sitCounter != 0 && getArmorType() >= 3 && !secondRider()) {
-                    List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(2D, 2D, 2D));
+                    List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(2D, 2D, 2D));
                     for (int i = 0; i < list.size(); i++) {
-                        Entity entity1 = (Entity) list.get(i);
+                        Entity entity1 = list.get(i);
 
                         if (!(entity1 instanceof EntityPlayer) || entity1 == this.riddenByEntity) {
                             continue;
@@ -289,9 +289,9 @@ public class MoCEntityElephant extends MoCEntityTameableAnimal {
     }
 
     private boolean secondRider() {
-        List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(3D, 3D, 3D));
+        List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(3D, 3D, 3D));
         for (int i = 0; i < list.size(); i++) {
-            Entity entity1 = (Entity) list.get(i);
+            Entity entity1 = list.get(i);
             if ((entity1 instanceof MoCEntityPlatform) && (entity1.riddenByEntity != null)) {
                 return true;
             }
@@ -318,7 +318,7 @@ public class MoCEntityElephant extends MoCEntityTameableAnimal {
      * Destroys dummy entity platforms used for second rider
      */
     private void destroyPlatforms() {
-        List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(3D, 3D, 3D));
+        List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(3D, 3D, 3D));
         for (int i = 0; i < list.size(); i++) {
             Entity entity1 = (Entity) list.get(i);
             if ((entity1 instanceof MoCEntityPlatform)) {
@@ -818,10 +818,10 @@ public class MoCEntityElephant extends MoCEntityTameableAnimal {
     public void Riding() {
         if ((this.riddenByEntity != null) && (this.riddenByEntity instanceof EntityPlayer)) {
             EntityPlayer entityplayer = (EntityPlayer) this.riddenByEntity;
-            List list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(1.0D, 0.0D, 1.0D));
+            List<Entity> list = this.worldObj.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().expand(1.0D, 0.0D, 1.0D));
             if (list != null) {
                 for (int i = 0; i < list.size(); i++) {
-                    Entity entity = (Entity) list.get(i);
+                    Entity entity = list.get(i);
                     if (entity.isDead) {
                         continue;
                     }

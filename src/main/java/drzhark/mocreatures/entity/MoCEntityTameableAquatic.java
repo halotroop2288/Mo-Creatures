@@ -58,7 +58,7 @@ public class MoCEntityTameableAquatic extends MoCEntityAquatic implements IMoCTa
         }
         //if the player interacting is not the owner, do nothing!
         if (MoCreatures.proxy.enableOwnership && getOwnerName() != null && !getOwnerName().equals("")
-                && !entityplayer.getCommandSenderName().equals(getOwnerName()) && !MoCTools.isThisPlayerAnOP(entityplayer)) {
+                && !entityplayer.getName().equals(getOwnerName()) && !MoCTools.isThisPlayerAnOP(entityplayer)) {
             return true;
         }
 
@@ -82,7 +82,7 @@ public class MoCEntityTameableAquatic extends MoCEntityAquatic implements IMoCTa
                     MoCreatures.instance.mapData.removeOwnerPet(this, this.getOwnerPetId());//this.getOwnerPetId());
                 }
                 this.setOwner("");
-                this.setName("");
+                this.setPetName("");
                 this.dropMyStuff();
                 this.setTamed(false);
             }
@@ -172,7 +172,7 @@ public class MoCEntityTameableAquatic extends MoCEntityAquatic implements IMoCTa
             nbttagcompound.setInteger("PetId", this.getOwnerPetId());
         }
         if (this instanceof IMoCTameable && getIsTamed() && MoCreatures.instance.mapData != null) {
-            MoCreatures.instance.mapData.updateOwnerPet(this, nbttagcompound);
+            MoCreatures.instance.mapData.updateOwnerPet(this);
         }
     }
 
@@ -226,7 +226,7 @@ public class MoCEntityTameableAquatic extends MoCEntityAquatic implements IMoCTa
     // Override to fix heart animation on clients
     @Override
     @SideOnly(Side.CLIENT)
-    public void handleHealthUpdate(byte par1) {
+    public void handleStatusUpdate(byte par1) {
         if (par1 == 2) {
             this.limbSwingAmount = 1.5F;
             this.hurtResistantTime = this.maxHurtResistantTime;
@@ -252,12 +252,17 @@ public class MoCEntityTameableAquatic extends MoCEntityAquatic implements IMoCTa
     }
 
     @Override
+    public void setRiderDisconnecting(boolean flag) {
+        this.riderIsDisconnecting = flag;
+    }
+
+    @Override
     public boolean allowLeashing() {
         return this.getIsTamed();
     }
 
     /**
-     * Overridden to prevent the use of a lead on an entity that belongs to other player when ownership is enabled
+     * Overridden to prevent the use of a lead on an entity that belongs to other player when ownership is enabled 
      * @param entityIn
      * @param sendAttachNotification
      */
@@ -266,15 +271,28 @@ public class MoCEntityTameableAquatic extends MoCEntityAquatic implements IMoCTa
         if (entityIn instanceof EntityPlayer) {
             EntityPlayer entityplayer = (EntityPlayer) entityIn;
             if (MoCreatures.proxy.enableOwnership && getOwnerName() != null && !getOwnerName().equals("")
-                    && !entityplayer.getCommandSenderName().equals(getOwnerName()) && !MoCTools.isThisPlayerAnOP((entityplayer))) {
+                    && !entityplayer.getName().equals(getOwnerName()) && !MoCTools.isThisPlayerAnOP((entityplayer))) {
                 return;
             }
         }
         super.setLeashedToEntity(entityIn, sendAttachNotification);
     }
 
+    /**
+     * Used to spawn hearts at this location
+     */
     @Override
-    public boolean readytoBreed() {
-        return false;
+    public void spawnHeart() {
+        double var2 = this.rand.nextGaussian() * 0.02D;
+        double var4 = this.rand.nextGaussian() * 0.02D;
+        double var6 = this.rand.nextGaussian() * 0.02D;
+
+        this.worldObj.spawnParticle(EnumParticleTypes.HEART, this.posX + this.rand.nextFloat() * this.width * 2.0F - this.width, this.posY + 0.5D
+                + this.rand.nextFloat() * this.height, this.posZ + this.rand.nextFloat() * this.width * 2.0F - this.width, var2, var4, var6);
     }
+
+	@Override
+	public boolean readytoBreed() {
+		return false;
+	}
 }

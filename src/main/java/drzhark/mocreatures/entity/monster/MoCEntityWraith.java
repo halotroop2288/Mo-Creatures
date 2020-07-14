@@ -29,7 +29,6 @@ public class MoCEntityWraith extends MoCEntityMob//MoCEntityFlyerMob
         setSize(1.5F, 1.5F);
         this.isImmuneToFire = false;
         this.tasks.addTask(2, new EntityAIAttackOnCollide(this, 1.0D, true));
-        this.tasks.addTask(3, this.aiAvoidExplodingCreepers);
         this.tasks.addTask(8, new EntityAIWatchClosest(this, EntityPlayer.class, 8.0F));
         this.targetTasks.addTask(1, new EntityAINearestAttackableTargetMoC(this, EntityPlayer.class, true));
     }
@@ -90,16 +89,13 @@ public class MoCEntityWraith extends MoCEntityMob//MoCEntityFlyerMob
     public void fall(float f, float f1) {
     }
 
-    @Override
     protected void updateFallState(double y, boolean onGroundIn, Block blockIn, BlockPos pos) {
     }
 
-    @Override
     public int maxFlyingHeight() {
         return 10;
     }
 
-    @Override
     public int minFlyingHeight() {
         return 3;
     }
@@ -125,9 +121,8 @@ public class MoCEntityWraith extends MoCEntityMob//MoCEntityFlyerMob
     public void onLivingUpdate() {
         if (this.attackCounter > 0) {
             this.attackCounter += 2;
-            if (this.attackCounter > 10) {
+            if (this.attackCounter > 10)
                 this.attackCounter = 0;
-            }
         }
         super.onLivingUpdate();
     }
@@ -140,8 +135,9 @@ public class MoCEntityWraith extends MoCEntityMob//MoCEntityFlyerMob
 
     }
 
-    @Override
+    //TODO ACTIVATE FOR RELEASE
+    /*@Override
     protected boolean isHarmedByDaylight() {
         return true;
-    }
+    }*/
 }

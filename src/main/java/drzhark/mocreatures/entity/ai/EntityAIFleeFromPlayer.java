@@ -30,7 +30,7 @@ public class EntityAIFleeFromPlayer extends EntityAIBase {
     public boolean shouldExecute() {
 
         if (this.theEntityCreature instanceof IMoCEntity) {
-            if (((IMoCEntity) this.theEntityCreature).isNotScared() || ((IMoCEntity) this.theEntityCreature).isMovementCeased()) {
+            if (((IMoCEntity) this.theEntityCreature).isNotScared()) {
                 return false;
             }
         }

@@ -70,7 +70,6 @@ public class MoCEntityDragonfly extends MoCEntityInsect {
         return 0.12F;
     }
 
-    @Override
     public int maxFlyingHeight() {
         return 4;
     }
