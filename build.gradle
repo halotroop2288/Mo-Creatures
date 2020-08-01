@@ -1,0 +1,61 @@
+plugins {
+	id 'fabric-loom' version '0.4-SNAPSHOT'
+	id 'maven-publish'
+}
+
+version = "${project.mod_version}"
+group = "${project.maven_group}"
+archivesBaseName = "${project.archives_base_name}"
+
+repositories {
+	maven {
+		name 'Cotton Releases'
+		url 'http://server.bbkr.space:8081/artifactory/libs-release'
+	}
+	mavenLocal()
+}
+
+dependencies {
+	// To change the versions see the gradle.properties file
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings "net.fabricmc:yarn:${project.yarn_mappings}"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+	modImplementation("io.github.prospector:modmenu:1.7.16.1.14.4+build.128") {
+		transitive(false)
+	}
+
+	def modules = ["logging", "config"]
+	modules.each { module ->
+		modApi ("io.github.cottonmc.cotton:cotton-$module:+") { transitive = false }
+		include("io.github.cottonmc.cotton:cotton-$module:+")
+	}
+
+	modApi ("io.github.cottonmc:Jankson-Fabric:2.2.0+j1.2.0") { transitive = false }
+	include("io.github.cottonmc:Jankson-Fabric:2.2.0+j1.2.0")
+
+	modApi ("me.shedaniel.cloth:config-2:${project.cloth_config_version}") { transitive = false }
+	include("me.shedaniel.cloth:config-2:${project.cloth_config_version}")
+}
+
+processResources {
+	inputs.property "version", project.version
+
+	from(sourceSets.main.resources.srcDirs) {
+		include "fabric.mod.json"
+		expand "version": project.version
+	}
+
+	from(sourceSets.main.resources.srcDirs) {
+		exclude "fabric.mod.json"
+	}
+}
+
+tasks.withType(JavaCompile) {
+	options.encoding = "UTF-8"
+}
+
+jar {
+	from "LICENSE"
+}
