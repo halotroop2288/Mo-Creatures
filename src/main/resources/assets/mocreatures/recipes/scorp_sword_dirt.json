@@ -1,20 +1,20 @@
 {
-  "type": "minecraft:crafting_shapeless",
-  "ingredients": [
-    {
-      "item": "minecraft:diamond_sword"
-    },
-    {
-      "item": "mocreatures:scorpstingdirt"
-    },
-    {
-      "item": "mocreatures:scorpstingdirt"
-    },
-    {
-      "item": "mocreatures:scorpstingdirt"
-    }
-  ],
-  "result": {
-    "item": "mocreatures:scorpsworddirt"
-  }
+	"type": "minecraft:crafting_shapeless",
+	"ingredients": [
+		{
+			"item": "minecraft:diamond_sword"
+		},
+		{
+			"item": "mocreatures:scorpstingdirt"
+		},
+		{
+			"item": "mocreatures:scorpstingdirt"
+		},
+		{
+			"item": "mocreatures:scorpstingdirt"
+		}
+	],
+	"result": {
+		"item": "mocreatures:scorpsworddirt"
+	}
 }

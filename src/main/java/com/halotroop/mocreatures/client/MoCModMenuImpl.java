@@ -40,15 +40,15 @@ public class MoCModMenuImpl implements ModMenuApi {
 			// Creature Settings
 			ConfigCategory creatureGeneralSettingsCategory = builder.getOrCreateCategory(MODID + ".creature_general.config")
 					.addEntry(entryBuilder.startBooleanToggle(OPT_STR + "attack_horses",
-									creatureGeneralSettings.attackHorses).requireRestart()
+							creatureGeneralSettings.attackHorses).requireRestart()
 							.setTooltip("Allows creatures to attack horses.").build())
 					.addEntry(entryBuilder.startBooleanToggle(OPT_STR + "attack_wolves",
-									creatureGeneralSettings.attackWolves).requireRestart()
+							creatureGeneralSettings.attackWolves).requireRestart()
 							.setTooltip("Allows creatures to attack wolves.").build())
 					.addEntry(entryBuilder.startBooleanToggle(OPT_STR + "destroy_drops",
-									creatureGeneralSettings.destroyDrops).build())
+							creatureGeneralSettings.destroyDrops).build())
 					.addEntry(entryBuilder.startBooleanToggle(OPT_STR + "easy_breeding",
-									creatureGeneralSettings.easyBreeding)
+							creatureGeneralSettings.easyBreeding)
 							.setTooltip("Makes horse breeding simpler.").build())
 					.addEntry(entryBuilder.startBooleanToggle(OPT_STR + "elephant_bulldozer",
 							creatureGeneralSettings.elephantBulldozer).build())
@@ -85,8 +85,7 @@ public class MoCModMenuImpl implements ModMenuApi {
 					.addEntry(entryBuilder.startIntSlider(OPT_STR + "despawn_light_level",
 							creatureGeneralSettings.despawnLightLevel, 0, 15)
 							.setTooltip("The maximum light level threshold used to determine",
-									"whether or not to despawn a farm animal.").build())
-					;
+									"whether or not to despawn a farm animal.").build());
 			
 			// Creature spawn settings
 			for (MoCreaturesConfig config : MoCreaturesConfig.values()) {
@@ -161,8 +160,7 @@ public class MoCModMenuImpl implements ModMenuApi {
 					.addEntry(entryBuilder.startIntField(OPT_STR + "max_tamed_per_player",
 							ownershipSettings.maxTamedPerOP)
 							.setTooltip("Max tamed creatures a player can have." +
-									"Requires enableOwnership to be set to true.").build())
-					;
+									"Requires enableOwnership to be set to true.").build());
 			
 			// Global Settings
 			ConfigCategory globalSettingsCategory = builder.getOrCreateCategory(MODID + ".global.config")
@@ -180,7 +178,7 @@ public class MoCModMenuImpl implements ModMenuApi {
 					.addEntry(entryBuilder.startBooleanToggle(OPT_STR + "display_pet_name",
 							globalSettings.displayPetName)
 							.setTooltip(I18n.translate(OPT_STR + "display_pet_name")).build())
-					.addEntry(entryBuilder.startBooleanToggle(OPT_STR+ "force_despawns",
+					.addEntry(entryBuilder.startBooleanToggle(OPT_STR + "force_despawns",
 							globalSettings.forceDespawns)
 							.setTooltip("If true, it will force despawns on all creatures including",
 									"vanilla for a more dynamic experience while exploring world.",
@@ -189,14 +187,12 @@ public class MoCModMenuImpl implements ModMenuApi {
 									"Note: if you experience issues with farm animals despawning,",
 									"adjust despawnLightLevel.").build())
 					.addEntry(entryBuilder.startIntField(OPT_STR + "particle_fx",
-							globalSettings.particleFX).build())
-					;
+							globalSettings.particleFX).build());
 			// Water Mob General Settings
 			ConfigCategory waterMobGeneralSettingsCategory = builder.getOrCreateCategory(MODID + "water_mob.config")
 					.addEntry(entryBuilder.startBooleanToggle(OPT_STR + "attack_dolphins",
 							waterMobGeneralSettings.attackDolphins)
-							.setTooltip("Allows water creatures to attack dolphins.").build())
-					;
+							.setTooltip("Allows water creatures to attack dolphins.").build());
 			
 			builder.setFallbackCategory(creatureGeneralSettingsCategory);
 			return builder.build();

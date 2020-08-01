@@ -12,18 +12,18 @@ public class MoCSettings {
 	public static WaterMobGeneralSettings waterMobGeneralSettings;
 	
 	static void loadAll() {
-		creatureGeneralSettings = loadConfig(CreatureGeneralSettings.class,"creature-general");
-		globalSettings = loadConfig(GlobalSettings.class,         "global");
+		creatureGeneralSettings = loadConfig(CreatureGeneralSettings.class, "creature-general");
+		globalSettings = loadConfig(GlobalSettings.class, "global");
 		monsterGeneralSettings = loadConfig(MonsterGeneralSettings.class, "monster-general");
-		ownershipSettings = loadConfig(OwnershipSettings.class,      "ownership");
-		waterMobGeneralSettings = loadConfig(WaterMobGeneralSettings.class,"water-mob-general");
+		ownershipSettings = loadConfig(OwnershipSettings.class, "ownership");
+		waterMobGeneralSettings = loadConfig(WaterMobGeneralSettings.class, "water-mob-general");
 	}
 	
 	public static void saveAll() {
 		saveConfig(creatureGeneralSettings, "creature-general");
-		saveConfig(globalSettings,          "global");
-		saveConfig(monsterGeneralSettings,  "monster-general");
-		saveConfig(ownershipSettings,       "ownership");
+		saveConfig(globalSettings, "global");
+		saveConfig(monsterGeneralSettings, "monster-general");
+		saveConfig(ownershipSettings, "ownership");
 		saveConfig(waterMobGeneralSettings, "water-mob-general");
 	}
 	

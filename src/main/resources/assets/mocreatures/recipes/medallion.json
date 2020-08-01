@@ -1,18 +1,18 @@
 {
-  "type": "minecraft:crafting_shaped",
-  "pattern": [
-    "# #",
-    " X "
-  ],
-  "key": {
-    "X": {
-      "item": "minecraft:gold_ingot"
-    },
-    "#": {
-      "item": "minecraft:leather"
-    }
-  },
-  "result": {
-    "item": "mocreatures:medallion"
-  }
+	"type": "minecraft:crafting_shaped",
+	"pattern": [
+		"# #",
+		" X "
+	],
+	"key": {
+		"X": {
+			"item": "minecraft:gold_ingot"
+		},
+		"#": {
+			"item": "minecraft:leather"
+		}
+	},
+	"result": {
+		"item": "mocreatures:medallion"
+	}
 }

@@ -1,6 +1,6 @@
 {
-    "parent": "block/cube_all",
-    "textures": {
-        "all": "mocreatures:blocks/wood_planks_wyvern_lair"
-    }
+	"parent": "block/cube_all",
+	"textures": {
+		"all": "mocreatures:blocks/wood_planks_wyvern_lair"
+	}
 }

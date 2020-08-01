@@ -2,7 +2,6 @@
 	"schemaVersion": 1,
 	"id": "mocreatures",
 	"version": "${version}",
-	
 	"name": "Mo' Creatures",
 	"description": "This mod adds many more creatures to Minecraft.\nFabric port by halotroop2288\nAuthored by DrZhark\nCoding:halotroop2288, DrZhark\nAI, animations: DrZhark\nModels, textures: BlockDaddy, DrZhark.\nSMP coding: Bloodshot, DrZhark",
 	"authors": [
@@ -18,10 +17,8 @@
 		"discord": "https://halotroop.com/Discord.html",
 		"email": "carolinejoybell@gmail.com"
 	},
-	
 	"license": "MIT",
 	"icon": "assets/mocreatures/DrZhark.png",
-	
 	"environment": "*",
 	"entrypoints": {
 		"main": [
@@ -37,7 +34,6 @@
 	"mixins": [
 		"mocreatures.mixins.json"
 	],
-	
 	"depends": {
 		"fabricloader": ">=0.7.4",
 		"fabric": "*",

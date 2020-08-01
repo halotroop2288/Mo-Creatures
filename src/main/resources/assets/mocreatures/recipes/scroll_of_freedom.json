@@ -1,18 +1,18 @@
 {
-  "type": "minecraft:crafting_shapeless",
-  "group": "mocreatures:scrolloffreedom",
-  "ingredients": [
-    {
-      "item": "minecraft:paper"
-    },
-    {
-      "item": "minecraft:feather"
-    },
-    {
-      "item": "minecraft:redstone"
-    }
-  ],
-  "result": {
-    "item": "mocreatures:scrolloffreedom"
-  }
+	"type": "minecraft:crafting_shapeless",
+	"group": "mocreatures:scrolloffreedom",
+	"ingredients": [
+		{
+			"item": "minecraft:paper"
+		},
+		{
+			"item": "minecraft:feather"
+		},
+		{
+			"item": "minecraft:redstone"
+		}
+	],
+	"result": {
+		"item": "mocreatures:scrolloffreedom"
+	}
 }
