@@ -1,7 +1,7 @@
 package com.halotroop.mocreatures.client;
 
-import com.halotroop.mocreatures.common.MoCSettings;
-import com.halotroop.mocreatures.common.MoCreaturesConfig;
+import com.halotroop.mocreatures.common.config.MoCSettings;
+import com.halotroop.mocreatures.common.config.MoCreaturesConfig;
 import io.github.prospector.modmenu.api.ModMenuApi;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
@@ -13,7 +13,7 @@ import net.minecraft.client.resource.language.I18n;
 import java.util.function.Function;
 
 import static com.halotroop.mocreatures.common.MoCMain.MODID;
-import static com.halotroop.mocreatures.common.MoCSettings.*;
+import static com.halotroop.mocreatures.common.config.MoCSettings.*;
 
 public class MoCModMenuImpl implements ModMenuApi {
 	private static final String OPT_STR = "option." + MODID + '.';

@@ -1,4 +1,4 @@
-package com.halotroop.mocreatures.common;
+package com.halotroop.mocreatures.common.config;
 
 import blue.endless.jankson.Comment;
 import io.github.cottonmc.cotton.config.ConfigManager;
@@ -94,7 +94,7 @@ public enum MoCreaturesConfig {
 		}
 	}
 	
-	static void loadAll() {
+	public static void loadAll() {
 		// TOUCH
 	}
 	

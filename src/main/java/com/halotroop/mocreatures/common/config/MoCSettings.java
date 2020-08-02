@@ -1,4 +1,4 @@
-package com.halotroop.mocreatures.common;
+package com.halotroop.mocreatures.common.config;
 
 import blue.endless.jankson.Comment;
 import io.github.cottonmc.cotton.config.ConfigManager;
@@ -11,7 +11,7 @@ public class MoCSettings {
 	public static OwnershipSettings ownershipSettings;
 	public static WaterMobGeneralSettings waterMobGeneralSettings;
 	
-	static void loadAll() {
+	public static void loadAll() {
 		creatureGeneralSettings = loadConfig(CreatureGeneralSettings.class, "creature-general");
 		globalSettings = loadConfig(GlobalSettings.class, "global");
 		monsterGeneralSettings = loadConfig(MonsterGeneralSettings.class, "monster-general");
