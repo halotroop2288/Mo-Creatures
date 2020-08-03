@@ -1,5 +1,6 @@
 package com.halotroop.mocreatures.common.registry;
 
+import com.halotroop.mocreatures.client.entity.renderer.AntRenderer;
 import com.halotroop.mocreatures.common.MoCMain;
 import com.halotroop.mocreatures.common.entity.ambient.AntEntity;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityTypeBuilder;
@@ -14,7 +15,7 @@ public class MoCEntityTypes {
 	
 	static {
 		ANT = FabricEntityTypeBuilder.create(EntityCategory.AMBIENT, AntEntity::new)
-				.dimensions(EntityDimensions.fixed(0.5F, 0.5F)).build();
+				.dimensions(EntityDimensions.fixed(AntRenderer.SCALE, AntRenderer.SCALE)).build();
 	}
 	
 	public static void registerAll() {

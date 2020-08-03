@@ -8,8 +8,10 @@ import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.util.Identifier;
 
 public class AntRenderer extends InsectRenderer<AntEntity, AntModel> {
+	public static final float SCALE = 0.25F;
+	
 	public AntRenderer(EntityRenderDispatcher dispatcher, EntityRendererRegistry.Context context) {
-		super(dispatcher, new AntModel(), 0.25f);
+		super(dispatcher, new AntModel(), SCALE);
 	}
 	
 	@Override

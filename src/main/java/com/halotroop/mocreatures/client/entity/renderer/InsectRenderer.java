@@ -6,8 +6,8 @@ import net.minecraft.client.render.entity.model.EntityModel;
 import org.lwjgl.opengl.GL11;
 
 public abstract class InsectRenderer<T extends InsectEntity, M extends EntityModel<T>> extends CreatureRenderer<T, M> {
-	public InsectRenderer(EntityRenderDispatcher entityRenderDispatcher, M entityModel, float f) {
-		super(entityRenderDispatcher, entityModel, f);
+	public InsectRenderer(EntityRenderDispatcher entityRenderDispatcher, M entityModel, float scale) {
+		super(entityRenderDispatcher, entityModel, scale);
 	}
 	
 	@Override

@@ -16,7 +16,7 @@ public class MoCMain implements ModInitializer {
 	}
 	
 	public static Identifier getTexture(String path) {
-		return getID("textures/entity/");
+		return getID("textures/" + path);
 	}
 	
 	@Override

@@ -46,8 +46,8 @@ public class MoCWanderGoal2 extends Goal {
 			}
 			
 			if (this.entity.getRandom().nextInt(this.executionChance) != 0) {
-				MoCMain.logger.info(this.entity + "exiting due executionChance, age = " + this.entity.age
-						+ ", executionChance = " + this.executionChance);
+//				MoCMain.logger.info(this.entity + "exiting due executionChance, age = " + this.entity.age
+//						+ ", executionChance = " + this.executionChance);
 				return false;
 			}
 		}
@@ -62,15 +62,14 @@ public class MoCWanderGoal2 extends Goal {
 				int finalYHeight = distToFloor + MathHelper.floor(vec3.y - this.entity.y);
 				if ((finalYHeight < ((MoCEntity) this.entity).minFlyingHeight())) {
 					MoCMain.logger.info("vector height " + finalYHeight + " smaller than min flying height "
-							+ ((MoCEntity) this.entity).minFlyingHeight());
+							+ ((MoCAnimalEntity) this.entity).minFlyingHeight());
 					return false;
 				}
-				if ((finalYHeight > ((MoCEntity) this.entity).maxFlyingHeight())) {
+				if ((finalYHeight > ((MoCAnimalEntity) this.entity).maxFlyingHeight())) {
 					MoCMain.logger.info("vector height " + finalYHeight + " bigger than max flying height "
 							+ ((MoCEntity) this.entity).maxFlyingHeight());
 					return false;
 				}
-				
 			}
 		}
 		
