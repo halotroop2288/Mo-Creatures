@@ -150,7 +150,7 @@ public class MoCModMenuImpl implements ModMenuApi {
 							.setTooltip(
 									"Assigns player as owner for each creature they tame.",
 									"Only the owner can interact with the tamed creature.").build())
-					.addEntry(entryBuilder.startBooleanToggle(OPT_STR + "enable_reset_ownership_scroll",
+					.addEntry(entryBuilder.startBooleanToggle(OPT_STR + "enable_reset_owner_scroll",
 							ownershipSettings.enableResetOwnerScroll)
 							.setTooltip("Allows players to remove a tamed creatures owner essentially un-taming it.").build())
 					.addEntry(entryBuilder.startIntField(OPT_STR + "max_tamed_per_op",
@@ -189,7 +189,7 @@ public class MoCModMenuImpl implements ModMenuApi {
 					.addEntry(entryBuilder.startIntField(OPT_STR + "particle_fx",
 							globalSettings.particleFX).build());
 			// Water Mob General Settings
-			ConfigCategory waterMobGeneralSettingsCategory = builder.getOrCreateCategory(MODID + "water_mob.config")
+			ConfigCategory waterMobGeneralSettingsCategory = builder.getOrCreateCategory(MODID + ".water_mob.config")
 					.addEntry(entryBuilder.startBooleanToggle(OPT_STR + "attack_dolphins",
 							waterMobGeneralSettings.attackDolphins)
 							.setTooltip("Allows water creatures to attack dolphins.").build());

@@ -3,13 +3,18 @@ package com.halotroop.mocreatures.common;
 import com.halotroop.mocreatures.common.config.MoCSettings;
 import com.halotroop.mocreatures.common.config.MoCreaturesConfig;
 import com.halotroop.mocreatures.common.registry.MoCEntityTypes;
+import com.halotroop.mocreatures.common.registry.MoCSoundEvents;
 import io.github.cottonmc.cotton.logging.ModLogger;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.util.Identifier;
 
 public class MoCMain implements ModInitializer {
 	public static final String MODID = "mocreatures";
-	public static ModLogger logger = new ModLogger(MODID);
+	public static ModLogger logger = getLogger("main");
+	
+	public static ModLogger getLogger(String subtitle) {
+		return new ModLogger(MODID + ":" + subtitle);
+	}
 	
 	public static Identifier getID(String name) {
 		return new Identifier(MODID, name);
@@ -17,6 +22,11 @@ public class MoCMain implements ModInitializer {
 	
 	public static Identifier getTexture(String path) {
 		return getID("textures/" + path);
+	}
+	
+	private static void registerCommon() {
+		MoCSoundEvents.registerAll();
+		MoCEntityTypes.registerAll();
 	}
 	
 	@Override
@@ -28,9 +38,5 @@ public class MoCMain implements ModInitializer {
 		
 		logger.info("Registering objects");
 		registerCommon();
-	}
-	
-	private static void registerCommon() {
-		MoCEntityTypes.registerAll();
 	}
 }

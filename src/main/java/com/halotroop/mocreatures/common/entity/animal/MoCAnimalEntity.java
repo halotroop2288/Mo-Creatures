@@ -1,26 +1,23 @@
 package com.halotroop.mocreatures.common.entity.animal;
 
-import com.halotroop.mocreatures.common.entity.MoCEntity;
+import com.halotroop.mocreatures.common.config.MoCSettings;
 import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.passive.AnimalEntity;
 import net.minecraft.entity.passive.PassiveEntity;
-import net.minecraft.entity.passive.TurtleEntity;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import java.util.UUID;
-
-public abstract class MoCAnimalEntity extends AnimalEntity implements MoCEntity {
+public abstract class MoCAnimalEntity extends AnimalEntity {
 	private static final TrackedData<BlockPos> HOME_POS;
+	private static final TrackedData<Boolean> ADULT;
 	
 	static {
-		HOME_POS = DataTracker.registerData(TurtleEntity.class, TrackedDataHandlerRegistry.BLOCK_POS);
+		HOME_POS = DataTracker.registerData(MoCAnimalEntity.class, TrackedDataHandlerRegistry.BLOCK_POS);
+		ADULT = DataTracker.registerData(MoCAnimalEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
 	}
 	
 	protected MoCAnimalEntity(EntityType<? extends AnimalEntity> entityType, World world) {
@@ -73,198 +70,22 @@ public abstract class MoCAnimalEntity extends AnimalEntity implements MoCEntity 
 		return getHomePosition().isWithinDistance(position, getMaximumHomeDistance());
 	}
 	
-	@Override
-	public String getPetName() {
-		return "";
+	public boolean isAdult() {
+		return this.dataTracker.get(ADULT);
 	}
 	
 	@Override
-	public void setPetName(String name) {
-	
-	}
-	
-	@Override
-	public int getOwnerPetId() {
-		return 0;
-	}
-	
-	@Override
-	public void setOwnerPetId(int petId) {
-	
-	}
-	
-	@Override
-	public UUID getOwnerId() {
-		return null;
-	}
-	
-	@Override
-	public boolean isTamed() {
-		return false;
-	}
-	
-	@Override
-	public boolean getIsAdult() {
-		return false;
-	}
-	
-	@Override
-	public boolean getIsGhost() {
-		return false;
-	}
-	
-	@Override
-	public void setAdult(boolean flag) {
-	
-	}
-	
-	@Override
-	public boolean checkSpawningBiome() {
-		return false;
-	}
-	
-	@Override
-	public boolean getCanSpawnHere() {
-		return false;
-	}
-	
-	@Override
-	public boolean renderName() {
-		return false;
-	}
-	
-	@Override
-	public int nameYOffset() {
-		return 0;
+	public boolean shouldRenderName() {
+		return (MoCSettings.globalSettings.displayPetName && this.hasCustomName()
+				&& !this.hasPassengers() && !this.hasVehicle());
 	}
 	
 	@Override
 	public void jump() {
-	
+		this.addVelocity(0, getJumpVelocity(), 0);
 	}
 	
-	@Override
-	public void makeEntityDive() {
-	
-	}
-	
-	@Override
-	public float getSizeFactor() {
-		return 0;
-	}
-	
-	@Override
-	public float getAdjustedYOffset() {
-		return 0;
-	}
-	
-	@Override
-	public void setArmorType(int i) {
-	
-	}
-	
-	@Override
-	public float rollRotationOffset() {
-		return 0;
-	}
-	
-	@Override
-	public float pitchRotationOffset() {
-		return 0;
-	}
-	
-	@Override
-	public void setAgeTicks(int i) {
-	
-	}
-	
-	@Override
-	public int getAgeTicks() {
-		return 0;
-	}
-	
-	@Override
-	public float yawRotationOffset() {
-		return 0;
-	}
-	
-	@Override
-	public float getAdjustedZOffset() {
-		return 0;
-	}
-	
-	@Override
-	public float getAdjustedXOffset() {
-		return 0;
-	}
-	
-	@Override
-	public Identifier getTexture() {
-		return null;
-	}
-	
-	@Override
-	public boolean canAttackTarget(LivingEntity entity) {
-		return false;
-	}
-	
-	@Override
-	public boolean getIsSitting() {
-		return false;
-	}
-	
-	@Override
 	public boolean isNotScared() {
 		return false;
-	}
-	
-	@Override
-	public boolean isMovementCeased() {
-		return false;
-	}
-	
-	@Override
-	public boolean shouldAttackPlayers() {
-		return false;
-	}
-	
-	@Override
-	public double getDivingDepth() {
-		return 0;
-	}
-	
-	@Override
-	public boolean isDiving() {
-		return false;
-	}
-	
-	@Override
-	public void forceEntityJump() {
-	
-	}
-	
-	@Override
-	public int maxFlyingHeight() {
-		return 0;
-	}
-	
-	@Override
-	public int minFlyingHeight() {
-		return 0;
-	}
-	
-	@Override
-	public boolean isFlyer() {
-		return false;
-	}
-	
-	@Override
-	public boolean getIsFlying() {
-		return false;
-	}
-	
-	@Override
-	public String getClazzString() {
-		return null;
 	}
 }

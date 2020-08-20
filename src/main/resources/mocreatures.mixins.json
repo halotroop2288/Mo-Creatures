@@ -4,6 +4,7 @@
 	"package": "com.halotroop.mocreatures.mixin",
 	"compatibilityLevel": "JAVA_8",
 	"mixins": [
+		"MobEntityMixin"
 	],
 	"client": [
 	],
