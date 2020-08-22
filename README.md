@@ -13,11 +13,14 @@ With no extra requirements, and no crashing config screen!
 ~~Crossed out~~ mobs are already in vanilla now!
 
 ### Passive mobs
- - [ ] Ants
- - [ ] Birds
+ - [x] Ants
+    - Please report bugs/missing features!
+ - [x] Birds
+	- Please report bugs/missing features!
  - [x] ~~Bunnies~~
-   - Added to [vanilla](https://minecraft.gamepedia.com/Rabbit) in 1.8
+	- Added to [vanilla](https://minecraft.gamepedia.com/Rabbit) in 1.8
  - [ ] Butterflies
+	- In progress!
  - [ ] Crabs
  - [ ] Crickets
  - [ ] Deer
@@ -27,8 +30,8 @@ With no extra requirements, and no crashing config screen!
  - [ ] Fishies
  - [ ] Flies
  - [ ] ~~Horses~~
-   - Added to [vanilla](https://minecraft.gamepedia.com/Horse) in 1.6
-   - Mo' Creatures features will return for them (configurable)
+	- Added to [vanilla](https://minecraft.gamepedia.com/Horse) in 1.6
+	- Mo' Creatures features will return for them (configurable)
  - [ ] Jellyfish
  - [ ] Maggots
  - [ ] Manta rays
@@ -49,14 +52,14 @@ With no extra requirements, and no crashing config screen!
  - [ ] Elephants
  - [ ] Ents
  - [x] ~~Foxes~~
-   - Added to [vanilla](https://minecraft.gamepedia.com/Fox) in 1.14
-   - Check out [LambdaFoxes](https://github.com/LambdAurora/LambdaFoxes) for more fox variants!
+	- Added to [vanilla](https://minecraft.gamepedia.com/Fox) in 1.14
+	- Check out [LambdaFoxes](https://github.com/LambdAurora/LambdaFoxes) for more fox variants!
  - [ ] Goats
  - [ ] Grizzly bears
  - [ ] Hellrats
  - [ ] ~~Kitties~~
-   - Replaced tamed ocelots in [vanilla](https://minecraft.gamepedia.com/Cat) in 1.14
-   - Mo Creatures features for cats will return for them (configurable)
+	- Replaced tamed ocelots in [vanilla](https://minecraft.gamepedia.com/Cat) in 1.14
+	- Mo Creatures features for cats will return for them (configurable)
  - [ ] Ogres
  - [ ] Ostriches
  - [ ] Raccoons

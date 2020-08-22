@@ -22,13 +22,13 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"com.halotroop.mocreatures.common.MoCMain"
+			"org.mocreatures.mocreatures.common.MoCMain"
 		],
 		"client": [
-			"com.halotroop.mocreatures.client.MoCClient"
+			"org.mocreatures.mocreatures.client.MoCClient"
 		],
 		"modmenu": [
-			"com.halotroop.mocreatures.client.MoCModMenuImpl"
+			"org.mocreatures.mocreatures.client.MoCModMenuImpl"
 		]
 	},
 	"mixins": [

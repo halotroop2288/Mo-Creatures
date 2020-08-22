@@ -31,8 +31,8 @@ dependencies {
         include("io.github.cottonmc.cotton:cotton-$module:+")
     }
 
-    modApi("io.github.cottonmc:Jankson-Fabric:2.2.0+j1.2.0") { transitive = false }
-    include("io.github.cottonmc:Jankson-Fabric:2.2.0+j1.2.0")
+    modApi("io.github.cottonmc:Jankson-Fabric:${project.jankson_version}") { transitive = false }
+    include("io.github.cottonmc:Jankson-Fabric:${project.jankson_version}")
 
     modApi("me.shedaniel.cloth:config-2:${project.cloth_config_version}") { transitive = false }
     include("me.shedaniel.cloth:config-2:${project.cloth_config_version}")
@@ -57,4 +57,5 @@ tasks.withType(JavaCompile) {
 
 jar {
     from "LICENSE"
+    from "README.md"
 }
