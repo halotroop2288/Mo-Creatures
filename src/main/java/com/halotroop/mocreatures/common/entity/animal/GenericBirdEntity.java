@@ -6,10 +6,13 @@ import net.minecraft.entity.EntityData;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.SpawnType;
 import net.minecraft.entity.passive.ParrotEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Hand;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.IWorld;
@@ -18,30 +21,10 @@ import net.minecraft.world.World;
 
 import java.util.Locale;
 
-// TODO: Add feather-falling to the owner when a bird sits on their head.
+// TODO: Add slow falling to the owner when a bird sits on their head.
 public class GenericBirdEntity extends ParrotEntity implements MoCreature.Flying {
-	public float getWingAnimationProgress(float f) {
-		float f1 = this.wingE + ((this.wingB - this.wingE) * f);
-		float f2 = this.wingD + ((this.wingC - this.wingD) * f);
-		return (MathHelper.sin(f1) + 1.0F) * f2;
-	}
-	
-	public enum BirdType {
-		dove("white", MoCSounds.ENTITY_BIRD_AMBIENT_WHITE.event),
-		crow("black", MoCSounds.ENTITY_BIRD_AMBIENT_BLACK.event),
-		//		parrot("green", MoCSoundEvents.ENTITY_BIRD_AMBIENT_GREEN.event), // TODO make this a different bird, since parrots have been added to vanilla?
-		blue("blue", MoCSounds.ENTITY_BIRD_AMBIENT_BLUE.event),
-		canary("yellow", MoCSounds.ENTITY_BIRD_AMBIENT_YELLOW.event),
-		cardinal("red", MoCSounds.ENTITY_BIRD_AMBIENT_RED.event);
-		
-		protected final String color;
-		protected final SoundEvent ambientSound;
-		
-		BirdType(String color, SoundEvent ambientSound) {
-			this.color = color.toLowerCase(Locale.ENGLISH);
-			this.ambientSound = ambientSound;
-		}
-	}
+	public float wingB, wingC, wingD, wingE, wingH;
+	private int hopTimer;
 	
 	public GenericBirdEntity(EntityType<GenericBirdEntity> entityType, World world) {
 		super(entityType, world);
@@ -95,15 +78,72 @@ public class GenericBirdEntity extends ParrotEntity implements MoCreature.Flying
 		return MoCSounds.ENTITY_GENERIC_DRINKING.event;
 	}
 	
-	public float wingB, wingC, wingD, wingE, wingH;
+	@Override
+	public boolean interactMob(PlayerEntity playerEntity, Hand hand) {
+		final ItemStack stack = playerEntity.getActiveItem();
+		if (!stack.isEmpty() && stack.getItem().equals(Items.WHEAT_SEEDS)) {
+			stack.decrement(1);
+			if (stack.isEmpty()) {
+				playerEntity.setStackInHand(hand, ItemStack.EMPTY);
+			}
+			if (!this.world.isClient) {
+				this.setTamed(true); // TODO: Implement MoC Taming screen?
+				// MoCTools.tameWithName(playerEntity, this);
+			}
+			return true;
+		} else {
+			if (this.isTamed()) {
+				if (this.hasVehicle()) {
+					this.stopRiding();
+				} else {
+					if (this.startRiding(playerEntity)) {
+						this.yaw = playerEntity.yaw;
+					}
+				}
+				return true;
+			}
+		}
+		
+		return false;
+	}
 	
 	@Override
 	public void tick() {
 		super.tick();
 		this.updateWingAnimationProgress();
+		
+		if (this.getVehicle() != null) {
+			this.yaw = this.getVehicle().yaw;
+			
+			if (this.getVehicle() instanceof PlayerEntity) {
+				PlayerEntity player = (PlayerEntity) this.getVehicle();
+				// FIXME: Give player slow falling effect in later versions
+				player.fallDistance = 0.0F;
+				Vec3d vel = player.getVelocity();
+				if (vel.getY() < -0.1D) {
+					player.setVelocity(vel.x, 0, vel.z);
+				}
+			}
+		}
+		
+		tryHop();
 	}
 	
-	public void updateWingAnimationProgress() {
+	private void tryHop() {
+		Vec3d vel = this.getVelocity();
+		if (--this.hopTimer <= 0 && this.onGround
+				&& (vel.getX() > 0.05D || vel.getZ() > 0.05D
+				|| vel.getX() < -0.05D || vel.getZ() < -0.05D)) {
+			this.setVelocity(0.25D, vel.y, vel.z);
+			float velX = MathHelper.sin(this.yaw * (float) Math.PI / 180.0F);
+			float velZ = MathHelper.cos(this.yaw * (float) Math.PI / 180.0F);
+			
+			this.setVelocity(vel.x + (-0.2F * velX), vel.y, vel.z + (0.2F * velZ));
+			this.hopTimer = 15;
+		}
+	}
+	
+	private void updateWingAnimationProgress() {
 		this.wingE = this.wingB;
 		this.wingD = this.wingC;
 		this.wingC = (float) (this.wingC + ((this.onGround ? -1 : 4) * 0.3D));
@@ -117,5 +157,28 @@ public class GenericBirdEntity extends ParrotEntity implements MoCreature.Flying
 			this.setVelocity(vel.x, vel.y * 0.8D, vel.z);
 		}
 		this.wingB += this.wingH * 2.0F;
+	}
+	
+	public float getWingAnimationProgress(float f) {
+		float f1 = this.wingE + ((this.wingB - this.wingE) * f);
+		float f2 = this.wingD + ((this.wingC - this.wingD) * f);
+		return (MathHelper.sin(f1) + 1.0F) * f2;
+	}
+	
+	public enum BirdType {
+		dove("white", MoCSounds.ENTITY_BIRD_AMBIENT_WHITE.event),
+		crow("black", MoCSounds.ENTITY_BIRD_AMBIENT_BLACK.event),
+		//		parrot("green", MoCSoundEvents.ENTITY_BIRD_AMBIENT_GREEN.event), // TODO make this a different bird, since parrots have been added to vanilla?
+		blue("blue", MoCSounds.ENTITY_BIRD_AMBIENT_BLUE.event),
+		canary("yellow", MoCSounds.ENTITY_BIRD_AMBIENT_YELLOW.event),
+		cardinal("red", MoCSounds.ENTITY_BIRD_AMBIENT_RED.event);
+		
+		protected final String color;
+		protected final SoundEvent ambientSound;
+		
+		BirdType(String color, SoundEvent ambientSound) {
+			this.color = color.toLowerCase(Locale.ENGLISH);
+			this.ambientSound = ambientSound;
+		}
 	}
 }
