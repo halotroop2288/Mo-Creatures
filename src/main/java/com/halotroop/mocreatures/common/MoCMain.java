@@ -3,7 +3,7 @@ package com.halotroop.mocreatures.common;
 import com.halotroop.mocreatures.common.config.MoCSettings;
 import com.halotroop.mocreatures.common.config.MoCreaturesConfig;
 import com.halotroop.mocreatures.common.registry.MoCEntityTypes;
-import com.halotroop.mocreatures.common.registry.MoCSoundEvents;
+import com.halotroop.mocreatures.common.registry.MoCSounds;
 import io.github.cottonmc.cotton.logging.ModLogger;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.util.Identifier;
@@ -21,11 +21,11 @@ public class MoCMain implements ModInitializer {
 	}
 	
 	public static Identifier getTexture(String path) {
-		return getID("textures/" + path);
+		return getID("textures/" + path + ".png");
 	}
 	
 	private static void registerCommon() {
-		MoCSoundEvents.registerAll();
+		MoCSounds.registerAll();
 		MoCEntityTypes.registerAll();
 	}
 	

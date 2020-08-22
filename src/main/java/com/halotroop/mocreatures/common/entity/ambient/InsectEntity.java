@@ -18,7 +18,7 @@ import net.minecraft.item.Item;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
-public abstract class InsectEntity extends AnimalEntity {
+public abstract class InsectEntity extends AnimalEntity implements MoCreature {
 	private int climbCounter;
 	
 	protected InsectEntity(EntityType<? extends AnimalEntity> entityType, World world) {

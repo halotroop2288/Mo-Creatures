@@ -1,5 +1,6 @@
 package com.halotroop.mocreatures.common.entity.ambient;
 
+import com.halotroop.mocreatures.common.entity.MoCreature;
 import com.halotroop.mocreatures.common.registry.MoCEntityTypes;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.WanderAroundGoal;
@@ -7,7 +8,7 @@ import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.world.World;
 
-public class AntEntity extends InsectEntity {
+public class AntEntity extends InsectEntity implements MoCreature {
 	public AntEntity(EntityType<? extends InsectEntity> entityType, World world) {
 		super(entityType, world);
 	}
@@ -45,5 +46,4 @@ public class AntEntity extends InsectEntity {
 	public float getMovementSpeed() {
 		return hasPassengers() ? 0.05F : 0.15F;
 	}
-	
 }

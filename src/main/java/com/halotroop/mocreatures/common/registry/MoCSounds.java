@@ -7,7 +7,7 @@ import net.minecraft.util.registry.Registry;
 
 import java.util.Locale;
 
-public enum MoCSoundEvents {
+public enum MoCSounds {
 	// Put inconsistent names on separate lines
 	// TODO: Fix inconsistent names, place appropriate underscores back in || WILL BREAK OLD RESOURCE PACKS!
 	ENTITY_BEAR_AMBIENT("bear_grunt"),
@@ -20,7 +20,7 @@ public enum MoCSoundEvents {
 	ENTITY_BIRD_AMBIENT_WHITE,
 	ENTITY_BIRD_AMBIENT_YELLOW,
 	//	ENTITY_BIRD_DEATH, BIRD_HURT, // TODO - DrZ team
-	ENTITY_CRICKET_AMBIENT("cricket"), CRICKET_FLY,
+	ENTITY_CRICKET_AMBIENT, CRICKET_FLY,
 	ENTITY_CROCODILE_AMBIENT("croc_grunt"),
 	ENTITY_CROCODILE_DEATH("croc_dying"),
 	//	ENTITY_CROCODILE_HURT("croc_hurt"), // TODO - DrZ team
@@ -42,7 +42,8 @@ public enum MoCSoundEvents {
 	ENTITY_ELEPHANT_HURT,
 	//	ENTITY_ENT_AMBIENT, ENTITY_ENT_DEATH, ENTITY_ENT_HURT, // TODO - DrZ team
 	ENTITY_FLY_AMBIENT,
-	ENTITY_GENERIC_ARMOR_ON("armor_put"), GENERIC_ARMOR_OFF,
+	ENTITY_GENERIC_ARMOR_ON("armor_put"),
+	GENERIC_ARMOR_OFF,
 	ENTITY_GENERIC_DESTROY,
 	ENTITY_GENERIC_DRINKING,
 	ENTITY_GENERIC_EATING,
@@ -105,7 +106,7 @@ public enum MoCSoundEvents {
 	public SoundEvent event;
 	public String name;
 	
-	MoCSoundEvents() {
+	MoCSounds() {
 		this.name = this.name()
 				.replaceAll("_", "")
 				.replaceAll("ENTITY", "")
@@ -116,7 +117,7 @@ public enum MoCSoundEvents {
 		this.event = register(this.name);
 	}
 	
-	MoCSoundEvents(String name) {
+	MoCSounds(String name) {
 		this.name = name.replaceAll("_", "").toLowerCase();
 		this.event = register(this.name);
 	}

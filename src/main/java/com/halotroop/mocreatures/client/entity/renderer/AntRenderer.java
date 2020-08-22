@@ -16,6 +16,6 @@ public class AntRenderer extends InsectRenderer<AntEntity, AntModel> {
 	
 	@Override
 	protected Identifier getTexture(AntEntity entity) {
-		return MoCMain.getTexture("entity/ant.png");
+		return MoCMain.getTexture("entity/ant");
 	}
 }
