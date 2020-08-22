@@ -1,7 +1,7 @@
 Dr. Zhark's [Mo' Creatures](https://mocreatures.org): Refabricated
 ----------------------------------------
 
-##### Brought to Fabric by halotroop2288
+##### Brought to Fabric by [halotroop2288](https://halotroop.com/posts/mocreatures/)
 
 ----------------------------------------
 Remember that mod that added all the animals, from the olden days?
