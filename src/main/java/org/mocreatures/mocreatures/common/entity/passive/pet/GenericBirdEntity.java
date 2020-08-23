@@ -21,11 +21,11 @@ import org.mocreatures.mocreatures.common.registry.MoCSounds;
 
 import java.util.Locale;
 
-public class GenericBirdEntity extends ParrotEntity implements MoCreature.Flying {
+public class GenericBirdEntity extends ParrotEntity implements MoCreature.Flying, MoCreature.Variable {
 	public float wingB, wingC, wingD, wingE, wingH;
 	private int hopTimer;
 	
-	public GenericBirdEntity(EntityType<GenericBirdEntity> entityType, World world) {
+	public GenericBirdEntity(EntityType<? extends ParrotEntity> entityType, World world) {
 		super(entityType, world);
 		this.wingB = 0.0F;
 		this.wingC = 0.0F;
@@ -81,13 +81,25 @@ public class GenericBirdEntity extends ParrotEntity implements MoCreature.Flying
 	public boolean interactMob(PlayerEntity playerEntity, Hand hand) {
 		final ItemStack stack = playerEntity.getActiveItem();
 		if (!stack.isEmpty() && stack.getItem().equals(Items.WHEAT_SEEDS)) {
-			stack.decrement(1);
-			if (stack.isEmpty()) {
-				playerEntity.setStackInHand(hand, ItemStack.EMPTY);
+			if (!playerEntity.abilities.creativeMode) {
+				stack.decrement(1);
 			}
+			
+			if (!this.isSilent()) {
+				this.world.playSound(null, this.x, this.y, this.z, SoundEvents.ENTITY_PARROT_EAT,
+						this.getSoundCategory(), 1.0F,
+						1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F);
+			}
+			
 			if (!this.world.isClient) {
-				this.setTamed(true); // TODO: Implement MoC Taming screen?
-				// MoCTools.tameWithName(playerEntity, this);
+				if (this.random.nextInt(10) == 0) {
+					this.setOwner(playerEntity);
+					this.showEmoteParticle(true);
+					this.world.sendEntityStatus(this, (byte)7);
+				} else {
+					this.showEmoteParticle(false);
+					this.world.sendEntityStatus(this, (byte)6);
+				}
 			}
 			return true;
 		} else {

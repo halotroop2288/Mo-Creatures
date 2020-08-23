@@ -15,6 +15,7 @@ With no extra requirements, and no crashing config screen!
 ### Passive mobs
  - [x] Ants
     - Please report bugs/missing features!
+ - [x] ~~Bees~~
  - [x] Birds
 	- Please report bugs/missing features!
  - [x] ~~Bunnies~~

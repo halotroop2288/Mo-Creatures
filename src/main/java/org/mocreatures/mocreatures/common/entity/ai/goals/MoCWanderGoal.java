@@ -9,8 +9,6 @@ import org.mocreatures.mocreatures.common.MoCMain;
 import org.mocreatures.mocreatures.common.MoCTools;
 import org.mocreatures.mocreatures.common.entity.MoCreature;
 import org.mocreatures.mocreatures.common.entity.ai.MoCFlyerRandomPositionGenerator;
-import org.mocreatures.mocreatures.common.entity.ambient.AntEntity;
-import org.mocreatures.mocreatures.common.entity.animal.MoCAnimalEntity;
 
 public class MoCWanderGoal extends WanderAroundGoal {
 	private final MobEntityWithAi entity;
@@ -36,18 +34,18 @@ public class MoCWanderGoal extends WanderAroundGoal {
 		if (this.entity.getNavigation().isIdle()) {
 			return false;
 		}
-		if (this.entity.hasPassengers() && !(this.entity instanceof AntEntity || this.entity instanceof MoCAnimalEntity)) {
+		if (this.entity.hasPassengers() && !(this.entity instanceof MoCreature)) {
 			return false;
 		}
 		
 		if (!this.mustUpdate) {
 			if (this.entity.age >= 100) {
-//				MoCMain.logger.info("exiting path finder !mustUpdate + Age > 100" + this.entity);
+//				MoCMain.logger.devInfo("exiting path finder !mustUpdate + Age > 100" + this.entity);
 				return false;
 			}
 			
 			if (this.entity.getRandom().nextInt(this.executionChance) != 0) {
-//				MoCMain.logger.info(this.entity + "exiting due executionChance, age = " + this.entity.age
+//				MoCMain.logger.devInfo(this.entity + "exiting due executionChance, age = " + this.entity.age
 //						+ ", executionChance = " + this.executionChance);
 				return false;
 			}
@@ -55,19 +53,19 @@ public class MoCWanderGoal extends WanderAroundGoal {
 		
 		Vec3d vec3 = null;
 		
-		if (entity instanceof MoCreature.Flying) {
+		if (entity.canFly()) {
 			vec3 = MoCFlyerRandomPositionGenerator.findRandomTarget(this.entity, 10, 12);
 			
 			if (vec3 != null && this.entity.getNavigation() instanceof BirdNavigation) {
 				int distToFloor = MoCTools.distanceToFloor(this.entity);
 				int finalYHeight = distToFloor + MathHelper.floor(vec3.y - this.entity.y);
 				if ((finalYHeight < ((MoCreature.Flying) this.entity).minFlyingHeight())) {
-					MoCMain.logger.info("vector height " + finalYHeight + " smaller than min flying height "
+					MoCMain.logger.devInfo("vector height " + finalYHeight + " smaller than min flying height "
 							+ ((MoCreature.Flying) this.entity).minFlyingHeight());
 					return false;
 				}
 				if ((finalYHeight > ((MoCreature.Flying) this.entity).maxFlyingHeight())) {
-					MoCMain.logger.info("vector height " + finalYHeight + " bigger than max flying height "
+					MoCMain.logger.devInfo("vector height " + finalYHeight + " bigger than max flying height "
 							+ ((MoCreature.Flying) this.entity).maxFlyingHeight());
 					return false;
 				}
@@ -75,10 +73,10 @@ public class MoCWanderGoal extends WanderAroundGoal {
 		}
 		
 		if (vec3 == null) {
-//			MoCMain.logger.info("exiting path finder null Vec3");
+			MoCMain.logger.devInfo("exiting path finder null Vec3");
 			return false;
 		} else {
-			MoCMain.logger.info("found vector " + vec3.x + ", " + vec3.y + ", " + vec3.z);
+			MoCMain.logger.devInfo("found vector " + vec3.x + ", " + vec3.y + ", " + vec3.z);
 			this.position = vec3;
 			this.mustUpdate = false;
 			return true;
@@ -103,7 +101,6 @@ public class MoCWanderGoal extends WanderAroundGoal {
 	 * Makes task to bypass chance
 	 */
 	public void makeUpdate() {
-//		MoCMain.logger.info(entity + " has forced update");
 		this.mustUpdate = true;
 	}
 	

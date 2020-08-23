@@ -5,7 +5,7 @@ import net.fabricmc.api.ModInitializer;
 import net.minecraft.util.Identifier;
 import org.mocreatures.mocreatures.common.config.MoCSettings;
 import org.mocreatures.mocreatures.common.config.MoCreaturesConfig;
-import org.mocreatures.mocreatures.common.registry.MoCEntityTypes;
+import org.mocreatures.mocreatures.common.registry.MoCEntities;
 import org.mocreatures.mocreatures.common.registry.MoCSounds;
 
 public class MoCMain implements ModInitializer {
@@ -26,7 +26,7 @@ public class MoCMain implements ModInitializer {
 	
 	private static void registerCommon() {
 		MoCSounds.registerAll();
-		MoCEntityTypes.registerAll();
+		MoCEntities.registerAll();
 	}
 	
 	@Override
@@ -36,7 +36,7 @@ public class MoCMain implements ModInitializer {
 		MoCreaturesConfig.loadAll();
 		logger.info("Loading settings complete!");
 		
-		logger.info("Registering objects");
+		logger.devInfo("Registering objects");
 		registerCommon();
 	}
 }

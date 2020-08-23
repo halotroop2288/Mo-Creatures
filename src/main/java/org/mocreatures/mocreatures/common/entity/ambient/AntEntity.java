@@ -3,27 +3,18 @@ package org.mocreatures.mocreatures.common.entity.ambient;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.goal.WanderAroundGoal;
 import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.world.World;
 import org.mocreatures.mocreatures.common.entity.MoCreature;
-import org.mocreatures.mocreatures.common.registry.MoCEntityTypes;
 
 public class AntEntity extends InsectEntity implements MoCreature {
-	public AntEntity(EntityType<? extends InsectEntity> entityType, World world) {
-		super(entityType, world);
+	public AntEntity(EntityType<? extends InsectEntity> type, World world) {
+		super(type, world);
 	}
 	
 	@Override
 	protected void initGoals() {
 		this.goalSelector.add(4, new SeekFoodGoal(this, true));
 		this.goalSelector.add(5, new WanderAroundGoal(this, 1.2D));
-	}
-	
-	@Override
-	public PassiveEntity createChild(PassiveEntity mate) {
-		PassiveEntity child = MoCEntityTypes.ANT.create(world);
-		world.spawnEntity(child);
-		return child;
 	}
 	
 	@Override

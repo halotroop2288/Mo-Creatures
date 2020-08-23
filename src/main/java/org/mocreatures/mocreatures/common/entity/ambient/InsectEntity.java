@@ -1,7 +1,10 @@
 package org.mocreatures.mocreatures.common.entity.ambient;
 
+import net.minecraft.block.Blocks;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.data.DataTracker;
@@ -9,8 +12,10 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.AnimalEntity;
+import net.minecraft.entity.passive.PassiveEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import org.mocreatures.mocreatures.common.MoCMain;
@@ -19,6 +24,8 @@ import org.mocreatures.mocreatures.common.entity.MoCreature;
 import org.mocreatures.mocreatures.common.entity.ai.goals.MoCWanderGoal;
 
 public abstract class InsectEntity extends AnimalEntity implements MoCreature {
+	protected MoCWanderGoal wander;
+	
 	private int climbCounter;
 	
 	protected InsectEntity(EntityType<? extends AnimalEntity> entityType, World world) {
@@ -26,7 +33,6 @@ public abstract class InsectEntity extends AnimalEntity implements MoCreature {
 	}
 	
 	public static void faceLocation(MobEntity entity, int i, int j, int k, float maxIncrement) {
-		// TODO: Correctly label math-y stuff
 		double var1 = i + 0.5D - entity.x;
 		double var2 = k + 0.5D - entity.z;
 		double var3 = j + 0.5D - entity.y;
@@ -37,16 +43,17 @@ public abstract class InsectEntity extends AnimalEntity implements MoCreature {
 		entity.yaw = updateRotation(entity.yaw, yawModifier, maxIncrement);
 	}
 	
+	// FIXME: This can probably be simplified with some math-y stuff.
 	private static float updateRotation(float currentRotation, float intendedRotation, float maxIncrement) {
-		float rotationModifier = intendedRotation - currentRotation;
+		float rotMod = intendedRotation - currentRotation;
 		
-		while (rotationModifier < -180.0F) rotationModifier += 360.0F;
-		while (rotationModifier >= 180.0F) rotationModifier -= 360.0F;
+		while (rotMod < -180.0F) rotMod += 360.0F;
+		while (rotMod >= 180.0F) rotMod -= 360.0F;
 		
-		if (rotationModifier > maxIncrement) rotationModifier = maxIncrement;
-		if (rotationModifier < -maxIncrement) rotationModifier = -maxIncrement;
+		if (rotMod > maxIncrement) rotMod = maxIncrement;
+		if (rotMod < -maxIncrement) rotMod = -maxIncrement;
 		
-		return currentRotation + rotationModifier;
+		return currentRotation + rotMod;
 	}
 	
 	@Override
@@ -57,7 +64,8 @@ public abstract class InsectEntity extends AnimalEntity implements MoCreature {
 	@Override
 	protected void initGoals() {
 		super.initGoals();
-		this.goalSelector.add(5, new MoCWanderGoal(this, this.getMovementSpeed()));
+		wander = new MoCWanderGoal(this, this.getMovementSpeed());
+		this.goalSelector.add(5, wander);
 	}
 	
 	@Override
@@ -70,6 +78,26 @@ public abstract class InsectEntity extends AnimalEntity implements MoCreature {
 	@Override
 	protected void initDataTracker() {
 		super.initDataTracker();
+	}
+	
+	@Override
+	public void tick() {
+		super.tick();
+		
+		if (world.isClient) { // Client stuff
+			if (this.climbCounter > 0 && ++this.climbCounter > 8) {
+				this.climbCounter = 0;
+			}
+		} else { // Server stuff
+			if (this.isClimbing() && !this.onGround) {
+				// Animation???
+			}
+		}
+	}
+	
+	@Override
+	public PassiveEntity createChild(PassiveEntity passiveEntity) {
+		return null;
 	}
 	
 	public abstract static class Flying extends InsectEntity implements MoCreature.Flying {
@@ -101,6 +129,55 @@ public abstract class InsectEntity extends AnimalEntity implements MoCreature {
 			super.initDataTracker();
 			this.dataTracker.startTracking(IS_FLYING, false);
 		}
+		
+		@Override
+		public void tick() {
+			super.tick();
+			
+			if (!world.isClient) {
+				if (isAttractedToLight() && this.random.nextInt(50) == 0) {
+					BlockPos ai = MoCTools.ReturnNearestBlockPos(this, Blocks.TORCH, 8D);
+					if (ai.getX() > -1000) {
+						this.getNavigation().findPathTo(ai, 1);
+					}
+				}
+				// Makes the entity start flying if a large mob is around
+				if (!isFlying()) {
+					if (this.random.nextInt(getFlyingFreq()) == 0) {
+						for (Entity fear : this.world.getEntities(this, this.getBoundingBox().expand(4D, 4D, 4D))) {
+							if ((fear instanceof LivingEntity)
+									&& fear.getWidth() >= 0.4F && fear.getHeight() >= 0.4f && canSee(fear)) {
+								this.startFlying();
+							}
+						}
+					}
+				}
+				
+				// Makes the entity start flying at random
+				if (isFlying() && (this.random.nextInt(200) == 0)) {
+					this.startFlying();
+				}
+				
+				// This makes the flying insect move all the time in the air
+				if (isFlying()) {
+					if (this.navigation.isIdle() && !isMovementCeased() && getTarget() == null) {
+						this.wander.makeUpdate();
+					}
+				}
+			}
+		}
+		
+		private void startFlying() {
+			this.setFlying(true);
+			this.wander.makeUpdate();
+		}
+		
+		/**
+		 * @return how often this creature starts flying
+		 */
+		protected int getFlyingFreq() { return 20; }
+		
+		public abstract boolean isAttractedToLight();
 	}
 	
 	public static class SeekFoodGoal extends Goal {
@@ -117,7 +194,7 @@ public abstract class InsectEntity extends AnimalEntity implements MoCreature {
 		
 		@Override
 		public void start() {
-			MoCMain.logger.info("Found food. Should start navigating now.");
+			MoCMain.logger.devInfo("Found food. Should start navigating now.");
 			if (!closestFood.hasVehicle()) {
 				float f = closestFood.distanceTo(this.user);
 				if (f > 1.0F) {

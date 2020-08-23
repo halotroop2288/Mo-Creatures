@@ -5,7 +5,7 @@ import net.minecraft.client.render.entity.model.EntityModel;
 import net.minecraft.util.math.MathHelper;
 import org.mocreatures.mocreatures.common.entity.passive.pet.GenericBirdEntity;
 
-public class GenericBirdModel extends EntityModel<GenericBirdEntity> implements ModelHelper {
+public class GenericBirdModel extends EntityModel<GenericBirdEntity> {
 	protected final ModelPart head, body, leftLeg, rightLeg, rightWing, leftWing, beak, tail;
 	
 	public GenericBirdModel() {
@@ -38,14 +38,17 @@ public class GenericBirdModel extends EntityModel<GenericBirdEntity> implements 
 		this.rightLeg.setPivot(1.0F, 3 + byte0, 1.0F);
 		this.cuboidList.add(rightLeg);
 		
+		float wingOff = 0.0F;
+		float wingPivOff = 0.5F;
+		
 		this.rightWing = new ModelPart(this, 24, 13);
-		this.rightWing.addCuboid(-1F, 0.0F + hOff, -3F, 1, 5, 5);
-		this.rightWing.setPivot(-2F, -2 + byte0, 0.0F);
+		this.rightWing.addCuboid(-1F + wingOff, 0.0F + hOff, -3F, 1, 5, 5);
+		this.rightWing.setPivot(-2F + wingPivOff, -2 + byte0, 0.0F);
 		this.cuboidList.add(rightWing);
 		
 		this.leftWing = new ModelPart(this, 24, 13);
-		this.leftWing.addCuboid(0.0F, 0.0F + hOff, -3F, 1, 5, 5);
-		this.leftWing.setPivot(2.0F, -2 + byte0, 0.0F);
+		this.leftWing.addCuboid(0.0F - wingOff, 0.0F + hOff, -3F, 1, 5, 5);
+		this.leftWing.setPivot(2.0F - wingPivOff, -2 + byte0, 0.0F);
 		this.cuboidList.add(leftWing);
 		
 		this.tail = new ModelPart(this, 0, 23);
@@ -71,7 +74,7 @@ public class GenericBirdModel extends EntityModel<GenericBirdEntity> implements 
 			this.rightLeg.pitch = 1.4F;
 		} else {
 			this.leftLeg.pitch = MathHelper.cos(f * 0.6662F) * g;
-			this.rightLeg.pitch = MathHelper.cos((f * 0.6662F) + 3.141593F) * g;
+			this.rightLeg.pitch = MathHelper.cos((f * 0.6662F) + (float) Math.PI) * g;
 		}
 		this.rightWing.roll = h;
 		this.leftWing.roll = -h;

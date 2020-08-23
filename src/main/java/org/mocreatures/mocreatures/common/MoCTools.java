@@ -1,11 +1,13 @@
 package org.mocreatures.mocreatures.common;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
@@ -68,4 +70,57 @@ public class MoCTools {
 			return "";
 		}
 	}
+	
+	public static BlockPos ReturnNearestBlockPos(Entity entity, Block block, double range) {
+		double shortestDistance = -1D;
+		int x = -9999;
+		int y = -1;
+		int z = -1;
+		
+		Box box = entity.getBoundingBox().expand(range);
+		int i = MathHelper.floor(box.x1);
+		int j = MathHelper.floor(box.x2 + 1.0D);
+		int k = MathHelper.floor(box.y1);
+		int l = MathHelper.floor(box.y2 + 1.0D);
+		int i1 = MathHelper.floor(box.z1);
+		int j1 = MathHelper.floor(box.z2 + 1.0D);
+		for (int k1 = i; k1 < j; k1++) {
+			for (int l1 = k; l1 < l; l1++) {
+				for (int i2 = i1; i2 < j1; i2++) {
+					BlockPos pos = new BlockPos(k1, l1, i2);
+					BlockState blockstate = entity.world.getBlockState(pos);
+					if ((blockstate.getBlock() != Blocks.AIR) && (blockstate.getBlock() == block)) {
+						double distance = entity.squaredDistanceTo(k1, l1, i2);
+						if (shortestDistance == -1D) {
+							x = k1;
+							y = l1;
+							z = i2;
+							shortestDistance = distance;
+						}
+						
+						if (distance < shortestDistance) {
+							x = k1;
+							y = l1;
+							z = i2;
+							shortestDistance = distance;
+						}
+					}
+				}
+			}
+		}
+		
+		if (entity.x > x) {
+			x -= 2;
+		} else {
+			x += 2;
+		}
+		if (entity.z > z) {
+			z -= 2;
+		} else {
+			z += 2;
+		}
+		
+		return new BlockPos(x, y, z);
+	}
+	
 }
